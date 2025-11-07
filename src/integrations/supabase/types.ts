@@ -14,6 +14,36 @@ export type Database = {
   }
   public: {
     Tables: {
+      obra_fotos: {
+        Row: {
+          created_at: string
+          data_upload: string
+          descricao: string | null
+          foto_url: string
+          id: string
+          titulo: string
+          uploaded_by: string
+        }
+        Insert: {
+          created_at?: string
+          data_upload?: string
+          descricao?: string | null
+          foto_url: string
+          id?: string
+          titulo: string
+          uploaded_by: string
+        }
+        Update: {
+          created_at?: string
+          data_upload?: string
+          descricao?: string | null
+          foto_url?: string
+          id?: string
+          titulo?: string
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           cpf: string | null

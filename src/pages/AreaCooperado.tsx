@@ -3,17 +3,19 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp } from 'lucide-react';
+import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [fotos, setFotos] = useState<any[]>([]);
 
   useEffect(() => {
     if (user) {
       loadProfile();
+      loadFotos();
     }
   }, [user]);
 
@@ -31,6 +33,20 @@ export default function AreaCooperado() {
       console.error('Erro ao carregar perfil:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadFotos = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('obra_fotos')
+        .select('*')
+        .order('data_upload', { ascending: false });
+
+      if (error) throw error;
+      setFotos(data || []);
+    } catch (error) {
+      console.error('Erro ao carregar fotos:', error);
     }
   };
 
@@ -177,6 +193,49 @@ export default function AreaCooperado() {
               </CardContent>
             </Card>
           </div>
+
+          {/* Photo Gallery */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Camera className="h-5 w-5 text-primary" />
+                Galeria de Fotos da Obra
+              </CardTitle>
+              <CardDescription>
+                Acompanhe o andamento da construção através de fotos
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {fotos.length === 0 ? (
+                <p className="text-center text-muted-foreground py-8">
+                  Nenhuma foto disponível ainda
+                </p>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {fotos.map((foto) => (
+                    <div key={foto.id} className="group">
+                      <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                        <img
+                          src={foto.foto_url}
+                          alt={foto.titulo}
+                          className="w-full h-64 object-cover"
+                        />
+                      </div>
+                      <div className="mt-3 space-y-1">
+                        <h3 className="font-semibold">{foto.titulo}</h3>
+                        {foto.descricao && (
+                          <p className="text-sm text-muted-foreground">{foto.descricao}</p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(foto.data_upload).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
       </main>
     </div>
