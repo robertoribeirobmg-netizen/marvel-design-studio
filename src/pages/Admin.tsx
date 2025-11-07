@@ -7,9 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
 
 export default function Admin() {
   const { signOut } = useAuth();
@@ -215,7 +217,24 @@ export default function Admin() {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="max-w-7xl mx-auto space-y-8">
+        <div className="max-w-7xl mx-auto">
+          <Tabs defaultValue="cooperados" className="space-y-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="cooperados" className="flex items-center gap-2">
+                <Users className="h-4 w-4" />
+                Cooperados
+              </TabsTrigger>
+              <TabsTrigger value="financeiro" className="flex items-center gap-2">
+                <DollarSign className="h-4 w-4" />
+                Financeiro
+              </TabsTrigger>
+              <TabsTrigger value="fotos" className="flex items-center gap-2">
+                <Camera className="h-4 w-4" />
+                Galeria
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="cooperados" className="space-y-8">
           {/* Create User Form */}
           <Card>
             <CardHeader>
@@ -336,8 +355,14 @@ export default function Admin() {
             </CardContent>
           </Card>
 
-          {/* Photo Gallery Upload */}
-          <Card>
+            </TabsContent>
+
+            <TabsContent value="financeiro">
+              <FinanceiroAdmin />
+            </TabsContent>
+
+            <TabsContent value="fotos">
+              <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5 text-primary" />
@@ -441,6 +466,8 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
+            </TabsContent>
+          </Tabs>
         </div>
       </main>
     </div>

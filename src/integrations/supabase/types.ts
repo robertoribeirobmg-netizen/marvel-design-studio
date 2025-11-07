@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      investimentos: {
+        Row: {
+          created_at: string
+          data_inicio: string
+          id: string
+          numero_parcelas: number
+          observacoes: string | null
+          updated_at: string
+          user_id: string
+          valor_parcela: number
+          valor_total: number
+        }
+        Insert: {
+          created_at?: string
+          data_inicio: string
+          id?: string
+          numero_parcelas: number
+          observacoes?: string | null
+          updated_at?: string
+          user_id: string
+          valor_parcela: number
+          valor_total: number
+        }
+        Update: {
+          created_at?: string
+          data_inicio?: string
+          id?: string
+          numero_parcelas?: number
+          observacoes?: string | null
+          updated_at?: string
+          user_id?: string
+          valor_parcela?: number
+          valor_total?: number
+        }
+        Relationships: []
+      }
       obra_fotos: {
         Row: {
           categoria: Database["public"]["Enums"]["categoria_obra"]
@@ -46,6 +82,62 @@ export type Database = {
           uploaded_by?: string
         }
         Relationships: []
+      }
+      parcelas: {
+        Row: {
+          created_at: string
+          data_pagamento: string | null
+          data_vencimento: string
+          id: string
+          investimento_id: string
+          juros: number | null
+          multa: number | null
+          numero_parcela: number
+          observacoes: string | null
+          status: string
+          updated_at: string
+          valor_pago: number | null
+          valor_parcela: number
+        }
+        Insert: {
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento: string
+          id?: string
+          investimento_id: string
+          juros?: number | null
+          multa?: number | null
+          numero_parcela: number
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_parcela: number
+        }
+        Update: {
+          created_at?: string
+          data_pagamento?: string | null
+          data_vencimento?: string
+          id?: string
+          investimento_id?: string
+          juros?: number | null
+          multa?: number | null
+          numero_parcela?: number
+          observacoes?: string | null
+          status?: string
+          updated_at?: string
+          valor_pago?: number | null
+          valor_parcela?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcelas_investimento_id_fkey"
+            columns: ["investimento_id"]
+            isOneToOne: false
+            referencedRelation: "investimentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {

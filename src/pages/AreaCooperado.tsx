@@ -7,6 +7,7 @@ import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera,
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
+import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -196,23 +197,10 @@ export default function AreaCooperado() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  Investimento
-                </CardTitle>
-                <CardDescription>
-                  Informações sobre seu investimento
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" className="w-full" disabled>
-                  Em Breve
-                </Button>
-              </CardContent>
-            </Card>
           </div>
+
+          {/* Dashboard Financeiro */}
+          {user && <DashboardFinanceiro userId={user.id} />}
 
           {/* Photo Gallery */}
           <Card>
