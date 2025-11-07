@@ -1,6 +1,7 @@
 import { Home, LayoutDashboard, User, Shield, LogOut } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import {
   Sidebar,
   SidebarContent,
@@ -14,6 +15,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -96,7 +98,9 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="space-y-2">
+        <ThemeToggle collapsed={collapsed} />
+        <Separator />
         <Button
           variant="ghost"
           onClick={handleLogout}
