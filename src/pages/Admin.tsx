@@ -27,6 +27,7 @@ export default function Admin() {
   const [fotoFile, setFotoFile] = useState<File | null>(null);
   const [fotoTitulo, setFotoTitulo] = useState('');
   const [fotoDescricao, setFotoDescricao] = useState('');
+  const [fotoCategoria, setFotoCategoria] = useState<'fundacao' | 'estrutura' | 'acabamento'>('fundacao');
   const [isUploadingFoto, setIsUploadingFoto] = useState(false);
 
   useEffect(() => {
@@ -144,6 +145,7 @@ export default function Admin() {
           titulo: fotoTitulo,
           descricao: fotoDescricao || null,
           foto_url: publicUrl,
+          categoria: fotoCategoria,
           uploaded_by: (await supabase.auth.getUser()).data.user?.id,
         });
 
@@ -153,6 +155,7 @@ export default function Admin() {
       setFotoFile(null);
       setFotoTitulo('');
       setFotoDescricao('');
+      setFotoCategoria('fundacao');
       loadFotos();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao enviar foto');
@@ -346,7 +349,7 @@ export default function Admin() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleUploadFoto} className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid md:grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="titulo">Título da Foto</Label>
                     <Input
@@ -357,6 +360,20 @@ export default function Admin() {
                       onChange={(e) => setFotoTitulo(e.target.value)}
                       required
                     />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="categoria">Categoria</Label>
+                    <select
+                      id="categoria"
+                      value={fotoCategoria}
+                      onChange={(e) => setFotoCategoria(e.target.value as any)}
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      required
+                    >
+                      <option value="fundacao">Fundação</option>
+                      <option value="estrutura">Estrutura</option>
+                      <option value="acabamento">Acabamento</option>
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="descricao">Descrição (opcional)</Label>

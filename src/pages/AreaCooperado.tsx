@@ -3,14 +3,16 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera } from 'lucide-react';
+import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { Badge } from '@/components/ui/badge';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fotos, setFotos] = useState<any[]>([]);
+  const [filtroCategoria, setFiltroCategoria] = useState<'todas' | 'fundacao' | 'estrutura' | 'acabamento'>('todas');
 
   useEffect(() => {
     if (user) {
@@ -38,10 +40,16 @@ export default function AreaCooperado() {
 
   const loadFotos = async () => {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('obra_fotos')
         .select('*')
         .order('data_upload', { ascending: false });
+
+      if (filtroCategoria !== 'todas') {
+        query = query.eq('categoria', filtroCategoria);
+      }
+
+      const { error, data } = await query;
 
       if (error) throw error;
       setFotos(data || []);
@@ -49,6 +57,10 @@ export default function AreaCooperado() {
       console.error('Erro ao carregar fotos:', error);
     }
   };
+
+  useEffect(() => {
+    loadFotos();
+  }, [filtroCategoria]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -206,6 +218,40 @@ export default function AreaCooperado() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Category Filters */}
+              <div className="mb-6 flex flex-wrap gap-2">
+                <Button
+                  variant={filtroCategoria === 'todas' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('todas')}
+                  className="flex items-center gap-2"
+                >
+                  <Filter className="h-4 w-4" />
+                  Todas
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'fundacao' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('fundacao')}
+                >
+                  Fundação
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'estrutura' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('estrutura')}
+                >
+                  Estrutura
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'acabamento' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('acabamento')}
+                >
+                  Acabamento
+                </Button>
+              </div>
+
               {fotos.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Nenhuma foto disponível ainda
@@ -222,7 +268,14 @@ export default function AreaCooperado() {
                         />
                       </div>
                       <div className="mt-3 space-y-1">
-                        <h3 className="font-semibold">{foto.titulo}</h3>
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold">{foto.titulo}</h3>
+                          <Badge variant="secondary" className="text-xs">
+                            {foto.categoria === 'fundacao' && 'Fundação'}
+                            {foto.categoria === 'estrutura' && 'Estrutura'}
+                            {foto.categoria === 'acabamento' && 'Acabamento'}
+                          </Badge>
+                        </div>
                         {foto.descricao && (
                           <p className="text-sm text-muted-foreground">{foto.descricao}</p>
                         )}

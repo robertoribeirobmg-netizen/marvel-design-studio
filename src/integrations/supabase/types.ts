@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       obra_fotos: {
         Row: {
+          categoria: Database["public"]["Enums"]["categoria_obra"]
           created_at: string
           data_upload: string
           descricao: string | null
@@ -25,6 +26,7 @@ export type Database = {
           uploaded_by: string
         }
         Insert: {
+          categoria?: Database["public"]["Enums"]["categoria_obra"]
           created_at?: string
           data_upload?: string
           descricao?: string | null
@@ -34,6 +36,7 @@ export type Database = {
           uploaded_by: string
         }
         Update: {
+          categoria?: Database["public"]["Enums"]["categoria_obra"]
           created_at?: string
           data_upload?: string
           descricao?: string | null
@@ -104,6 +107,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "cooperado"
+      categoria_obra: "fundacao" | "estrutura" | "acabamento"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -232,6 +236,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "cooperado"],
+      categoria_obra: ["fundacao", "estrutura", "acabamento"],
     },
   },
 } as const
