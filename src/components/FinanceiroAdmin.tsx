@@ -6,9 +6,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, Upload, FileSpreadsheet, Edit, Check, X } from 'lucide-react';
+import { DollarSign, Upload, FileSpreadsheet, Edit, Check, X, FileDown, FileText } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export function FinanceiroAdmin() {
   const [cooperados, setCooperados] = useState<any[]>([]);
@@ -198,8 +200,225 @@ export function FinanceiroAdmin() {
     });
   };
 
+  const exportToExcel = async () => {
+    try {
+      // Buscar todos os dados com relacionamentos
+      const { data: investimentosData, error: invError } = await supabase
+        .from('investimentos')
+        .select(`
+          *,
+          profiles (nome_completo),
+          parcelas (*)
+        `)
+        .order('data_inicio', { ascending: false });
+
+      if (invError) throw invError;
+
+      // Preparar dados para o Excel
+      const excelData: any[] = [];
+      
+      investimentosData?.forEach((inv: any) => {
+        // Adicionar linha do investimento
+        excelData.push({
+          'Cooperado': inv.profiles?.nome_completo || '-',
+          'Valor Total': inv.valor_total,
+          'Número de Parcelas': inv.numero_parcelas,
+          'Valor Parcela': inv.valor_parcela,
+          'Data Início': new Date(inv.data_inicio).toLocaleDateString('pt-BR'),
+          'Observações': inv.observacoes || '-',
+          '': '',
+          'Parcela Nº': '',
+          'Vencimento': '',
+          'Status': '',
+          'Data Pagamento': '',
+          'Valor Pago': '',
+          'Juros': '',
+          'Multa': '',
+        });
+
+        // Adicionar linhas das parcelas
+        inv.parcelas?.forEach((parcela: any) => {
+          excelData.push({
+            'Cooperado': '',
+            'Valor Total': '',
+            'Número de Parcelas': '',
+            'Valor Parcela': '',
+            'Data Início': '',
+            'Observações': '',
+            '': '',
+            'Parcela Nº': parcela.numero_parcela,
+            'Vencimento': new Date(parcela.data_vencimento).toLocaleDateString('pt-BR'),
+            'Status': parcela.status === 'paga' ? 'Paga' : 'Pendente',
+            'Data Pagamento': parcela.data_pagamento ? new Date(parcela.data_pagamento).toLocaleDateString('pt-BR') : '-',
+            'Valor Pago': parcela.valor_pago ? parcela.valor_pago.toFixed(2) : '-',
+            'Juros': (parcela.juros || 0).toFixed(2),
+            'Multa': (parcela.multa || 0).toFixed(2),
+          });
+        });
+
+        // Linha vazia entre investimentos
+        excelData.push({});
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(excelData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Relatório Financeiro');
+
+      const fileName = `relatorio_financeiro_${new Date().toISOString().split('T')[0]}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      toast.success('Relatório Excel exportado com sucesso!');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao exportar relatório');
+      console.error('Erro na exportação:', error);
+    }
+  };
+
+  const exportToPDF = async () => {
+    try {
+      // Buscar todos os dados com relacionamentos
+      const { data: investimentosData, error: invError } = await supabase
+        .from('investimentos')
+        .select(`
+          *,
+          profiles (nome_completo),
+          parcelas (*)
+        `)
+        .order('data_inicio', { ascending: false });
+
+      if (invError) throw invError;
+
+      const doc = new jsPDF();
+      let yPosition = 20;
+
+      // Título
+      doc.setFontSize(18);
+      doc.text('Relatório Financeiro Completo', 14, yPosition);
+      yPosition += 10;
+
+      doc.setFontSize(10);
+      doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')} às ${new Date().toLocaleTimeString('pt-BR')}`, 14, yPosition);
+      yPosition += 15;
+
+      investimentosData?.forEach((inv: any, index: number) => {
+        // Verificar se precisa de nova página
+        if (yPosition > 250) {
+          doc.addPage();
+          yPosition = 20;
+        }
+
+        // Informações do investimento
+        doc.setFontSize(12);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Investimento ${index + 1}: ${inv.profiles?.nome_completo || 'N/A'}`, 14, yPosition);
+        yPosition += 7;
+
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Valor Total: R$ ${inv.valor_total.toFixed(2)}`, 14, yPosition);
+        doc.text(`Parcelas: ${inv.numero_parcelas}x de R$ ${inv.valor_parcela.toFixed(2)}`, 110, yPosition);
+        yPosition += 6;
+        doc.text(`Data Início: ${new Date(inv.data_inicio).toLocaleDateString('pt-BR')}`, 14, yPosition);
+        if (inv.observacoes) {
+          doc.text(`Obs: ${inv.observacoes}`, 110, yPosition);
+        }
+        yPosition += 10;
+
+        // Tabela de parcelas
+        if (inv.parcelas && inv.parcelas.length > 0) {
+          const parcelasData = inv.parcelas.map((p: any) => [
+            p.numero_parcela,
+            new Date(p.data_vencimento).toLocaleDateString('pt-BR'),
+            `R$ ${p.valor_parcela.toFixed(2)}`,
+            p.status === 'paga' ? 'Paga' : 'Pendente',
+            p.data_pagamento ? new Date(p.data_pagamento).toLocaleDateString('pt-BR') : '-',
+            p.valor_pago ? `R$ ${p.valor_pago.toFixed(2)}` : '-',
+            `R$ ${(p.juros || 0).toFixed(2)}`,
+            `R$ ${(p.multa || 0).toFixed(2)}`,
+          ]);
+
+          autoTable(doc, {
+            startY: yPosition,
+            head: [['Nº', 'Vencimento', 'Valor', 'Status', 'Dt Pgto', 'Pago', 'Juros', 'Multa']],
+            body: parcelasData,
+            theme: 'grid',
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [59, 130, 246] },
+          });
+
+          yPosition = (doc as any).lastAutoTable.finalY + 15;
+        }
+      });
+
+      // Resumo final
+      if (yPosition > 240) {
+        doc.addPage();
+        yPosition = 20;
+      }
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'bold');
+      doc.text('Resumo Geral', 14, yPosition);
+      yPosition += 8;
+
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      
+      const totalInvestimentos = investimentosData?.reduce((sum, inv) => sum + Number(inv.valor_total), 0) || 0;
+      const totalParcelas = investimentosData?.reduce((sum, inv) => sum + (inv.parcelas?.length || 0), 0) || 0;
+      const parcelasPagas = investimentosData?.reduce((sum, inv) => 
+        sum + (inv.parcelas?.filter((p: any) => p.status === 'paga').length || 0), 0) || 0;
+      const totalPago = investimentosData?.reduce((sum, inv) => 
+        sum + (inv.parcelas?.filter((p: any) => p.status === 'paga')
+          .reduce((s: number, p: any) => s + (Number(p.valor_pago) || 0), 0) || 0), 0) || 0;
+
+      doc.text(`Total de Investimentos: ${investimentosData?.length || 0}`, 14, yPosition);
+      yPosition += 6;
+      doc.text(`Valor Total Investido: R$ ${totalInvestimentos.toFixed(2)}`, 14, yPosition);
+      yPosition += 6;
+      doc.text(`Total de Parcelas: ${totalParcelas}`, 14, yPosition);
+      yPosition += 6;
+      doc.text(`Parcelas Pagas: ${parcelasPagas} (${totalParcelas > 0 ? ((parcelasPagas/totalParcelas)*100).toFixed(1) : 0}%)`, 14, yPosition);
+      yPosition += 6;
+      doc.text(`Valor Total Pago: R$ ${totalPago.toFixed(2)}`, 14, yPosition);
+
+      const fileName = `relatorio_financeiro_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+
+      toast.success('Relatório PDF exportado com sucesso!');
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao exportar relatório');
+      console.error('Erro na exportação:', error);
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Exportação de Relatórios */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <FileDown className="h-5 w-5 text-primary" />
+            Exportar Relatórios Financeiros
+          </CardTitle>
+          <CardDescription>
+            Baixe o histórico completo de investimentos e parcelas em Excel ou PDF
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Button onClick={exportToExcel} variant="outline" className="flex-1">
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Exportar Excel
+            </Button>
+            <Button onClick={exportToPDF} variant="outline" className="flex-1">
+              <FileText className="h-4 w-4 mr-2" />
+              Exportar PDF
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Upload Excel */}
       <Card>
         <CardHeader>
