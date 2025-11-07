@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { PhotoLightbox } from '@/components/PhotoLightbox';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -13,6 +14,8 @@ export default function AreaCooperado() {
   const [isLoading, setIsLoading] = useState(true);
   const [fotos, setFotos] = useState<any[]>([]);
   const [filtroCategoria, setFiltroCategoria] = useState<'todas' | 'fundacao' | 'estrutura' | 'acabamento'>('todas');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   useEffect(() => {
     if (user) {
@@ -61,6 +64,11 @@ export default function AreaCooperado() {
   useEffect(() => {
     loadFotos();
   }, [filtroCategoria]);
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setLightboxOpen(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -258,13 +266,16 @@ export default function AreaCooperado() {
                 </p>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {fotos.map((foto) => (
+                  {fotos.map((foto, index) => (
                     <div key={foto.id} className="group">
-                      <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                      <div 
+                        className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer"
+                        onClick={() => openLightbox(index)}
+                      >
                         <img
                           src={foto.foto_url}
                           alt={foto.titulo}
-                          className="w-full h-64 object-cover"
+                          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
                         />
                       </div>
                       <div className="mt-3 space-y-1">
@@ -291,6 +302,15 @@ export default function AreaCooperado() {
           </Card>
         </div>
       </main>
+
+      {/* Photo Lightbox */}
+      <PhotoLightbox
+        photos={fotos}
+        currentIndex={lightboxIndex}
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        onNavigate={setLightboxIndex}
+      />
     </div>
   );
 }
