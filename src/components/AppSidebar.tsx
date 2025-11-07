@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function AppSidebar() {
   const { state } = useSidebar();
@@ -31,6 +32,15 @@ export function AppSidebar() {
       console.error("Erro ao fazer logout:", error);
     }
   };
+
+  const userName = user.user_metadata?.nome_completo || "Usuário";
+  const userEmail = user.email || "";
+  const initials = userName
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <Sidebar className={collapsed ? "w-14" : "w-60"} collapsible="icon">
@@ -99,6 +109,23 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="space-y-2">
+        <div className="flex items-center gap-2 px-2 py-2">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src="" alt={userName} />
+            <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          {!collapsed && (
+            <div className="flex flex-col flex-1 min-w-0">
+              <span className="text-sm font-medium truncate">{userName}</span>
+              <span className="text-xs text-muted-foreground truncate">
+                {userEmail}
+              </span>
+            </div>
+          )}
+        </div>
+        <Separator />
         <ThemeToggle collapsed={collapsed} />
         <Separator />
         <Button
