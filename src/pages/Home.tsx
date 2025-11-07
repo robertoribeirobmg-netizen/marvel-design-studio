@@ -185,10 +185,10 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link to="/dashboard">
+            <Link to="/login">
               <Button className="bg-primary hover:bg-primary-hover shadow-lg shadow-primary/30 transition-all duration-200">
                 <Users className="mr-2 h-4 w-4" />
-                Portal do Cooperado
+                Área do Cooperado
               </Button>
             </Link>
           </div>
