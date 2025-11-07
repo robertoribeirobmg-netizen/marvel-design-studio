@@ -3,8 +3,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { DollarSign, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
+import { DollarSign, TrendingUp, Calendar, AlertCircle, BarChart3, PieChart } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 interface DashboardFinanceiroProps {
   userId: string;
@@ -20,7 +22,10 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
     parcelasPagas: 0,
     parcelasPendentes: 0,
     percentualPago: 0,
+    taxaAdimplencia: 0,
   });
+  const [chartData, setChartData] = useState<any[]>([]);
+  const [monthlyData, setMonthlyData] = useState<any[]>([]);
 
   useEffect(() => {
     loadInvestimento();
@@ -50,9 +55,16 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
         // Calcular estatísticas
         const pagas = parcelasData?.filter(p => p.status === 'paga') || [];
         const pendentes = parcelasData?.filter(p => p.status === 'pendente') || [];
+        const vencidas = parcelasData?.filter(p => 
+          p.status === 'pendente' && new Date(p.data_vencimento) < new Date()
+        ) || [];
         
         const totalPago = pagas.reduce((sum, p) => sum + (p.valor_pago || 0) + (p.juros || 0) + (p.multa || 0), 0);
         const totalPendente = pendentes.reduce((sum, p) => sum + p.valor_parcela, 0);
+        
+        // Calcular taxa de adimplência (parcelas pagas no prazo / total de parcelas vencidas)
+        const parcelasVencidas = pagas.length + vencidas.length;
+        const taxaAdimplencia = parcelasVencidas > 0 ? (pagas.length / parcelasVencidas) * 100 : 100;
         
         setStats({
           totalPago,
@@ -60,7 +72,64 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
           parcelasPagas: pagas.length,
           parcelasPendentes: pendentes.length,
           percentualPago: (pagas.length / (parcelasData?.length || 1)) * 100,
+          taxaAdimplencia,
         });
+
+        // Preparar dados para gráfico de evolução
+        const sortedParcelas = [...(parcelasData || [])].sort((a, b) => 
+          a.numero_parcela - b.numero_parcela
+        );
+        
+        let acumuladoPago = 0;
+        let acumuladoPendente = invData.valor_total;
+        
+        const evolutionData = sortedParcelas.map(parcela => {
+          if (parcela.status === 'paga') {
+            acumuladoPago += parcela.valor_pago || parcela.valor_parcela;
+            acumuladoPendente -= parcela.valor_parcela;
+          }
+          
+          return {
+            parcela: `${parcela.numero_parcela}`,
+            pago: Number(acumuladoPago.toFixed(2)),
+            pendente: Number(acumuladoPendente.toFixed(2)),
+            mes: new Date(parcela.data_vencimento).toLocaleDateString('pt-BR', { month: 'short', year: '2-digit' })
+          };
+        });
+        
+        setChartData(evolutionData);
+
+        // Preparar dados para distribuição mensal
+        const monthlyMap = new Map<string, { mes: string, valorPago: number, quantidade: number }>();
+        
+        pagas.forEach(parcela => {
+          const mes = new Date(parcela.data_pagamento || parcela.data_vencimento).toLocaleDateString('pt-BR', { 
+            month: 'short', 
+            year: '2-digit' 
+          });
+          
+          if (monthlyMap.has(mes)) {
+            const current = monthlyMap.get(mes)!;
+            monthlyMap.set(mes, {
+              mes,
+              valorPago: current.valorPago + (parcela.valor_pago || 0),
+              quantidade: current.quantidade + 1
+            });
+          } else {
+            monthlyMap.set(mes, {
+              mes,
+              valorPago: parcela.valor_pago || 0,
+              quantidade: 1
+            });
+          }
+        });
+        
+        const monthlyArray = Array.from(monthlyMap.values()).map(item => ({
+          ...item,
+          valorPago: Number(item.valorPago.toFixed(2))
+        }));
+        
+        setMonthlyData(monthlyArray);
       }
     } catch (error) {
       console.error('Erro ao carregar dados financeiros:', error);
@@ -166,6 +235,188 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Gráficos Financeiros */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Gráfico de Evolução */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              Evolução Financeira
+            </CardTitle>
+            <CardDescription>
+              Total pago vs pendente ao longo do tempo
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {chartData.length > 0 ? (
+              <ChartContainer
+                config={{
+                  pago: {
+                    label: "Pago",
+                    color: "hsl(var(--chart-1))",
+                  },
+                  pendente: {
+                    label: "Pendente",
+                    color: "hsl(var(--chart-2))",
+                  },
+                }}
+                className="h-[300px] w-full"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="mes" 
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
+                    />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Legend />
+                    <Area 
+                      type="monotone" 
+                      dataKey="pago" 
+                      stackId="1"
+                      stroke="hsl(var(--chart-1))" 
+                      fill="hsl(var(--chart-1))"
+                      name="Pago"
+                    />
+                    <Area 
+                      type="monotone" 
+                      dataKey="pendente" 
+                      stackId="1"
+                      stroke="hsl(var(--chart-2))" 
+                      fill="hsl(var(--chart-2))"
+                      name="Pendente"
+                    />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                Sem dados para exibir
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Gráfico de Distribuição Mensal */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <PieChart className="h-5 w-5 text-primary" />
+              Distribuição de Pagamentos
+            </CardTitle>
+            <CardDescription>
+              Valor pago por mês
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {monthlyData.length > 0 ? (
+              <ChartContainer
+                config={{
+                  valorPago: {
+                    label: "Valor Pago",
+                    color: "hsl(var(--chart-3))",
+                  },
+                }}
+                className="h-[300px] w-full"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={monthlyData}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="mes"
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => `R$ ${value.toLocaleString('pt-BR')}`}
+                    />
+                    <ChartTooltip 
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          return (
+                            <div className="rounded-lg border bg-background p-2 shadow-sm">
+                              <div className="grid gap-2">
+                                <div className="flex flex-col">
+                                  <span className="text-[0.70rem] uppercase text-muted-foreground">
+                                    {payload[0].payload.mes}
+                                  </span>
+                                  <span className="font-bold text-foreground">
+                                    R$ {payload[0].value?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                                  </span>
+                                  <span className="text-xs text-muted-foreground">
+                                    {payload[0].payload.quantidade} parcela(s)
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Bar 
+                      dataKey="valorPago" 
+                      fill="hsl(var(--chart-3))"
+                      radius={[4, 4, 0, 0]}
+                      name="Valor Pago"
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            ) : (
+              <p className="text-center text-muted-foreground py-8">
+                Nenhum pagamento realizado ainda
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Taxa de Adimplência */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Taxa de Adimplência
+          </CardTitle>
+          <CardDescription>
+            Percentual de parcelas pagas dentro do prazo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <p className="text-4xl font-bold" style={{
+                color: stats.taxaAdimplencia >= 80 ? 'hsl(var(--chart-1))' : 
+                       stats.taxaAdimplencia >= 50 ? 'hsl(var(--chart-4))' : 
+                       'hsl(var(--chart-5))'
+              }}>
+                {stats.taxaAdimplencia.toFixed(1)}%
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {stats.parcelasPagas} de {stats.parcelasPagas + parcelas.filter(p => 
+                  p.status === 'pendente' && new Date(p.data_vencimento) < new Date()
+                ).length} parcelas vencidas foram pagas
+              </p>
+            </div>
+            <Progress 
+              value={stats.taxaAdimplencia} 
+              className="w-1/2 h-4"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Informações do Investimento */}
       <Card>
