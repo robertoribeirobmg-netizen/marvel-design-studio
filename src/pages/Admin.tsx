@@ -374,7 +374,25 @@ export default function Admin() {
         const quadra = row.quadra || row.Quadra || null;
         const lote = row.lote || row.Lote || null;
         const fase = row.fase || row.Fase || null;
-        const data_compra = row.data_compra || row.data || row.Data || row['Data Compra'] || row['Data da Compra'] || null;
+        
+        // Processar data_compra - converter números do Excel para data
+        let data_compra = row.data_compra || row.data || row.Data || row['Data Compra'] || row['Data da Compra'] || null;
+        if (data_compra && typeof data_compra === 'number') {
+          // Excel armazena datas como números (dias desde 1900-01-01)
+          const excelEpoch = new Date(1899, 11, 30);
+          const date = new Date(excelEpoch.getTime() + data_compra * 86400000);
+          data_compra = date.toISOString().split('T')[0];
+        } else if (data_compra instanceof Date) {
+          data_compra = data_compra.toISOString().split('T')[0];
+        } else if (typeof data_compra === 'string' && data_compra.trim() !== '') {
+          // Tentar parsear string de data
+          const parsed = new Date(data_compra);
+          if (!isNaN(parsed.getTime())) {
+            data_compra = parsed.toISOString().split('T')[0];
+          }
+        } else {
+          data_compra = null;
+        }
 
         try {
           if (!email || !password || !nome_completo) {
