@@ -10,8 +10,6 @@ import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
-import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
-import { TimelineObras } from '@/components/TimelineObras';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -229,44 +227,6 @@ export default function AreaCooperado() {
           {/* Dashboard Financeiro */}
           {user && <DashboardFinanceiro userId={user.id} />}
 
-          {/* Timeline de Obras */}
-          <TimelineObras />
-
-          {/* Acompanhamento de Obras */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                Acompanhamento de Obras
-              </CardTitle>
-              <CardDescription>
-                Veja o andamento detalhado de cada etapa da construção
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AcompanhamentoObras />
-            </CardContent>
-          </Card>
-
-          {/* Dashboard Comparativo */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Análise Comparativa
-              </CardTitle>
-              <CardDescription>
-                Compare o progresso real com o planejado
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DashboardComparativoObras />
-            </CardContent>
-          </Card>
-
-          {/* Histórico de Alterações */}
-          <HistoricoGeralObras />
-
           {/* Photo Gallery */}
           <Card>
             <CardHeader>
@@ -351,6 +311,38 @@ export default function AreaCooperado() {
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Acompanhamento de Obras */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Acompanhamento de Obras
+              </CardTitle>
+              <CardDescription>
+                Veja o andamento detalhado de cada etapa da construção
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AcompanhamentoObras />
+            </CardContent>
+          </Card>
+
+          {/* Dashboard Comparativo */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Análise Comparativa
+              </CardTitle>
+              <CardDescription>
+                Compare o progresso real com o planejado
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DashboardComparativoObras />
             </CardContent>
           </Card>
         </div>
