@@ -87,7 +87,7 @@ export default function Admin() {
   
   // Preview pagination state
   const [previewPage, setPreviewPage] = useState(1);
-  const [previewItemsPerPage] = useState(100);
+  const [previewItemsPerPage] = useState(50);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   
