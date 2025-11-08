@@ -147,6 +147,29 @@ export default function AreaCooperado() {
                   </div>
                 )}
                 <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Quadra</p>
+                  <p className="font-semibold">{profile?.quadra || '-'}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Lote</p>
+                  <p className="font-semibold">{profile?.lote || '-'}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">Fase</p>
+                  <p className="font-semibold">{profile?.fase || '-'}</p>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    Data da Compra
+                  </p>
+                  <p className="font-semibold">
+                    {profile?.data_compra 
+                      ? new Date(profile.data_compra).toLocaleDateString('pt-BR')
+                      : '-'}
+                  </p>
+                </div>
+                <div className="space-y-2">
                   <p className="text-sm text-muted-foreground flex items-center gap-2">
                     <Calendar className="h-4 w-4" />
                     Membro desde
