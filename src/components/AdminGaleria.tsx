@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -39,9 +39,12 @@ export function AdminGaleria() {
   const [dateTo, setDateTo] = useState<Date>();
   const [ordenacao, setOrdenacao] = useState<'desc' | 'asc'>('desc');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(12);
 
   useEffect(() => {
     loadItems();
+    setCurrentPage(1); // Reset to first page when filters change
   }, [dateFrom, dateTo, ordenacao]);
 
   const loadItems = async () => {
@@ -74,6 +77,18 @@ export function AdminGaleria() {
   const clearDateFilters = () => {
     setDateFrom(undefined);
     setDateTo(undefined);
+    setCurrentPage(1);
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(items.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedItems = items.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const extractYouTubeId = (url: string) => {
@@ -435,9 +450,11 @@ export function AdminGaleria() {
             <p className="text-center text-muted-foreground py-8">
               Nenhum item na galeria ainda
             </p>
-          ) : viewMode === 'grid' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {items.map((item) => (
+          ) : (
+            <>
+              {viewMode === 'grid' ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {paginatedItems.map((item) => (
                 <Card key={item.id}>
                   <CardContent className="p-4">
                     <div className="space-y-3">
@@ -498,11 +515,11 @@ export function AdminGaleria() {
                     </div>
                   </CardContent>
                 </Card>
-              ))}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {items.map((item) => (
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {paginatedItems.map((item) => (
                 <div 
                   key={item.id} 
                   className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
@@ -566,8 +583,80 @@ export function AdminGaleria() {
                     </div>
                   </div>
                 </div>
-              ))}
-            </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Mostrando {startIndex + 1}-{Math.min(endIndex, items.length)} de {items.length} itens
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </Button>
+                    
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                        let pageNum;
+                        if (totalPages <= 5) {
+                          pageNum = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNum = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNum = totalPages - 4 + i;
+                        } else {
+                          pageNum = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={currentPage === pageNum ? 'default' : 'outline'}
+                            size="sm"
+                            onClick={() => handlePageChange(pageNum)}
+                            className="w-9"
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+                    </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="text-sm border rounded-md px-2 py-1 bg-background"
+                  >
+                    <option value={6}>6 por página</option>
+                    <option value={12}>12 por página</option>
+                    <option value={24}>24 por página</option>
+                    <option value={48}>48 por página</option>
+                  </select>
+                </div>
+              )}
+            </>
           )}
         </div>
       </CardContent>
