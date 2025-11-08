@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +24,10 @@ export default function Admin() {
   const [newPassword, setNewPassword] = useState('');
   const [newNome, setNewNome] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  
+  // Excel import state
+  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
   
   // Photo gallery state
   const [fotos, setFotos] = useState<any[]>([]);
@@ -99,6 +104,62 @@ export default function Admin() {
       loadCooperados();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao remover cooperado');
+    }
+  };
+
+  const handleExcelImport = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!excelFile) {
+      toast.error('Selecione um arquivo Excel');
+      return;
+    }
+
+    setIsImporting(true);
+
+    try {
+      const data = await excelFile.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+      if (jsonData.length === 0) {
+        toast.error('Planilha vazia');
+        setIsImporting(false);
+        return;
+      }
+
+      let sucessos = 0;
+      let erros = 0;
+
+      for (const row of jsonData) {
+        try {
+          const { error } = await supabase.functions.invoke('create-user', {
+            body: {
+              email: row.email || row.Email,
+              password: row.senha || row.Senha || row.password || row.Password,
+              nome_completo: row.nome_completo || row.nome || row.Nome || row['Nome Completo'],
+            },
+          });
+
+          if (error) {
+            console.error('Erro ao criar usuário:', error);
+            erros++;
+          } else {
+            sucessos++;
+          }
+        } catch (error) {
+          console.error('Erro ao processar linha:', error);
+          erros++;
+        }
+      }
+
+      toast.success(`${sucessos} cooperados criados com sucesso! ${erros > 0 ? `${erros} erros.` : ''}`);
+      setExcelFile(null);
+      loadCooperados();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao processar planilha');
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -287,6 +348,40 @@ export default function Admin() {
                     {isCreating ? 'Criando...' : 'Criar Cooperado'}
                   </Button>
                 </div>
+              </form>
+            </CardContent>
+          </Card>
+
+          {/* Import from Excel */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileSpreadsheet className="h-5 w-5 text-primary" />
+                Importar Cooperados via Planilha
+              </CardTitle>
+              <CardDescription>
+                Envie uma planilha Excel (.xlsx) com as colunas: nome_completo, email e senha
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleExcelImport} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="excel">Selecionar Planilha Excel</Label>
+                  <Input
+                    id="excel"
+                    type="file"
+                    accept=".xlsx,.xls"
+                    onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
+                    required
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    A planilha deve conter as colunas: <strong>nome_completo</strong>, <strong>email</strong> e <strong>senha</strong>
+                  </p>
+                </div>
+                <Button type="submit" disabled={isImporting} className="w-full">
+                  <Upload className="h-4 w-4 mr-2" />
+                  {isImporting ? 'Importando...' : 'Importar Cooperados'}
+                </Button>
               </form>
             </CardContent>
           </Card>
