@@ -1588,8 +1588,13 @@ export default function Admin() {
             <Button variant="outline" onClick={handleCancelPreview}>
               Cancelar
             </Button>
-            <Button onClick={handleConfirmImport} disabled={previewStats.comEmail === 0 || previewStats.comNome === 0}>
-              <Upload className="h-4 w-4 mr-2" />
+            <Button 
+              onClick={handleConfirmImport} 
+              disabled={previewStats.comEmail === 0 || previewStats.comNome === 0}
+              size="lg"
+              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+            >
+              <Upload className="h-5 w-5 mr-2" />
               Iniciar Importação
             </Button>
           </div>
