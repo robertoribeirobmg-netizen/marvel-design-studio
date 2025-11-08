@@ -132,6 +132,11 @@ export default function Admin() {
       });
 
       if (error) throw error;
+      
+      // Check if the response contains an error (e.g., 409 duplicate email)
+      if (data?.error) {
+        throw new Error(data.error);
+      }
 
       toast.success('Cooperado criado com sucesso!');
       setNewEmail('');
@@ -293,7 +298,7 @@ export default function Admin() {
             }
           }
 
-          const { error } = await supabase.functions.invoke('create-user', {
+          const { data, error } = await supabase.functions.invoke('create-user', {
             body: {
               email,
               password,
@@ -305,13 +310,13 @@ export default function Admin() {
             },
           });
 
-          if (error) {
+          if (error || data?.error) {
             results.push({
               row: i + 2, // +2 porque linha 1 é cabeçalho e array começa em 0
               nome: nome_completo,
               email,
               status: 'error',
-              error: error.message || 'Erro desconhecido',
+              error: data?.error || error?.message || 'Erro desconhecido',
             });
             erros++;
           } else {
