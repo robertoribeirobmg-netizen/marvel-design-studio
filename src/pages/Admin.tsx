@@ -1652,53 +1652,86 @@ export default function Admin() {
 
             <TabsContent value="financeiro">
               <div className="space-y-6">
-                {/* Template de importação */}
-                <Card className="border-blue-500/50 bg-gradient-to-r from-blue-500/5 to-transparent">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <Download className="h-6 w-6 text-blue-500" />
-                      Templates de Importação
-                    </CardTitle>
-                    <CardDescription>
-                      Baixe os templates Excel com exemplos e instruções para facilitar sua importação
-                    </CardDescription>
+                {/* Template de importação - DESTAQUE PARA CHAT */}
+                <Card className="border-blue-500 bg-gradient-to-r from-blue-500/10 via-blue-500/5 to-transparent shadow-lg">
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                        <CardTitle className="flex items-center gap-2 text-xl">
+                          <Download className="h-7 w-7 text-blue-500" />
+                          ⚡ Importação Automática via Chat
+                        </CardTitle>
+                        <CardDescription className="text-base">
+                          Baixe o template, preencha e envie direto no chat - a IA faz todo o trabalho!
+                        </CardDescription>
+                      </div>
+                    </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="p-4 bg-background rounded-lg border hover:border-primary/50 transition-colors">
+                  <CardContent className="space-y-4">
+                    <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4 space-y-3">
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-blue-500 text-white w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">1</div>
+                        <div>
+                          <p className="font-medium text-sm">Baixe o template Excel</p>
+                          <p className="text-xs text-muted-foreground">Com exemplos e formato otimizado</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-blue-500 text-white w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">2</div>
+                        <div>
+                          <p className="font-medium text-sm">Preencha seus dados</p>
+                          <p className="text-xs text-muted-foreground">Siga os exemplos e instruções</p>
+                        </div>
+                      </div>
+                      <div className="flex items-start gap-3">
+                        <div className="rounded-full bg-blue-500 text-white w-6 h-6 flex items-center justify-center flex-shrink-0 text-sm font-bold">3</div>
+                        <div>
+                          <p className="font-medium text-sm">Envie no chat do Lovable</p>
+                          <p className="text-xs text-muted-foreground">A IA processa e importa automaticamente!</p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="p-4 bg-background rounded-lg border-2 border-primary/20 hover:border-primary/50 transition-colors">
                         <div className="space-y-3">
                           <div>
-                            <h4 className="font-semibold mb-1">Template Financeiro</h4>
+                            <h4 className="font-semibold mb-1 flex items-center gap-2">
+                              ⚡ Template Financeiro
+                              <Badge variant="default" className="text-xs">Recomendado</Badge>
+                            </h4>
                             <p className="text-xs text-muted-foreground">
-                              Para importação de parcelas e dados de vendas
+                              Para importação automática via chat
                             </p>
                           </div>
                           <ul className="text-xs text-muted-foreground space-y-1">
-                            <li>• Colunas pré-configuradas</li>
-                            <li>• Exemplos de preenchimento</li>
-                            <li>• Instruções detalhadas</li>
+                            <li>• ✅ Processamento automático pela IA</li>
+                            <li>• ✅ Cooperados criados automaticamente</li>
+                            <li>• ✅ Relatório detalhado instantâneo</li>
                           </ul>
                           <Button 
-                            variant="outline"
                             size="sm"
                             onClick={() => {
                               downloadFinancialTemplate();
-                              toast.success('Template baixado com sucesso!');
+                              toast.success('Template baixado! Preencha e envie no chat.', {
+                                description: 'A IA irá processar automaticamente quando você enviar o arquivo.',
+                                duration: 5000,
+                              });
                             }}
-                            className="w-full"
+                            className="w-full bg-blue-500 hover:bg-blue-600"
                           >
                             <Download className="h-4 w-4 mr-2" />
-                            Baixar Template Financeiro
+                            Baixar Template para Chat
                           </Button>
                         </div>
                       </div>
                       
-                      <div className="p-4 bg-background rounded-lg border hover:border-primary/50 transition-colors">
+                      <div className="p-4 bg-background rounded-lg border hover:border-primary/30 transition-colors">
                         <div className="space-y-3">
                           <div>
                             <h4 className="font-semibold mb-1">Template Cooperados</h4>
                             <p className="text-xs text-muted-foreground">
-                              Para cadastro em lote de cooperados
+                              Para cadastro manual em lote
                             </p>
                           </div>
                           <ul className="text-xs text-muted-foreground space-y-1">
@@ -1716,7 +1749,7 @@ export default function Admin() {
                             className="w-full"
                           >
                             <Download className="h-4 w-4 mr-2" />
-                            Baixar Template Cooperados
+                            Baixar Template
                           </Button>
                         </div>
                       </div>

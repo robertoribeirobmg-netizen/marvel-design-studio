@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 
 export function downloadFinancialTemplate() {
-  // Dados de exemplo para o template
+  // Dados de exemplo para o template - FORMATO EXATO PARA PROCESSAMENTO AUTOMÁTICO
   const exampleData = [
     {
       'Quadra/Lote': 'A/01',
@@ -69,7 +69,14 @@ export function downloadFinancialTemplate() {
 
   // Adicionar uma segunda aba com instruções
   const instructions = [
-    ['INSTRUÇÕES PARA PREENCHIMENTO DO TEMPLATE'],
+    ['⭐ TEMPLATE PARA IMPORTAÇÃO AUTOMÁTICA VIA CHAT ⭐'],
+    [''],
+    ['COMO USAR:'],
+    ['1. Preencha os dados seguindo o formato dos exemplos'],
+    ['2. Envie o arquivo diretamente no chat do Lovable'],
+    ['3. A IA irá processar e importar automaticamente!'],
+    [''],
+    ['FORMATO DAS COLUNAS:'],
     [''],
     ['Coluna', 'Descrição', 'Formato', 'Obrigatório'],
     ['Quadra/Lote', 'Identificação do lote (formato: Quadra/Lote)', 'Texto (ex: A/01)', 'Sim'],
@@ -84,13 +91,20 @@ export function downloadFinancialTemplate() {
     ['Honorários', 'Valor de honorários cobrado', 'Moeda (R$ 0,00)', 'Não'],
     ['Valor Pago', 'Valor efetivamente pago', 'Moeda (R$ 0,00)', 'Não'],
     [''],
-    ['OBSERVAÇÕES IMPORTANTES:'],
-    ['1. A primeira linha deve conter os cabeçalhos (exatamente como no exemplo)'],
-    ['2. Os cooperados serão criados automaticamente se não existirem'],
-    ['3. Valores monetários podem usar R$ ou não, pontos como separador de milhar e vírgula para decimais'],
-    ['4. Datas devem estar no formato DD/MM/AAAA ou DD/MM/AA'],
-    ['5. Situação aceita apenas "Pago" ou "Pendente" (case insensitive)'],
-    ['6. Cada linha representa uma parcela individual'],
+    ['⚡ PROCESSAMENTO AUTOMÁTICO:'],
+    ['✅ Cooperados são criados automaticamente se não existirem'],
+    ['✅ Investimentos são vinculados ou criados conforme necessário'],
+    ['✅ Todas as parcelas são importadas com seus status corretos'],
+    ['✅ Estatísticas completas são geradas automaticamente'],
+    [''],
+    ['📋 REGRAS IMPORTANTES:'],
+    ['• Mantenha os cabeçalhos exatamente como no exemplo'],
+    ['• Cada linha representa uma parcela individual'],
+    ['• Valores monetários: use R$ ou não, vírgula para decimal'],
+    ['• Datas: formato DD/MM/AAAA ou DD/MM/AA'],
+    ['• Situação: apenas "Pago" ou "Pendente"'],
+    [''],
+    ['💡 DICA: Após preencher, salve e envie o arquivo no chat!'],
   ];
 
   const wsInstructions = XLSX.utils.aoa_to_sheet(instructions);
