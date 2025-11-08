@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -39,6 +39,11 @@ export default function Admin() {
     error?: string;
   }>>([]);
   const [showImportResults, setShowImportResults] = useState(false);
+  
+  // Filter state
+  const [filterQuadra, setFilterQuadra] = useState('');
+  const [filterLote, setFilterLote] = useState('');
+  const [filterFase, setFilterFase] = useState('');
   
   // Photo gallery state
   const [fotos, setFotos] = useState<any[]>([]);
@@ -308,6 +313,24 @@ export default function Admin() {
     }
   };
 
+  // Filter cooperados
+  const filteredCooperados = cooperados.filter((cooperado) => {
+    const matchQuadra = !filterQuadra || 
+      (cooperado.quadra && cooperado.quadra.toLowerCase().includes(filterQuadra.toLowerCase()));
+    const matchLote = !filterLote || 
+      (cooperado.lote && cooperado.lote.toLowerCase().includes(filterLote.toLowerCase()));
+    const matchFase = !filterFase || 
+      (cooperado.fase && cooperado.fase.toLowerCase().includes(filterFase.toLowerCase()));
+    
+    return matchQuadra && matchLote && matchFase;
+  });
+
+  const clearFilters = () => {
+    setFilterQuadra('');
+    setFilterLote('');
+    setFilterFase('');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -447,17 +470,73 @@ export default function Admin() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5 text-primary" />
-                Lista de Cooperados ({cooperados.length})
+                Lista de Cooperados ({filteredCooperados.length})
               </CardTitle>
+              <CardDescription>
+                Use os filtros abaixo para buscar cooperados específicos
+              </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Filters */}
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-3">
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                  <h3 className="font-medium text-sm">Filtros de Busca</h3>
+                  {(filterQuadra || filterLote || filterFase) && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearFilters}
+                      className="ml-auto h-7"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Limpar
+                    </Button>
+                  )}
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="filter-quadra" className="text-xs">Quadra</Label>
+                    <Input
+                      id="filter-quadra"
+                      placeholder="Ex: 1, 2, 3..."
+                      value={filterQuadra}
+                      onChange={(e) => setFilterQuadra(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="filter-lote" className="text-xs">Lote</Label>
+                    <Input
+                      id="filter-lote"
+                      placeholder="Ex: 10, 20, 30..."
+                      value={filterLote}
+                      onChange={(e) => setFilterLote(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="filter-fase" className="text-xs">Fase</Label>
+                    <Input
+                      id="filter-fase"
+                      placeholder="Ex: 1, 2, 3..."
+                      value={filterFase}
+                      onChange={(e) => setFilterFase(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
+                </div>
+              </div>
+
               {isLoading ? (
                 <div className="text-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 </div>
-              ) : cooperados.length === 0 ? (
+              ) : filteredCooperados.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  Nenhum cooperado cadastrado ainda
+                  {cooperados.length === 0 
+                    ? 'Nenhum cooperado cadastrado ainda'
+                    : 'Nenhum cooperado encontrado com os filtros aplicados'}
                 </p>
               ) : (
                 <div className="overflow-x-auto">
@@ -473,7 +552,7 @@ export default function Admin() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {cooperados.map((cooperado) => (
+                      {filteredCooperados.map((cooperado) => (
                         <TableRow key={cooperado.id}>
                           <TableCell className="font-medium">
                             {cooperado.nome_completo}
