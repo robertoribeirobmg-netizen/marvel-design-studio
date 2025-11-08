@@ -10,6 +10,7 @@ import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
+import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -258,6 +259,9 @@ export default function AreaCooperado() {
               <DashboardComparativoObras />
             </CardContent>
           </Card>
+
+          {/* Histórico de Alterações */}
+          <HistoricoGeralObras />
 
           {/* Photo Gallery */}
           <Card>

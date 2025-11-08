@@ -11,7 +11,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Edit, Upload, FileText, Image, Video, File, Trash2, Save } from 'lucide-react';
+import { Edit, Upload, FileText, Image, Video, File, Trash2, Save, History as HistoryIcon } from 'lucide-react';
+import { HistoricoEtapaObra } from './HistoricoEtapaObra';
 
 interface EtapaObra {
   id: string;
@@ -244,9 +245,10 @@ export function AdminObras() {
                           <DialogTitle>{etapa.nome}</DialogTitle>
                         </DialogHeader>
                         <Tabs defaultValue="dados" className="w-full">
-                          <TabsList className="grid w-full grid-cols-2">
+                          <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="dados">Dados da Etapa</TabsTrigger>
                             <TabsTrigger value="arquivos">Arquivos e Mídia</TabsTrigger>
+                            <TabsTrigger value="historico">Histórico</TabsTrigger>
                           </TabsList>
 
                           <TabsContent value="dados" className="space-y-4">
@@ -453,6 +455,15 @@ export function AdminObras() {
                                 </div>
                               )}
                             </div>
+                          </TabsContent>
+
+                          <TabsContent value="historico">
+                            {selectedEtapa && (
+                              <HistoricoEtapaObra 
+                                etapaId={selectedEtapa.id}
+                                etapaNome={selectedEtapa.nome}
+                              />
+                            )}
                           </TabsContent>
                         </Tabs>
                       </DialogContent>

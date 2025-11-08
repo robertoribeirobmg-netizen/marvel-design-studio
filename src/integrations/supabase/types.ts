@@ -100,6 +100,50 @@ export type Database = {
           },
         ]
       }
+      etapas_obra_historico: {
+        Row: {
+          alterado_por: string
+          campo_alterado: string
+          created_at: string
+          data_alteracao: string
+          etapa_id: string
+          id: string
+          observacao: string | null
+          valor_anterior: string | null
+          valor_novo: string | null
+        }
+        Insert: {
+          alterado_por: string
+          campo_alterado: string
+          created_at?: string
+          data_alteracao?: string
+          etapa_id: string
+          id?: string
+          observacao?: string | null
+          valor_anterior?: string | null
+          valor_novo?: string | null
+        }
+        Update: {
+          alterado_por?: string
+          campo_alterado?: string
+          created_at?: string
+          data_alteracao?: string
+          etapa_id?: string
+          id?: string
+          observacao?: string | null
+          valor_anterior?: string | null
+          valor_novo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etapas_obra_historico_etapa_id_fkey"
+            columns: ["etapa_id"]
+            isOneToOne: false
+            referencedRelation: "etapas_obra"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investimentos: {
         Row: {
           created_at: string
