@@ -227,15 +227,15 @@ export default function AreaCooperado() {
           {/* Dashboard Financeiro */}
           {user && <DashboardFinanceiro userId={user.id} />}
 
-          {/* Photo Gallery */}
+          {/* Photo and Video Gallery */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5 text-primary" />
-                Galeria de Fotos da Obra
+                Galeria de Fotos e Vídeos da Obra
               </CardTitle>
               <CardDescription>
-                Acompanhe o andamento da construção através de fotos
+                Acompanhe o andamento da construção através de fotos e vídeos
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -281,16 +281,28 @@ export default function AreaCooperado() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {fotos.map((foto, index) => (
                     <div key={foto.id} className="group">
-                      <div 
-                        className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer"
-                        onClick={() => openLightbox(index)}
-                      >
-                        <img
-                          src={foto.foto_url}
-                          alt={foto.titulo}
-                          className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      </div>
+                      {foto.foto_url ? (
+                        <div 
+                          className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer"
+                          onClick={() => openLightbox(index)}
+                        >
+                          <img
+                            src={foto.foto_url}
+                            alt={foto.titulo}
+                            className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </div>
+                      ) : foto.video_url ? (
+                        <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
+                          <iframe
+                            src={foto.video_url}
+                            title={foto.titulo}
+                            className="w-full h-64"
+                            allowFullScreen
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          />
+                        </div>
+                      ) : null}
                       <div className="mt-3 space-y-1">
                         <div className="flex items-center justify-between">
                           <h3 className="font-semibold">{foto.titulo}</h3>

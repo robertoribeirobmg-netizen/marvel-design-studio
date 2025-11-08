@@ -186,30 +186,33 @@ export type Database = {
           created_at: string
           data_upload: string
           descricao: string | null
-          foto_url: string
+          foto_url: string | null
           id: string
           titulo: string
           uploaded_by: string
+          video_url: string | null
         }
         Insert: {
           categoria?: Database["public"]["Enums"]["categoria_obra"]
           created_at?: string
           data_upload?: string
           descricao?: string | null
-          foto_url: string
+          foto_url?: string | null
           id?: string
           titulo: string
           uploaded_by: string
+          video_url?: string | null
         }
         Update: {
           categoria?: Database["public"]["Enums"]["categoria_obra"]
           created_at?: string
           data_upload?: string
           descricao?: string | null
-          foto_url?: string
+          foto_url?: string | null
           id?: string
           titulo?: string
           uploaded_by?: string
+          video_url?: string | null
         }
         Relationships: []
       }
