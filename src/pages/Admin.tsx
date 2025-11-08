@@ -117,11 +117,22 @@ export default function Admin() {
 
       if (rolesError) throw rolesError;
 
-      // Juntar os dados
-      const profilesWithRoles = profiles?.map(profile => ({
-        ...profile,
-        user_roles: userRoles?.filter(role => role.user_id === profile.id) || []
-      })) || [];
+      // Buscar emails do auth.users
+      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
+      
+      if (usersError) {
+        console.error('Error fetching users:', usersError);
+      }
+
+      // Juntar os dados com emails
+      const profilesWithRoles = profiles?.map(profile => {
+        const user = users?.find((u: any) => u.id === profile.id);
+        return {
+          ...profile,
+          email: user?.email || '-',
+          user_roles: userRoles?.filter(role => role.user_id === profile.id) || []
+        };
+      }) || [];
 
       setCooperados(profilesWithRoles);
     } catch (error) {
@@ -677,6 +688,7 @@ export default function Admin() {
       // Preparar dados para o Excel
       const excelData = filteredCooperados.map((cooperado) => ({
         'Nome Completo': cooperado.nome_completo,
+        'Email': cooperado.email || '-',
         'CPF': cooperado.cpf || '-',
         'Telefone': cooperado.telefone || '-',
         'Quadra': cooperado.quadra || '-',
@@ -698,6 +710,7 @@ export default function Admin() {
       // Ajustar largura das colunas
       const colWidths = [
         { wch: 30 }, // Nome Completo
+        { wch: 25 }, // Email
         { wch: 15 }, // CPF
         { wch: 15 }, // Telefone
         { wch: 10 }, // Quadra
@@ -1068,6 +1081,7 @@ export default function Admin() {
                           />
                         </TableHead>
                         <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
                         <TableHead>CPF</TableHead>
                         <TableHead>Telefone</TableHead>
                         <TableHead>Quadra/Lote</TableHead>
@@ -1089,6 +1103,9 @@ export default function Admin() {
                           </TableCell>
                           <TableCell className="font-medium">
                             {cooperado.nome_completo}
+                          </TableCell>
+                          <TableCell>
+                            {cooperado.email || '-'}
                           </TableCell>
                           <TableCell>
                             {cooperado.cpf || '-'}
