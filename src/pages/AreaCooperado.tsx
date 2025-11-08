@@ -20,7 +20,7 @@ export default function AreaCooperado() {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fotos, setFotos] = useState<any[]>([]);
-  const [filtroCategoria, setFiltroCategoria] = useState<'todas' | 'fundacao' | 'estrutura' | 'acabamento'>('todas');
+  const [filtroCategoria, setFiltroCategoria] = useState<'todas' | '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo'>('todas');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [dateFrom, setDateFrom] = useState<Date>();
@@ -325,25 +325,67 @@ export default function AreaCooperado() {
                   Todas
                 </Button>
                 <Button
-                  variant={filtroCategoria === 'fundacao' ? 'default' : 'outline'}
+                  variant={filtroCategoria === '1ª Fase do Muro' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setFiltroCategoria('fundacao')}
+                  onClick={() => setFiltroCategoria('1ª Fase do Muro')}
                 >
-                  Fundação
+                  1ª Fase do Muro
                 </Button>
                 <Button
-                  variant={filtroCategoria === 'estrutura' ? 'default' : 'outline'}
+                  variant={filtroCategoria === '2ª Fase do Muro' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setFiltroCategoria('estrutura')}
+                  onClick={() => setFiltroCategoria('2ª Fase do Muro')}
                 >
-                  Estrutura
+                  2ª Fase do Muro
                 </Button>
                 <Button
-                  variant={filtroCategoria === 'acabamento' ? 'default' : 'outline'}
+                  variant={filtroCategoria === '3ª Fase do Muro' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setFiltroCategoria('acabamento')}
+                  onClick={() => setFiltroCategoria('3ª Fase do Muro')}
                 >
-                  Acabamento
+                  3ª Fase do Muro
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'Supressão Vegetal' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('Supressão Vegetal')}
+                >
+                  Supressão Vegetal
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'Terraplanagem' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('Terraplanagem')}
+                >
+                  Terraplanagem
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'Infraestrutura' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('Infraestrutura')}
+                >
+                  Infraestrutura
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'Pavimentação' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('Pavimentação')}
+                >
+                  Pavimentação
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'Portaria e Clube' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('Portaria e Clube')}
+                >
+                  Portaria e Clube
+                </Button>
+                <Button
+                  variant={filtroCategoria === 'Paisagismo' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setFiltroCategoria('Paisagismo')}
+                >
+                  Paisagismo
                 </Button>
                 </div>
               </div>
@@ -468,9 +510,7 @@ export default function AreaCooperado() {
                             <div className="flex items-center justify-between">
                               <h3 className="font-semibold">{foto.titulo}</h3>
                               <Badge variant="secondary" className="text-xs">
-                                {foto.categoria === 'fundacao' && 'Fundação'}
-                                {foto.categoria === 'estrutura' && 'Estrutura'}
-                                {foto.categoria === 'acabamento' && 'Acabamento'}
+                                {foto.categoria}
                               </Badge>
                             </div>
                             {foto.descricao && (
@@ -515,9 +555,7 @@ export default function AreaCooperado() {
                             <div className="flex items-start justify-between gap-2 mb-1">
                               <h3 className="font-semibold truncate">{foto.titulo}</h3>
                               <Badge variant="secondary" className="text-xs shrink-0">
-                                {foto.categoria === 'fundacao' && 'Fundação'}
-                                {foto.categoria === 'estrutura' && 'Estrutura'}
-                                {foto.categoria === 'acabamento' && 'Acabamento'}
+                                {foto.categoria}
                               </Badge>
                             </div>
                             {foto.descricao && (

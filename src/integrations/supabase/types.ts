@@ -344,7 +344,16 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "cooperado"
-      categoria_obra: "fundacao" | "estrutura" | "acabamento"
+      categoria_obra:
+        | "1ª Fase do Muro"
+        | "2ª Fase do Muro"
+        | "3ª Fase do Muro"
+        | "Supressão Vegetal"
+        | "Terraplanagem"
+        | "Infraestrutura"
+        | "Pavimentação"
+        | "Portaria e Clube"
+        | "Paisagismo"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -473,7 +482,17 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "cooperado"],
-      categoria_obra: ["fundacao", "estrutura", "acabamento"],
+      categoria_obra: [
+        "1ª Fase do Muro",
+        "2ª Fase do Muro",
+        "3ª Fase do Muro",
+        "Supressão Vegetal",
+        "Terraplanagem",
+        "Infraestrutura",
+        "Pavimentação",
+        "Portaria e Clube",
+        "Paisagismo",
+      ],
     },
   },
 } as const

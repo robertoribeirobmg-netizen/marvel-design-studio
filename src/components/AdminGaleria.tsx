@@ -20,7 +20,7 @@ interface GaleriaItem {
   descricao: string | null;
   foto_url: string | null;
   video_url: string | null;
-  categoria: 'fundacao' | 'estrutura' | 'acabamento';
+  categoria: '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo';
   data_upload: string;
 }
 
@@ -31,7 +31,7 @@ export function AdminGaleria() {
   const [form, setForm] = useState({
     titulo: '',
     descricao: '',
-    categoria: 'fundacao' as 'fundacao' | 'estrutura' | 'acabamento',
+    categoria: '1ª Fase do Muro' as '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo',
     videoUrl: '',
   });
   const [file, setFile] = useState<File | null>(null);
@@ -168,7 +168,7 @@ export function AdminGaleria() {
       setForm({
         titulo: '',
         descricao: '',
-        categoria: 'fundacao',
+        categoria: '1ª Fase do Muro',
         videoUrl: '',
       });
       setFile(null);
@@ -270,9 +270,15 @@ export function AdminGaleria() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="fundacao">Fundação</SelectItem>
-                  <SelectItem value="estrutura">Estrutura</SelectItem>
-                  <SelectItem value="acabamento">Acabamento</SelectItem>
+                  <SelectItem value="1ª Fase do Muro">1ª Fase do Muro</SelectItem>
+                  <SelectItem value="2ª Fase do Muro">2ª Fase do Muro</SelectItem>
+                  <SelectItem value="3ª Fase do Muro">3ª Fase do Muro</SelectItem>
+                  <SelectItem value="Supressão Vegetal">Supressão Vegetal</SelectItem>
+                  <SelectItem value="Terraplanagem">Terraplanagem</SelectItem>
+                  <SelectItem value="Infraestrutura">Infraestrutura</SelectItem>
+                  <SelectItem value="Pavimentação">Pavimentação</SelectItem>
+                  <SelectItem value="Portaria e Clube">Portaria e Clube</SelectItem>
+                  <SelectItem value="Paisagismo">Paisagismo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -487,9 +493,7 @@ export function AdminGaleria() {
                         <div className="flex items-start justify-between gap-2">
                           <h4 className="font-semibold text-sm">{item.titulo}</h4>
                           <Badge variant="secondary" className="text-xs shrink-0">
-                            {item.categoria === 'fundacao' && 'Fundação'}
-                            {item.categoria === 'estrutura' && 'Estrutura'}
-                            {item.categoria === 'acabamento' && 'Acabamento'}
+                            {item.categoria}
                           </Badge>
                         </div>
                         
@@ -553,9 +557,7 @@ export function AdminGaleria() {
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <h4 className="font-semibold truncate">{item.titulo}</h4>
                       <Badge variant="secondary" className="text-xs shrink-0">
-                        {item.categoria === 'fundacao' && 'Fundação'}
-                        {item.categoria === 'estrutura' && 'Estrutura'}
-                        {item.categoria === 'acabamento' && 'Acabamento'}
+                        {item.categoria}
                       </Badge>
                     </div>
                     
