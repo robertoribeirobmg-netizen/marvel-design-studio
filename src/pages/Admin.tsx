@@ -268,6 +268,7 @@ export default function Admin() {
 
       let sucessos = 0;
       let erros = 0;
+      let ignorados = 0;
 
       for (let i = 0; i < jsonData.length; i++) {
         const row = jsonData[i];
@@ -310,9 +311,15 @@ export default function Admin() {
             },
           });
 
+          // Se retornar erro de email duplicado (409), ignorar silenciosamente
+          if (data?.error && data.error.includes('Já existe um usuário cadastrado')) {
+            ignorados++;
+            continue;
+          }
+
           if (error || data?.error) {
             results.push({
-              row: i + 2, // +2 porque linha 1 é cabeçalho e array começa em 0
+              row: i + 2,
               nome: nome_completo,
               email,
               status: 'error',
@@ -340,9 +347,13 @@ export default function Admin() {
         }
       }
 
+      const mensagem = ignorados > 0 
+        ? `Importação concluída: ${sucessos} criados, ${erros} erros, ${ignorados} emails duplicados ignorados`
+        : `Importação concluída: ${sucessos} criados, ${erros} erros`;
+
       setImportResults(results);
       setShowImportResults(true);
-      toast.success(`Importação concluída: ${sucessos} sucessos, ${erros} erros`);
+      toast.success(mensagem);
       setExcelFile(null);
       loadCooperados();
     } catch (error: any) {
