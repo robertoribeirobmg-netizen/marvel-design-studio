@@ -133,9 +133,11 @@ export default function Admin() {
 
       if (error) throw error;
       
-      // Check if the response contains an error (e.g., 409 duplicate email)
-      if (data?.error) {
-        throw new Error(data.error);
+      // Check if user already exists (duplicate)
+      if (data?.duplicate) {
+        toast.error(`Já existe um usuário cadastrado com o email ${newEmail}`);
+        setIsCreating(false);
+        return;
       }
 
       toast.success('Cooperado criado com sucesso!');
@@ -311,8 +313,8 @@ export default function Admin() {
             },
           });
 
-          // Se retornar erro de email duplicado (409), ignorar silenciosamente
-          if (data?.error && data.error.includes('Já existe um usuário cadastrado')) {
+          // Se for email duplicado, ignorar silenciosamente
+          if (data?.duplicate) {
             ignorados++;
             continue;
           }

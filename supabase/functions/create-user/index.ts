@@ -48,16 +48,17 @@ serve(async (req) => {
 
     // Check if user already exists
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
-    const userExists = existingUsers?.users?.some(u => u.email === email)
+    const userExists = existingUsers?.users?.some(u => u.email?.toLowerCase() === email.toLowerCase())
     
     if (userExists) {
       return new Response(
         JSON.stringify({ 
-          error: `Já existe um usuário cadastrado com o email ${email}. Por favor, use um email diferente.` 
+          duplicate: true,
+          message: `Usuário com email ${email} já existe` 
         }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 409 
+          status: 200 
         }
       )
     }
@@ -78,6 +79,21 @@ serve(async (req) => {
 
     if (createError) {
       console.error('Error creating user:', createError)
+      
+      // Check if it's a duplicate email error from Supabase
+      if (createError.message?.includes('already been registered')) {
+        return new Response(
+          JSON.stringify({ 
+            duplicate: true,
+            message: `Usuário com email ${email} já existe` 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        )
+      }
+      
       throw new Error(`Erro ao criar usuário: ${createError.message}`)
     }
 
