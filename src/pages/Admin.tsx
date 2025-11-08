@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
@@ -56,6 +57,7 @@ export default function Admin() {
   const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
   const [startTime, setStartTime] = useState<number>(0);
   const [estimatedTimeLeft, setEstimatedTimeLeft] = useState<string>('');
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -809,7 +811,7 @@ export default function Admin() {
                       <Button 
                         variant="destructive" 
                         size="sm"
-                        onClick={() => setIsCancelling(true)}
+                        onClick={() => setShowCancelDialog(true)}
                         disabled={isCancelling}
                         className="h-7 gap-1"
                       >
@@ -1224,6 +1226,31 @@ export default function Admin() {
           </ScrollArea>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Import Confirmation Dialog */}
+      <AlertDialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cancelar Importação?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação irá interromper a importação e <strong>excluir todos os cooperados</strong> que já foram criados neste processo ({createdUserIds.length} usuários). 
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Continuar Importando</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setIsCancelling(true);
+                setShowCancelDialog(false);
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, Cancelar e Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
