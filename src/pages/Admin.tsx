@@ -1002,6 +1002,17 @@ export default function Admin() {
                     Colunas opcionais: <strong>cpf</strong>, <strong>telefone</strong>, <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)<br/>
                     <span className="text-primary font-medium">⚡ Senhas serão geradas automaticamente</span>
                   </p>
+                  {excelFile && previewData.length > 0 && (
+                    <Button 
+                      onClick={() => setShowPreview(true)}
+                      disabled={isImporting}
+                      size="lg"
+                      className="w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                    >
+                      <Upload className="h-5 w-5 mr-2" />
+                      Iniciar Importação
+                    </Button>
+                  )}
                 </div>
                 
                 {/* Barra de progresso */}
@@ -1589,8 +1600,7 @@ export default function Admin() {
               Cancelar
             </Button>
             <Button 
-              onClick={handleConfirmImport} 
-              disabled={previewStats.comEmail === 0 || previewStats.comNome === 0}
+              onClick={handleConfirmImport}
               size="lg"
               className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
             >
