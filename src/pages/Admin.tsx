@@ -379,21 +379,61 @@ export default function Admin() {
         const nome_completo = row.nome_completo || row.nome || row.Nome || row['Nome Completo'];
         const cpf = row.cpf || row.CPF || null;
         const telefone = row.telefone || row.Telefone || row.phone || row.Phone || null;
-        const quadra = row.quadra || row.Quadra || null;
-        const lote = row.lote || row.Lote || null;
-        const fase = row.fase || row.Fase || null;
+        
+        // Processar quadra e lote (pode vir combinado como "H 2 / 652")
+        let quadra = row.quadra || row.Quadra || null;
+        let lote = row.lote || row.Lote || null;
+        
+        // Limpar valores inúteis como "x" e "y"
+        if (quadra && (quadra.toString().toLowerCase() === 'x' || quadra.toString().toLowerCase() === 'y')) {
+          quadra = null;
+        }
+        
+        // Se o lote contém barra "/", provavelmente é dado combinado "Quadra / Lote"
+        if (lote && typeof lote === 'string' && lote.includes('/')) {
+          const parts = lote.split('/').map(p => p.trim());
+          if (parts.length === 2) {
+            // Formato: "H 2 / 652" ou "B / 28"
+            quadra = parts[0];
+            lote = parts[1];
+          }
+        }
+        
+        // Limpar valores inúteis do lote
+        if (lote && (lote.toString().toLowerCase() === 'x' || lote.toString().toLowerCase() === 'y')) {
+          lote = null;
+        }
+        
+        let fase = row.fase || row.Fase || null;
+        // Limpar valores inúteis como "x" e "y"
+        if (fase && (fase.toString().toLowerCase() === 'x' || fase.toString().toLowerCase() === 'y')) {
+          fase = null;
+        }
         
         let data_compra = row.data_compra || row.data || row.Data || row['Data Compra'] || row['Data da Compra'] || null;
+        
+        // Processar diferentes formatos de data
         if (data_compra && typeof data_compra === 'number') {
+          // Formato numérico do Excel
           const excelEpoch = new Date(1899, 11, 30);
           const date = new Date(excelEpoch.getTime() + data_compra * 86400000);
           data_compra = date.toISOString().split('T')[0];
         } else if (data_compra instanceof Date) {
           data_compra = data_compra.toISOString().split('T')[0];
         } else if (typeof data_compra === 'string' && data_compra.trim() !== '') {
-          const parsed = new Date(data_compra);
-          if (!isNaN(parsed.getTime())) {
-            data_compra = parsed.toISOString().split('T')[0];
+          // Tentar formato DD-MM-YYYY
+          const ddmmyyyyMatch = data_compra.match(/^(\d{2})-(\d{2})-(\d{4})$/);
+          if (ddmmyyyyMatch) {
+            const [, day, month, year] = ddmmyyyyMatch;
+            data_compra = `${year}-${month}-${day}`;
+          } else {
+            // Tentar outros formatos
+            const parsed = new Date(data_compra);
+            if (!isNaN(parsed.getTime())) {
+              data_compra = parsed.toISOString().split('T')[0];
+            } else {
+              data_compra = null;
+            }
           }
         } else {
           data_compra = null;
