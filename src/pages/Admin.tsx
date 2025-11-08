@@ -13,6 +13,9 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { CheckCircle2, XCircle } from 'lucide-react';
 
 export default function Admin() {
   const { signOut } = useAuth();
@@ -28,6 +31,14 @@ export default function Admin() {
   // Excel import state
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [isImporting, setIsImporting] = useState(false);
+  const [importResults, setImportResults] = useState<Array<{
+    row: number;
+    nome: string;
+    email: string;
+    status: 'success' | 'error';
+    error?: string;
+  }>>([]);
+  const [showImportResults, setShowImportResults] = useState(false);
   
   // Photo gallery state
   const [fotos, setFotos] = useState<any[]>([]);
@@ -115,6 +126,13 @@ export default function Admin() {
     }
 
     setIsImporting(true);
+    const results: Array<{
+      row: number;
+      nome: string;
+      email: string;
+      status: 'success' | 'error';
+      error?: string;
+    }> = [];
 
     try {
       const data = await excelFile.arrayBuffer();
@@ -131,29 +149,58 @@ export default function Admin() {
       let sucessos = 0;
       let erros = 0;
 
-      for (const row of jsonData) {
+      for (let i = 0; i < jsonData.length; i++) {
+        const row = jsonData[i];
+        const email = row.email || row.Email;
+        const password = row.senha || row.Senha || row.password || row.Password;
+        const nome_completo = row.nome_completo || row.nome || row.Nome || row['Nome Completo'];
+
         try {
+          if (!email || !password || !nome_completo) {
+            throw new Error('Dados incompletos: email, senha ou nome faltando');
+          }
+
           const { error } = await supabase.functions.invoke('create-user', {
             body: {
-              email: row.email || row.Email,
-              password: row.senha || row.Senha || row.password || row.Password,
-              nome_completo: row.nome_completo || row.nome || row.Nome || row['Nome Completo'],
+              email,
+              password,
+              nome_completo,
             },
           });
 
           if (error) {
-            console.error('Erro ao criar usuário:', error);
+            results.push({
+              row: i + 2, // +2 porque linha 1 é cabeçalho e array começa em 0
+              nome: nome_completo,
+              email,
+              status: 'error',
+              error: error.message || 'Erro desconhecido',
+            });
             erros++;
           } else {
+            results.push({
+              row: i + 2,
+              nome: nome_completo,
+              email,
+              status: 'success',
+            });
             sucessos++;
           }
-        } catch (error) {
-          console.error('Erro ao processar linha:', error);
+        } catch (error: any) {
+          results.push({
+            row: i + 2,
+            nome: nome_completo || 'N/A',
+            email: email || 'N/A',
+            status: 'error',
+            error: error.message || 'Erro ao processar linha',
+          });
           erros++;
         }
       }
 
-      toast.success(`${sucessos} cooperados criados com sucesso! ${erros > 0 ? `${erros} erros.` : ''}`);
+      setImportResults(results);
+      setShowImportResults(true);
+      toast.success(`Importação concluída: ${sucessos} sucessos, ${erros} erros`);
       setExcelFile(null);
       loadCooperados();
     } catch (error: any) {
@@ -565,6 +612,57 @@ export default function Admin() {
           </Tabs>
         </div>
       </main>
+
+      {/* Import Results Dialog */}
+      <Dialog open={showImportResults} onOpenChange={setShowImportResults}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Resultados da Importação</DialogTitle>
+            <DialogDescription>
+              Detalhes de cada linha processada da planilha
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[500px] pr-4">
+            <div className="space-y-2">
+              {importResults.map((result, index) => (
+                <div
+                  key={index}
+                  className={`p-3 rounded-lg border ${
+                    result.status === 'success'
+                      ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-900'
+                      : 'bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-900'
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    {result.status === 'success' ? (
+                      <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 mt-0.5" />
+                    ) : (
+                      <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
+                    )}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium text-muted-foreground">
+                          Linha {result.row}
+                        </span>
+                        <Badge variant={result.status === 'success' ? 'default' : 'destructive'}>
+                          {result.status === 'success' ? 'Sucesso' : 'Erro'}
+                        </Badge>
+                      </div>
+                      <p className="font-medium mt-1">{result.nome}</p>
+                      <p className="text-sm text-muted-foreground">{result.email}</p>
+                      {result.error && (
+                        <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                          {result.error}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
