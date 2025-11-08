@@ -46,6 +46,22 @@ serve(async (req) => {
 
     const { email, password, nome_completo, quadra, lote, fase, data_compra } = await req.json()
 
+    // Check if user already exists
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+    const userExists = existingUsers?.users?.some(u => u.email === email)
+    
+    if (userExists) {
+      return new Response(
+        JSON.stringify({ 
+          error: `Já existe um usuário cadastrado com o email ${email}. Por favor, use um email diferente.` 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 409 
+        }
+      )
+    }
+
     // Create the user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
@@ -60,7 +76,10 @@ serve(async (req) => {
       }
     })
 
-    if (createError) throw createError
+    if (createError) {
+      console.error('Error creating user:', createError)
+      throw new Error(`Erro ao criar usuário: ${createError.message}`)
+    }
 
     // Update profile with additional fields
     const { error: profileError } = await supabaseAdmin
