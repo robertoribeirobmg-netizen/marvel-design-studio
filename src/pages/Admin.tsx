@@ -45,6 +45,7 @@ export default function Admin() {
   const [showImportResults, setShowImportResults] = useState(false);
   
   // Filter state
+  const [filterNome, setFilterNome] = useState('');
   const [filterQuadra, setFilterQuadra] = useState('');
   const [filterLote, setFilterLote] = useState('');
   const [filterFase, setFilterFase] = useState('');
@@ -435,6 +436,8 @@ export default function Admin() {
 
   // Filter cooperados
   const filteredCooperados = cooperados.filter((cooperado) => {
+    const matchNome = !filterNome || 
+      (cooperado.nome_completo && cooperado.nome_completo.toLowerCase().includes(filterNome.toLowerCase()));
     const matchQuadra = !filterQuadra || 
       (cooperado.quadra && cooperado.quadra.toLowerCase().includes(filterQuadra.toLowerCase()));
     const matchLote = !filterLote || 
@@ -442,10 +445,11 @@ export default function Admin() {
     const matchFase = !filterFase || 
       (cooperado.fase && cooperado.fase.toLowerCase().includes(filterFase.toLowerCase()));
     
-    return matchQuadra && matchLote && matchFase;
+    return matchNome && matchQuadra && matchLote && matchFase;
   });
 
   const clearFilters = () => {
+    setFilterNome('');
     setFilterQuadra('');
     setFilterLote('');
     setFilterFase('');
@@ -641,7 +645,7 @@ export default function Admin() {
                 <div className="flex items-center gap-2 mb-3">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <h3 className="font-medium text-sm">Filtros de Busca</h3>
-                  {(filterQuadra || filterLote || filterFase) && (
+                  {(filterNome || filterQuadra || filterLote || filterFase) && (
                     <Button
                       variant="ghost"
                       size="sm"
@@ -653,7 +657,17 @@ export default function Admin() {
                     </Button>
                   )}
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="filter-nome" className="text-xs">Nome</Label>
+                    <Input
+                      id="filter-nome"
+                      placeholder="Buscar por nome..."
+                      value={filterNome}
+                      onChange={(e) => setFilterNome(e.target.value)}
+                      className="h-9"
+                    />
+                  </div>
                   <div className="space-y-1">
                     <Label htmlFor="filter-quadra" className="text-xs">Quadra</Label>
                     <Input
