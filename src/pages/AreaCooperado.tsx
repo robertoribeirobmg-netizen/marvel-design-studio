@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
+import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -239,6 +240,22 @@ export default function AreaCooperado() {
             </CardHeader>
             <CardContent>
               <AcompanhamentoObras />
+            </CardContent>
+          </Card>
+
+          {/* Dashboard Comparativo */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-primary" />
+                Análise Comparativa
+              </CardTitle>
+              <CardDescription>
+                Compare o progresso real com o planejado
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <DashboardComparativoObras />
             </CardContent>
           </Card>
 

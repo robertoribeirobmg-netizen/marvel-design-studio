@@ -18,6 +18,7 @@ interface EtapaObra {
   nome: string;
   descricao: string | null;
   percentual_concluido: number;
+  percentual_planejado: number;
   data_inicio: string | null;
   data_conclusao: string | null;
   ordem: number;
@@ -40,6 +41,7 @@ export function AdminObras() {
   const [arquivos, setArquivos] = useState<Arquivo[]>([]);
   const [editForm, setEditForm] = useState({
     percentual_concluido: 0,
+    percentual_planejado: 0,
     data_inicio: '',
     data_conclusao: '',
     descricao: '',
@@ -62,6 +64,7 @@ export function AdminObras() {
       loadArquivos(selectedEtapa.id);
       setEditForm({
         percentual_concluido: selectedEtapa.percentual_concluido,
+        percentual_planejado: selectedEtapa.percentual_planejado,
         data_inicio: selectedEtapa.data_inicio || '',
         data_conclusao: selectedEtapa.data_conclusao || '',
         descricao: selectedEtapa.descricao || '',
@@ -103,6 +106,7 @@ export function AdminObras() {
       .from('etapas_obra')
       .update({
         percentual_concluido: editForm.percentual_concluido,
+        percentual_planejado: (editForm as any).percentual_planejado,
         data_inicio: editForm.data_inicio || null,
         data_conclusao: editForm.data_conclusao || null,
         descricao: editForm.descricao || null,
@@ -247,20 +251,37 @@ export function AdminObras() {
 
                           <TabsContent value="dados" className="space-y-4">
                             <div className="space-y-4">
-                              <div>
-                                <Label>Percentual Concluído (%)</Label>
-                                <Input
-                                  type="number"
-                                  min="0"
-                                  max="100"
-                                  value={editForm.percentual_concluido}
-                                  onChange={(e) =>
-                                    setEditForm({
-                                      ...editForm,
-                                      percentual_concluido: parseInt(e.target.value) || 0,
-                                    })
-                                  }
-                                />
+                              <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                  <Label>Percentual Concluído (%) - Real</Label>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={editForm.percentual_concluido}
+                                    onChange={(e) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        percentual_concluido: parseInt(e.target.value) || 0,
+                                      })
+                                    }
+                                  />
+                                </div>
+                                <div>
+                                  <Label>Percentual Planejado (%) - Meta</Label>
+                                  <Input
+                                    type="number"
+                                    min="0"
+                                    max="100"
+                                    value={(editForm as any).percentual_planejado || 0}
+                                    onChange={(e) =>
+                                      setEditForm({
+                                        ...editForm,
+                                        percentual_planejado: parseInt(e.target.value) || 0,
+                                      } as any)
+                                    }
+                                  />
+                                </div>
                               </div>
 
                               <div>

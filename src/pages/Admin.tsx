@@ -15,6 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
 import { DashboardCooperados } from '@/components/DashboardCooperados';
 import { AdminObras } from '@/components/AdminObras';
+import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -1024,7 +1025,10 @@ export default function Admin() {
             </TabsContent>
 
             <TabsContent value="obras">
-              <AdminObras />
+              <div className="space-y-6">
+                <DashboardComparativoObras />
+                <AdminObras />
+              </div>
             </TabsContent>
 
             <TabsContent value="fotos">
