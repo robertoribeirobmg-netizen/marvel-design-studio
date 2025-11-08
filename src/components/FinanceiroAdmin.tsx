@@ -47,19 +47,38 @@ export function FinanceiroAdmin() {
   };
 
   const loadInvestimentos = async () => {
-    const { data, error } = await supabase
+    // Buscar investimentos
+    const { data: investimentosData, error: invError } = await supabase
       .from('investimentos')
-      .select(`
-        *,
-        profiles (nome_completo)
-      `)
+      .select('*')
       .order('data_inicio', { ascending: false });
 
-    if (error) {
-      console.error('Erro ao carregar investimentos:', error);
+    if (invError) {
+      console.error('Erro ao carregar investimentos:', invError);
       return;
     }
-    setInvestimentos(data || []);
+
+    // Buscar profiles dos cooperados
+    const userIds = [...new Set(investimentosData?.map(i => i.user_id) || [])];
+    const { data: profilesData, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, nome_completo')
+      .in('id', userIds);
+
+    if (profilesError) {
+      console.error('Erro ao carregar profiles:', profilesError);
+    }
+
+    // Criar um map de profiles
+    const profilesMap = new Map(profilesData?.map(p => [p.id, p]) || []);
+
+    // Juntar os dados
+    const investimentosWithProfiles = investimentosData?.map(inv => ({
+      ...inv,
+      profiles: profilesMap.get(inv.user_id) || null
+    })) || [];
+
+    setInvestimentos(investimentosWithProfiles);
   };
 
   const loadParcelas = async (investimentoId: string) => {

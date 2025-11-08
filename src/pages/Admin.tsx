@@ -79,16 +79,28 @@ export default function Admin() {
 
   const loadCooperados = async () => {
     try {
-      const { data: profiles, error } = await supabase
+      // Buscar profiles
+      const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
-        .select(`
-          *,
-          user_roles (role)
-        `)
+        .select('*')
         .order('data_cadastro', { ascending: false });
 
-      if (error) throw error;
-      setCooperados(profiles || []);
+      if (profilesError) throw profilesError;
+
+      // Buscar user_roles de todos os usuários
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (rolesError) throw rolesError;
+
+      // Juntar os dados
+      const profilesWithRoles = profiles?.map(profile => ({
+        ...profile,
+        user_roles: userRoles?.filter(role => role.user_id === profile.id) || []
+      })) || [];
+
+      setCooperados(profilesWithRoles);
     } catch (error) {
       console.error('Erro ao carregar cooperados:', error);
       toast.error('Erro ao carregar lista de cooperados');
