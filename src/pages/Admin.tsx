@@ -86,7 +86,8 @@ export default function Admin() {
   
   // Preview pagination state
   const [previewPage, setPreviewPage] = useState(1);
-  const [previewItemsPerPage] = useState(50);
+  const [previewItemsPerPage] = useState(100);
+  const [isProcessingFile, setIsProcessingFile] = useState(false);
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -366,6 +367,7 @@ export default function Admin() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setIsProcessingFile(true);
     try {
       const data = await file.arrayBuffer();
       const workbook = XLSX.read(data);
@@ -374,6 +376,7 @@ export default function Admin() {
 
       if (jsonData.length === 0) {
         toast.error('Planilha vazia');
+        setIsProcessingFile(false);
         return;
       }
 
@@ -475,9 +478,11 @@ export default function Admin() {
       setPreviewData(processedData);
       setPreviewStats(stats);
       setPreviewPage(1); // Reset preview page
+      setIsProcessingFile(false);
       setShowPreview(true);
     } catch (error: any) {
       toast.error('Erro ao processar planilha: ' + error.message);
+      setIsProcessingFile(false);
     }
   };
 
@@ -1040,14 +1045,22 @@ export default function Admin() {
                     type="file"
                     accept=".xlsx,.xls"
                     onChange={handleFileSelect}
-                    disabled={isImporting}
+                    disabled={isImporting || isProcessingFile}
                   />
+                  {isProcessingFile && (
+                    <div className="flex items-center gap-2 p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-primary border-t-transparent"></div>
+                      <p className="text-sm text-primary font-medium">
+                        Aguarde, processando planilha...
+                      </p>
+                    </div>
+                  )}
                   <p className="text-xs text-muted-foreground">
                     Colunas obrigatórias: <strong>nome_completo</strong> (ou nome), <strong>email</strong><br/>
                     Colunas opcionais: <strong>cpf</strong>, <strong>telefone</strong>, <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)<br/>
                     <span className="text-primary font-medium">⚡ Senhas serão geradas automaticamente</span>
                   </p>
-                  {excelFile && previewData.length > 0 && (
+                  {excelFile && previewData.length > 0 && !isProcessingFile && (
                     <Button 
                       onClick={() => setShowPreview(true)}
                       disabled={isImporting}
