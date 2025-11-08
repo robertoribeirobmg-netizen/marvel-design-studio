@@ -87,6 +87,22 @@ export default function Admin() {
     setIsCreating(true);
 
     try {
+      // Validar duplicação de quadra/lote se ambos forem fornecidos
+      if (newQuadra && newLote) {
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('id, nome_completo')
+          .eq('quadra', newQuadra)
+          .eq('lote', newLote)
+          .maybeSingle();
+
+        if (existing) {
+          toast.error(`Quadra ${newQuadra} Lote ${newLote} já está cadastrado para ${existing.nome_completo}`);
+          setIsCreating(false);
+          return;
+        }
+      }
+
       // Create user using admin function
       const { data, error } = await supabase.functions.invoke('create-user', {
         body: {
@@ -112,7 +128,11 @@ export default function Admin() {
       setNewDataCompra('');
       loadCooperados();
     } catch (error: any) {
-      toast.error(error.message || 'Erro ao criar cooperado');
+      if (error.message?.includes('unique_quadra_lote')) {
+        toast.error('Esta combinação de Quadra/Lote já está cadastrada');
+      } else {
+        toast.error(error.message || 'Erro ao criar cooperado');
+      }
     } finally {
       setIsCreating(false);
     }
@@ -179,6 +199,20 @@ export default function Admin() {
         try {
           if (!email || !password || !nome_completo) {
             throw new Error('Dados incompletos: email, senha ou nome faltando');
+          }
+
+          // Validar duplicação de quadra/lote se ambos forem fornecidos
+          if (quadra && lote) {
+            const { data: existing } = await supabase
+              .from('profiles')
+              .select('id, nome_completo')
+              .eq('quadra', quadra)
+              .eq('lote', lote)
+              .maybeSingle();
+
+            if (existing) {
+              throw new Error(`Quadra ${quadra} Lote ${lote} já cadastrado para ${existing.nome_completo}`);
+            }
           }
 
           const { error } = await supabase.functions.invoke('create-user', {
