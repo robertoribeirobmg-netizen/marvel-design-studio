@@ -10,7 +10,8 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff } from 'lucide-react';
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -88,6 +89,7 @@ export default function Admin() {
   const [previewPage, setPreviewPage] = useState(1);
   const [previewItemsPerPage] = useState(100);
   const [isProcessingFile, setIsProcessingFile] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -478,6 +480,9 @@ export default function Admin() {
       setPreviewData(processedData);
       setPreviewStats(stats);
       setPreviewPage(1); // Reset preview page
+      // Select all valid rows by default
+      const validRowsSet = new Set(processedData.filter(r => r.valid).map(r => r.row));
+      setSelectedRows(validRowsSet);
       setIsProcessingFile(false);
       setShowPreview(true);
     } catch (error: any) {
@@ -489,6 +494,11 @@ export default function Admin() {
   const handleConfirmImport = async () => {
     if (!excelFile || previewData.length === 0) {
       toast.error('Nenhum dado para importar');
+      return;
+    }
+    
+    if (selectedRows.size === 0) {
+      toast.error('Selecione pelo menos um registro para importar');
       return;
     }
 
@@ -503,7 +513,8 @@ export default function Admin() {
     const createdIds: string[] = [];
 
     try {
-      const jsonData = previewData;
+      // Only import selected rows
+      const jsonData = previewData.filter(row => selectedRows.has(row.row));
 
       // Definir o total de registros
       setImportProgress({ current: 0, total: jsonData.length });
@@ -676,6 +687,7 @@ export default function Admin() {
     setShowPreview(false);
     setExcelFile(null);
     setPreviewData([]);
+    setSelectedRows(new Set());
     setPreviewStats({
       total: 0,
       comEmail: 0,
@@ -687,6 +699,37 @@ export default function Admin() {
       comLote: 0,
       comFase: 0,
       comDataCompra: 0,
+    });
+  };
+  
+  const handleToggleRow = (rowNumber: number) => {
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(rowNumber)) {
+        newSet.delete(rowNumber);
+      } else {
+        newSet.add(rowNumber);
+      }
+      return newSet;
+    });
+  };
+  
+  const handleToggleAll = () => {
+    const currentPageRows = previewData
+      .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+      .filter(r => r.valid)
+      .map(r => r.row);
+    
+    const allSelected = currentPageRows.every(row => selectedRows.has(row));
+    
+    setSelectedRows(prev => {
+      const newSet = new Set(prev);
+      if (allSelected) {
+        currentPageRows.forEach(row => newSet.delete(row));
+      } else {
+        currentPageRows.forEach(row => newSet.add(row));
+      }
+      return newSet;
     });
   };
 
@@ -1593,52 +1636,112 @@ export default function Admin() {
             )}
           </div>
 
+          {/* Selection Summary */}
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <Check className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium">
+                  {selectedRows.size} de {previewData.filter(r => r.valid).length} registros selecionados
+                </span>
+              </div>
+              {selectedRows.size < previewData.filter(r => r.valid).length && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => setSelectedRows(new Set(previewData.filter(r => r.valid).map(r => r.row)))}
+                  className="h-auto p-0 text-primary"
+                >
+                  Selecionar todos válidos
+                </Button>
+              )}
+              {selectedRows.size > 0 && (
+                <Button
+                  variant="link"
+                  size="sm"
+                  onClick={() => setSelectedRows(new Set())}
+                  className="h-auto p-0 text-muted-foreground"
+                >
+                  Limpar seleção
+                </Button>
+              )}
+            </div>
+          </div>
+
           {/* Tabela de Preview */}
-          <ScrollArea className="h-[400px] rounded-md border">
+          <ScrollArea className="h-[450px] rounded-md border">
             <Table>
-              <TableHeader>
+              <TableHeader className="sticky top-0 bg-background z-10">
                 <TableRow>
-                  <TableHead className="w-12">#</TableHead>
+                  <TableHead className="w-12">
+                    <Checkbox
+                      checked={
+                        previewData
+                          .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+                          .filter(r => r.valid)
+                          .every(r => selectedRows.has(r.row)) &&
+                        previewData
+                          .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+                          .filter(r => r.valid).length > 0
+                      }
+                      onCheckedChange={handleToggleAll}
+                    />
+                  </TableHead>
+                  <TableHead className="w-16">#</TableHead>
                   <TableHead>Nome</TableHead>
                   <TableHead>Email</TableHead>
-                  <TableHead>Senha</TableHead>
-                  <TableHead>Quadra</TableHead>
-                  <TableHead>Lote</TableHead>
-                  <TableHead>Fase</TableHead>
-                  <TableHead>Data Compra</TableHead>
-                  <TableHead className="w-20">Status</TableHead>
+                  <TableHead className="w-24">Senha</TableHead>
+                  <TableHead className="w-24">Quadra</TableHead>
+                  <TableHead className="w-24">Lote</TableHead>
+                  <TableHead className="w-24">Fase</TableHead>
+                  <TableHead className="w-32">Data Compra</TableHead>
+                  <TableHead className="w-28">Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {previewData
                   .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
                   .map((row, index) => (
-                  <TableRow key={index} className={!row.valid ? 'bg-muted/50' : ''}>
-                    <TableCell className="text-xs text-muted-foreground">{row.row}</TableCell>
+                  <TableRow 
+                    key={index} 
+                    className={`${!row.valid ? 'bg-muted/50' : ''} ${selectedRows.has(row.row) ? 'bg-primary/5' : ''}`}
+                  >
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedRows.has(row.row)}
+                        onCheckedChange={() => handleToggleRow(row.row)}
+                        disabled={!row.valid}
+                      />
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground font-mono">{row.row}</TableCell>
                     <TableCell className="font-medium">
-                      {row.nome_completo || <span className="text-muted-foreground italic">-</span>}
+                      {row.nome_completo || <span className="text-muted-foreground italic text-xs">-</span>}
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {row.email || <span className="text-muted-foreground italic text-xs">-</span>}
                     </TableCell>
                     <TableCell>
-                      {row.email || <span className="text-muted-foreground italic">-</span>}
+                      {row.password ? (
+                        <code className="text-xs bg-muted px-2 py-1 rounded">••••••••</code>
+                      ) : (
+                        <span className="text-muted-foreground italic text-xs">-</span>
+                      )}
                     </TableCell>
-                    <TableCell>
-                      {row.password ? <span className="text-xs">••••••••</span> : <span className="text-muted-foreground italic">-</span>}
+                    <TableCell className="text-sm">
+                      {row.quadra || <span className="text-muted-foreground italic text-xs">-</span>}
                     </TableCell>
-                    <TableCell>
-                      {row.quadra || <span className="text-muted-foreground italic">-</span>}
+                    <TableCell className="text-sm">
+                      {row.lote || <span className="text-muted-foreground italic text-xs">-</span>}
                     </TableCell>
-                    <TableCell>
-                      {row.lote || <span className="text-muted-foreground italic">-</span>}
+                    <TableCell className="text-sm">
+                      {row.fase || <span className="text-muted-foreground italic text-xs">-</span>}
                     </TableCell>
-                    <TableCell>
-                      {row.fase || <span className="text-muted-foreground italic">-</span>}
-                    </TableCell>
-                    <TableCell>
-                      {row.data_compra || <span className="text-muted-foreground italic">-</span>}
+                    <TableCell className="text-sm">
+                      {row.data_compra || <span className="text-muted-foreground italic text-xs">-</span>}
                     </TableCell>
                     <TableCell>
                       {row.valid ? (
-                        <Badge variant="default" className="text-xs">OK</Badge>
+                        <Badge variant="default" className="text-xs">Válido</Badge>
                       ) : (
                         <Badge variant="destructive" className="text-xs">Incompleto</Badge>
                       )}
@@ -1650,51 +1753,126 @@ export default function Admin() {
           </ScrollArea>
 
           {/* Paginação do Preview */}
-          <div className="flex items-center justify-between px-2">
+          <div className="flex items-center justify-between px-2 py-4">
             <div className="text-sm text-muted-foreground">
               Mostrando {Math.min((previewPage - 1) * previewItemsPerPage + 1, previewData.length)} a {Math.min(previewPage * previewItemsPerPage, previewData.length)} de {previewData.length} registros
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPreviewPage(p => Math.max(1, p - 1))}
-                disabled={previewPage === 1}
-              >
-                <ChevronLeft className="h-4 w-4" />
-                Anterior
-              </Button>
-              <div className="flex items-center gap-1 text-sm">
-                <span className="text-muted-foreground">Página</span>
-                <span className="font-medium">{previewPage}</span>
-                <span className="text-muted-foreground">de</span>
-                <span className="font-medium">{Math.ceil(previewData.length / previewItemsPerPage)}</span>
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPreviewPage(p => Math.min(Math.ceil(previewData.length / previewItemsPerPage), p + 1))}
-                disabled={previewPage >= Math.ceil(previewData.length / previewItemsPerPage)}
-              >
-                Próxima
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPreviewPage(p => Math.max(1, p - 1))}
+                    disabled={previewPage === 1}
+                    className="gap-1"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span className="hidden sm:inline">Anterior</span>
+                  </Button>
+                </PaginationItem>
+                
+                {/* First page */}
+                {previewPage > 2 && (
+                  <PaginationItem>
+                    <PaginationLink onClick={() => setPreviewPage(1)} isActive={false}>
+                      1
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                
+                {/* Ellipsis before */}
+                {previewPage > 3 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+                
+                {/* Previous page */}
+                {previewPage > 1 && (
+                  <PaginationItem>
+                    <PaginationLink onClick={() => setPreviewPage(previewPage - 1)} isActive={false}>
+                      {previewPage - 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                
+                {/* Current page */}
+                <PaginationItem>
+                  <PaginationLink isActive={true}>
+                    {previewPage}
+                  </PaginationLink>
+                </PaginationItem>
+                
+                {/* Next page */}
+                {previewPage < Math.ceil(previewData.length / previewItemsPerPage) && (
+                  <PaginationItem>
+                    <PaginationLink onClick={() => setPreviewPage(previewPage + 1)} isActive={false}>
+                      {previewPage + 1}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                
+                {/* Ellipsis after */}
+                {previewPage < Math.ceil(previewData.length / previewItemsPerPage) - 2 && (
+                  <PaginationItem>
+                    <PaginationEllipsis />
+                  </PaginationItem>
+                )}
+                
+                {/* Last page */}
+                {previewPage < Math.ceil(previewData.length / previewItemsPerPage) - 1 && (
+                  <PaginationItem>
+                    <PaginationLink 
+                      onClick={() => setPreviewPage(Math.ceil(previewData.length / previewItemsPerPage))} 
+                      isActive={false}
+                    >
+                      {Math.ceil(previewData.length / previewItemsPerPage)}
+                    </PaginationLink>
+                  </PaginationItem>
+                )}
+                
+                <PaginationItem>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setPreviewPage(p => Math.min(Math.ceil(previewData.length / previewItemsPerPage), p + 1))}
+                    disabled={previewPage >= Math.ceil(previewData.length / previewItemsPerPage)}
+                    className="gap-1"
+                  >
+                    <span className="hidden sm:inline">Próxima</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
           </div>
 
           {/* Ações */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button variant="outline" onClick={handleCancelPreview}>
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleConfirmImport}
-              size="lg"
-              className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
-            >
-              <Upload className="h-5 w-5 mr-2" />
-              Iniciar Importação
-            </Button>
+          <div className="flex justify-between items-center pt-4 border-t">
+            <div className="text-sm text-muted-foreground">
+              {selectedRows.size === 0 ? (
+                <span className="text-destructive font-medium">Selecione pelo menos um registro para importar</span>
+              ) : (
+                <span>
+                  <strong className="text-primary">{selectedRows.size}</strong> registro{selectedRows.size !== 1 ? 's' : ''} será{selectedRows.size !== 1 ? 'ão' : ''} importado{selectedRows.size !== 1 ? 's' : ''}
+                </span>
+              )}
+            </div>
+            <div className="flex gap-3">
+              <Button variant="outline" onClick={handleCancelPreview}>
+                Cancelar
+              </Button>
+              <Button 
+                onClick={handleConfirmImport}
+                disabled={selectedRows.size === 0}
+                size="lg"
+                className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Upload className="h-5 w-5 mr-2" />
+                Iniciar Importação ({selectedRows.size})
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
