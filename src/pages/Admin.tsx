@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2 } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -34,7 +34,6 @@ export default function Admin() {
   
   // Form state
   const [newEmail, setNewEmail] = useState('');
-  const [newPassword, setNewPassword] = useState('');
   const [newNome, setNewNome] = useState('');
   const [newQuadra, setNewQuadra] = useState('');
   const [newLote, setNewLote] = useState('');
@@ -42,16 +41,25 @@ export default function Admin() {
   const [newDataCompra, setNewDataCompra] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   
-  // Excel import state
-  const [excelFile, setExcelFile] = useState<File | null>(null);
-  const [isImporting, setIsImporting] = useState(false);
-  const [importResults, setImportResults] = useState<Array<{
+  // Generated password state
+  const [generatedPassword, setGeneratedPassword] = useState('');
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [generatedUserName, setGeneratedUserName] = useState('');
+  
+  // Type for import results
+  type ImportResult = {
     row: number;
     nome: string;
     email: string;
+    password?: string;
     status: 'success' | 'error';
     error?: string;
-  }>>([]);
+  };
+  
+  // Excel import state
+  const [excelFile, setExcelFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [importResults, setImportResults] = useState<ImportResult[]>([]);
   const [showImportResults, setShowImportResults] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [createdUserIds, setCreatedUserIds] = useState<string[]>([]);
@@ -96,9 +104,27 @@ export default function Admin() {
   const [isUpdating, setIsUpdating] = useState(false);
   
 
+
   useEffect(() => {
     loadCooperados();
   }, []);
+
+  // Função para gerar senha aleatória segura
+  const generatePassword = () => {
+    const length = 10;
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*";
+    let password = "";
+    for (let i = 0; i < length; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
+    }
+    return password;
+  };
+
+  const copyPasswordToClipboard = () => {
+    navigator.clipboard.writeText(generatedPassword);
+    toast.success('Senha copiada para área de transferência!');
+  };
 
   const loadCooperados = async () => {
     try {
@@ -164,11 +190,14 @@ export default function Admin() {
         }
       }
 
+      // Gerar senha automaticamente
+      const autoPassword = generatePassword();
+
       // Create user using admin function
       const { data, error } = await supabase.functions.invoke('create-user', {
         body: {
           email: newEmail,
-          password: newPassword,
+          password: autoPassword,
           nome_completo: newNome,
           quadra: newQuadra || null,
           lote: newLote || null,
@@ -186,9 +215,13 @@ export default function Admin() {
         return;
       }
 
+      // Mostrar senha gerada
+      setGeneratedPassword(autoPassword);
+      setGeneratedUserName(newNome);
+      setShowPasswordDialog(true);
+
       toast.success('Cooperado criado com sucesso!');
       setNewEmail('');
-      setNewPassword('');
       setNewNome('');
       setNewQuadra('');
       setNewLote('');
@@ -341,7 +374,6 @@ export default function Admin() {
       // Processar dados para preview
       const processedData = jsonData.map((row, index) => {
         const email = row.email || row.Email;
-        const password = row.senha || row.Senha || row.password || row.Password;
         const nome_completo = row.nome_completo || row.nome || row.Nome || row['Nome Completo'];
         const quadra = row.quadra || row.Quadra || null;
         const lote = row.lote || row.Lote || null;
@@ -366,13 +398,12 @@ export default function Admin() {
         return {
           row: index + 2,
           email,
-          password,
           nome_completo,
           quadra,
           lote,
           fase,
           data_compra,
-          valid: !!(email && password && nome_completo)
+          valid: !!(email && nome_completo)
         };
       });
 
@@ -380,7 +411,7 @@ export default function Admin() {
       const stats = {
         total: processedData.length,
         comEmail: processedData.filter(d => d.email).length,
-        comSenha: processedData.filter(d => d.password).length,
+        comSenha: processedData.length, // Todas terão senha gerada automaticamente
         comNome: processedData.filter(d => d.nome_completo).length,
         comQuadra: processedData.filter(d => d.quadra).length,
         comLote: processedData.filter(d => d.lote).length,
@@ -410,13 +441,7 @@ export default function Admin() {
     setImportProgress({ current: 0, total: 0 });
     setStartTime(Date.now());
     setEstimatedTimeLeft('');
-    const results: Array<{
-      row: number;
-      nome: string;
-      email: string;
-      status: 'success' | 'error';
-      error?: string;
-    }> = [];
+    const results: ImportResult[] = [];
     const createdIds: string[] = [];
 
     try {
@@ -457,7 +482,6 @@ export default function Admin() {
 
         const row = jsonData[i];
         const email = row.email;
-        const password = row.password;
         const nome_completo = row.nome_completo;
         const quadra = row.quadra;
         const lote = row.lote;
@@ -465,9 +489,12 @@ export default function Admin() {
         const data_compra = row.data_compra;
 
         try {
-          if (!email || !password || !nome_completo) {
-            throw new Error('Dados incompletos: email, senha ou nome faltando');
+          if (!email || !nome_completo) {
+            throw new Error('Dados incompletos: email ou nome faltando');
           }
+
+          // Gerar senha automaticamente
+          const autoPassword = generatePassword();
 
           // Validar duplicação de quadra/lote se ambos forem fornecidos
           if (quadra && lote) {
@@ -488,7 +515,7 @@ export default function Admin() {
           const { data, error } = await supabase.functions.invoke('create-user', {
             body: {
               email,
-              password,
+              password: autoPassword,
               nome_completo,
               quadra,
               lote,
@@ -517,6 +544,7 @@ export default function Admin() {
               row: i + 2,
               nome: nome_completo,
               email,
+              password: autoPassword,
               status: 'success',
             });
             sucessos++;
@@ -828,15 +856,14 @@ export default function Admin() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="password">Senha *</Label>
+                    <Label htmlFor="nome">Nome Completo *</Label>
                     <Input
-                      id="password"
-                      type="password"
-                      placeholder="Senha (min 6 caracteres)"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
+                      id="nome"
+                      type="text"
+                      placeholder="Nome completo do cooperado"
+                      value={newNome}
+                      onChange={(e) => setNewNome(e.target.value)}
                       required
-                      minLength={6}
                     />
                   </div>
                   <div className="space-y-2">
@@ -909,8 +936,9 @@ export default function Admin() {
                     disabled={isImporting}
                   />
                   <p className="text-xs text-muted-foreground">
-                    Colunas obrigatórias: <strong>nome_completo</strong> (ou nome), <strong>email</strong>, <strong>senha</strong><br/>
-                    Colunas opcionais: <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)
+                    Colunas obrigatórias: <strong>nome_completo</strong> (ou nome), <strong>email</strong><br/>
+                    Colunas opcionais: <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)<br/>
+                    <span className="text-primary font-medium">⚡ Senhas serão geradas automaticamente</span>
                   </p>
                 </div>
                 
@@ -1381,8 +1409,8 @@ export default function Admin() {
               <p className="text-2xl font-bold text-green-600">{previewStats.comEmail}</p>
             </div>
             <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">Com Senha ✓</p>
-              <p className="text-2xl font-bold text-green-600">{previewStats.comSenha}</p>
+              <p className="text-xs text-muted-foreground">Senhas</p>
+              <p className="text-lg font-semibold text-primary">Geradas automaticamente</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Com Nome ✓</p>
@@ -1413,14 +1441,6 @@ export default function Admin() {
                 <XCircle className="h-4 w-4 text-yellow-600" />
                 <p className="text-sm text-yellow-800 dark:text-yellow-200">
                   {previewStats.total - previewStats.comEmail} registros sem email serão ignorados
-                </p>
-              </div>
-            )}
-            {previewStats.comSenha < previewStats.total && (
-              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 rounded-lg">
-                <XCircle className="h-4 w-4 text-yellow-600" />
-                <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                  {previewStats.total - previewStats.comSenha} registros sem senha serão ignorados
                 </p>
               </div>
             )}
@@ -1498,7 +1518,7 @@ export default function Admin() {
             <Button variant="outline" onClick={handleCancelPreview}>
               Cancelar
             </Button>
-            <Button onClick={handleConfirmImport} disabled={previewStats.comEmail === 0 || previewStats.comSenha === 0 || previewStats.comNome === 0}>
+            <Button onClick={handleConfirmImport} disabled={previewStats.comEmail === 0 || previewStats.comNome === 0}>
               <Upload className="h-4 w-4 mr-2" />
               Confirmar Importação
             </Button>
@@ -1532,7 +1552,7 @@ export default function Admin() {
                     ) : (
                       <XCircle className="h-5 w-5 text-red-600 dark:text-red-400 mt-0.5" />
                     )}
-                    <div className="flex-1">
+                     <div className="flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium text-muted-foreground">
                           Linha {result.row}
@@ -1543,6 +1563,26 @@ export default function Admin() {
                       </div>
                       <p className="font-medium mt-1">{result.nome}</p>
                       <p className="text-sm text-muted-foreground">{result.email}</p>
+                      {result.status === 'success' && result.password && (
+                        <div className="mt-2 flex items-center gap-2">
+                          <div className="flex-1 p-2 bg-background/50 rounded border font-mono text-xs">
+                            <span className="text-muted-foreground">Senha: </span>
+                            {result.password}
+                          </div>
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="h-8 w-8"
+                            onClick={() => {
+                              navigator.clipboard.writeText(result.password!);
+                              toast.success('Senha copiada!');
+                            }}
+                          >
+                            <Copy className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      )}
                       {result.error && (
                         <p className="text-sm text-red-600 dark:text-red-400 mt-1">
                           {result.error}
@@ -1554,6 +1594,59 @@ export default function Admin() {
               ))}
             </div>
           </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Generated Password Dialog */}
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Cooperado Criado com Sucesso!
+            </DialogTitle>
+            <DialogDescription>
+              A senha foi gerada automaticamente. Copie e envie para o cooperado.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Nome do Cooperado</Label>
+              <div className="p-3 bg-muted rounded-md">
+                <p className="text-sm font-medium">{generatedUserName}</p>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Senha Gerada</Label>
+              <div className="flex gap-2">
+                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-sm">
+                  {generatedPassword}
+                </div>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={copyPasswordToClipboard}
+                  className="shrink-0"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Clique no botão ao lado para copiar a senha
+              </p>
+            </div>
+            <div className="p-3 bg-primary/10 border border-primary/20 rounded-md">
+              <p className="text-xs text-foreground">
+                <strong>Importante:</strong> Guarde esta senha em local seguro. O cooperado precisará dela para fazer login no sistema.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowPasswordDialog(false)}>
+              Fechar
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
