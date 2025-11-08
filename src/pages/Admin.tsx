@@ -805,9 +805,12 @@ export default function Admin() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Nome</TableHead>
+                        <TableHead>CPF</TableHead>
+                        <TableHead>Telefone</TableHead>
                         <TableHead>Quadra/Lote</TableHead>
                         <TableHead>Fase</TableHead>
                         <TableHead>Data Compra</TableHead>
+                        <TableHead>Data Cadastro</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
@@ -819,6 +822,12 @@ export default function Admin() {
                             {cooperado.nome_completo}
                           </TableCell>
                           <TableCell>
+                            {cooperado.cpf || '-'}
+                          </TableCell>
+                          <TableCell>
+                            {cooperado.telefone || '-'}
+                          </TableCell>
+                          <TableCell>
                             {cooperado.quadra && cooperado.lote 
                               ? `Q${cooperado.quadra} L${cooperado.lote}`
                               : '-'}
@@ -827,6 +836,11 @@ export default function Admin() {
                           <TableCell>
                             {cooperado.data_compra 
                               ? new Date(cooperado.data_compra).toLocaleDateString('pt-BR')
+                              : '-'}
+                          </TableCell>
+                          <TableCell>
+                            {cooperado.data_cadastro 
+                              ? new Date(cooperado.data_cadastro).toLocaleDateString('pt-BR')
                               : '-'}
                           </TableCell>
                           <TableCell>

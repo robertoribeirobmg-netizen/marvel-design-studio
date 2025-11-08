@@ -158,6 +158,8 @@ export function generateCooperadosReport(
   // Preparar dados dos cooperados
   const cooperadosData = cooperados.map((c) => [
     c.nome_completo,
+    c.cpf || '-',
+    c.telefone || '-',
     c.quadra && c.lote ? `Q${c.quadra} L${c.lote}` : '-',
     c.fase || '-',
     c.data_compra ? new Date(c.data_compra).toLocaleDateString('pt-BR') : '-',
@@ -165,17 +167,19 @@ export function generateCooperadosReport(
 
   autoTable(doc, {
     startY: yPosition,
-    head: [['Nome', 'Quadra/Lote', 'Fase', 'Data Compra']],
+    head: [['Nome', 'CPF', 'Telefone', 'Quadra/Lote', 'Fase', 'Data Compra']],
     body: cooperadosData,
     theme: 'striped',
     headStyles: { fillColor: [66, 139, 202] },
     margin: { left: 14, right: 14 },
-    styles: { fontSize: 8 },
+    styles: { fontSize: 7 },
     columnStyles: {
-      0: { cellWidth: 'auto' },
-      1: { cellWidth: 30 },
-      2: { cellWidth: 20 },
-      3: { cellWidth: 30 },
+      0: { cellWidth: 45 },
+      1: { cellWidth: 28 },
+      2: { cellWidth: 28 },
+      3: { cellWidth: 25 },
+      4: { cellWidth: 18 },
+      5: { cellWidth: 25 },
     },
   });
 
