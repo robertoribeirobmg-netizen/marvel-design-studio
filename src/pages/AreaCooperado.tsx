@@ -25,6 +25,7 @@ export default function AreaCooperado() {
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
+  const [ordenacao, setOrdenacao] = useState<'desc' | 'asc'>('desc');
 
   useEffect(() => {
     if (user) {
@@ -71,7 +72,7 @@ export default function AreaCooperado() {
         query = query.lt('data_upload', dateToStr);
       }
 
-      query = query.order('data_upload', { ascending: false });
+      query = query.order('data_upload', { ascending: ordenacao === 'asc' });
 
       const { error, data } = await query;
 
@@ -89,7 +90,7 @@ export default function AreaCooperado() {
 
   useEffect(() => {
     loadFotos();
-  }, [filtroCategoria, dateFrom, dateTo]);
+  }, [filtroCategoria, dateFrom, dateTo, ordenacao]);
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -262,9 +263,21 @@ export default function AreaCooperado() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Filters Header */}
+              <div className="flex items-center justify-between mb-4">
+                <h4 className="text-sm font-medium">Filtros e Ordenação</h4>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
+                >
+                  {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
+                </Button>
+              </div>
+
               {/* Category Filters */}
               <div className="mb-4">
-                <h4 className="text-sm font-medium mb-3">Filtrar por Categoria</h4>
+                <h4 className="text-xs text-muted-foreground mb-2">Categoria</h4>
                 <div className="flex flex-wrap gap-2">
                 <Button
                   variant={filtroCategoria === 'todas' ? 'default' : 'outline'}

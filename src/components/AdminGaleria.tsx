@@ -37,10 +37,11 @@ export function AdminGaleria() {
   const [file, setFile] = useState<File | null>(null);
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
+  const [ordenacao, setOrdenacao] = useState<'desc' | 'asc'>('desc');
 
   useEffect(() => {
     loadItems();
-  }, [dateFrom, dateTo]);
+  }, [dateFrom, dateTo, ordenacao]);
 
   const loadItems = async () => {
     let query = supabase
@@ -58,7 +59,7 @@ export function AdminGaleria() {
       query = query.lt('data_upload', dateToStr);
     }
 
-    query = query.order('data_upload', { ascending: false });
+    query = query.order('data_upload', { ascending: ordenacao === 'asc' });
 
     const { data, error } = await query;
 
@@ -315,10 +316,19 @@ export function AdminGaleria() {
         {/* Date Filters */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base flex items-center gap-2">
-              <CalendarIcon className="h-4 w-4" />
-              Filtrar por Data
-            </CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base flex items-center gap-2">
+                <CalendarIcon className="h-4 w-4" />
+                Filtrar por Data
+              </CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
+              >
+                {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-4 items-end">
