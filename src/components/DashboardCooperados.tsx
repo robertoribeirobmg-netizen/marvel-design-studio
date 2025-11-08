@@ -1,6 +1,9 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Home, Calendar, MapPin } from 'lucide-react';
+import { Users, Home, Calendar, MapPin, FileText } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { generateCooperadosReport } from '@/lib/pdfGenerator';
+import { toast } from 'sonner';
 
 interface DashboardCooperadosProps {
   cooperados: any[];
@@ -51,8 +54,39 @@ export function DashboardCooperados({ cooperados }: DashboardCooperadosProps) {
   // Cooperados com data de compra definida
   const cooperadosComDataCompra = cooperados.filter(c => c.data_compra).length;
 
+  const handleGeneratePDF = () => {
+    try {
+      const estatisticas = {
+        totalCooperados,
+        cooperadosComLote,
+        cooperadosSemLote,
+        cooperadosRecentes,
+        cooperadosComDataCompra,
+        cooperadosPorFase,
+        cooperadosPorQuadra,
+      };
+      
+      generateCooperadosReport(cooperados, estatisticas);
+      toast.success('Relatório PDF gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast.error('Erro ao gerar relatório PDF');
+    }
+  };
+
   return (
     <div className="space-y-6">
+      {/* Botão de exportar PDF */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold">Dashboard de Cooperados</h2>
+          <p className="text-muted-foreground">Visão geral e estatísticas</p>
+        </div>
+        <Button onClick={handleGeneratePDF} className="gap-2">
+          <FileText className="h-4 w-4" />
+          Gerar Relatório PDF
+        </Button>
+      </div>
       {/* Cards de estatísticas principais */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>

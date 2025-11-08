@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3 } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
 import { DashboardCooperados } from '@/components/DashboardCooperados';
+import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { CheckCircle2, XCircle } from 'lucide-react';
@@ -477,6 +478,52 @@ export default function Admin() {
     setCurrentPage(1); // Reset to first page when changing items per page
   };
 
+  const handleExportFilteredPDF = () => {
+    try {
+      // Calcular estatísticas dos cooperados filtrados
+      const totalCooperados = filteredCooperados.length;
+      const cooperadosComLote = filteredCooperados.filter(c => c.quadra && c.lote).length;
+      const cooperadosSemLote = totalCooperados - cooperadosComLote;
+
+      const trintaDiasAtras = new Date();
+      trintaDiasAtras.setDate(trintaDiasAtras.getDate() - 30);
+      const cooperadosRecentes = filteredCooperados.filter(c => {
+        const dataCadastro = new Date(c.data_cadastro);
+        return dataCadastro >= trintaDiasAtras;
+      }).length;
+
+      const cooperadosComDataCompra = filteredCooperados.filter(c => c.data_compra).length;
+
+      const cooperadosPorFase = filteredCooperados.reduce((acc: Record<string, number>, c) => {
+        const fase = c.fase || 'Sem fase';
+        acc[fase] = (acc[fase] || 0) + 1;
+        return acc;
+      }, {});
+
+      const cooperadosPorQuadra = filteredCooperados.reduce((acc: Record<string, number>, c) => {
+        const quadra = c.quadra || 'Sem quadra';
+        acc[quadra] = (acc[quadra] || 0) + 1;
+        return acc;
+      }, {});
+
+      const estatisticas = {
+        totalCooperados,
+        cooperadosComLote,
+        cooperadosSemLote,
+        cooperadosRecentes,
+        cooperadosComDataCompra,
+        cooperadosPorFase,
+        cooperadosPorQuadra,
+      };
+      
+      generateCooperadosReport(filteredCooperados, estatisticas);
+      toast.success('Relatório PDF gerado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao gerar PDF:', error);
+      toast.error('Erro ao gerar relatório PDF');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -672,20 +719,31 @@ export default function Admin() {
             <CardContent>
               {/* Filters */}
               <div className="mb-6 p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-2 mb-3">
+                <div className="flex items-center gap-2 mb-3 flex-wrap">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <h3 className="font-medium text-sm">Filtros de Busca</h3>
-                  {(filterNome || filterQuadra || filterLote || filterFase) && (
+                  <div className="ml-auto flex gap-2">
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       size="sm"
-                      onClick={clearFilters}
-                      className="ml-auto h-7"
+                      onClick={handleExportFilteredPDF}
+                      className="h-7 gap-1"
                     >
-                      <X className="h-3 w-3 mr-1" />
-                      Limpar
+                      <FileText className="h-3 w-3" />
+                      Exportar PDF
                     </Button>
-                  )}
+                    {(filterNome || filterQuadra || filterLote || filterFase) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearFilters}
+                        className="h-7"
+                      >
+                        <X className="h-3 w-3 mr-1" />
+                        Limpar
+                      </Button>
+                    )}
+                  </div>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div className="space-y-1">
