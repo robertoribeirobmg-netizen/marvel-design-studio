@@ -40,9 +40,43 @@ export async function importFinancialData(data: FinancialImportData[]) {
         continue;
       }
 
+      let profileId: string;
+
       if (!profile) {
-        results.errors.push(`Cooperado não encontrado: ${cliente.cliente} (Quadra/Lote: ${cliente.quadraLote})`);
-        continue;
+        // Criar cooperado automaticamente
+        try {
+          const tempEmail = `${quadra}.${lote}@temp.cooperativa.com`;
+          const tempPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
+          
+          const { data: sessionData } = await supabase.auth.getSession();
+          
+          const { data: newUserData, error: createUserError } = await supabase.functions.invoke('create-user', {
+            body: {
+              email: tempEmail,
+              password: tempPassword,
+              nome: cliente.cliente,
+              quadra,
+              lote,
+            },
+            headers: {
+              Authorization: `Bearer ${sessionData.session?.access_token}`,
+            },
+          });
+
+          if (createUserError || !newUserData?.userId) {
+            results.errors.push(
+              `Erro ao criar cooperado ${cliente.cliente}: ${createUserError?.message || 'Erro desconhecido'}`
+            );
+            continue;
+          }
+
+          profileId = newUserData.userId;
+        } catch (error: any) {
+          results.errors.push(`Erro ao criar cooperado ${cliente.cliente}: ${error.message}`);
+          continue;
+        }
+      } else {
+        profileId = profile.id;
       }
 
       // Calcular valor total e número de parcelas
@@ -57,7 +91,7 @@ export async function importFinancialData(data: FinancialImportData[]) {
       const { data: existingInv } = await supabase
         .from('investimentos')
         .select('id')
-        .eq('user_id', profile.id)
+        .eq('user_id', profileId)
         .maybeSingle();
 
       let investimentoId: string;
@@ -70,7 +104,7 @@ export async function importFinancialData(data: FinancialImportData[]) {
         const { data: newInv, error: invError } = await supabase
           .from('investimentos')
           .insert({
-            user_id: profile.id,
+            user_id: profileId,
             valor_total: valorTotal,
             numero_parcelas: numeroParcelas,
             valor_parcela: valorParcela,
