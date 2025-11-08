@@ -46,21 +46,33 @@ serve(async (req) => {
 
     const { email, password, nome_completo, quadra, lote, fase, data_compra } = await req.json()
 
-    // Check if user already exists
-    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
-    const userExists = existingUsers?.users?.some(u => u.email?.toLowerCase() === email.toLowerCase())
+    // Check if user already exists with same nome + email + lote
+    const { data: existingProfiles } = await supabaseAdmin
+      .from('profiles')
+      .select('id, user_id')
+      .eq('nome_completo', nome_completo)
+      .eq('lote', lote || null)
     
-    if (userExists) {
-      return new Response(
-        JSON.stringify({ 
-          duplicate: true,
-          message: `Usuário com email ${email} já existe` 
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200 
-        }
-      )
+    // Also check email in auth users
+    const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
+    const emailMatch = existingUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
+    
+    // If we find a profile with same nome + lote AND the email matches, it's a duplicate
+    if (emailMatch && existingProfiles && existingProfiles.length > 0) {
+      const isDuplicate = existingProfiles.some(p => p.user_id === emailMatch.id)
+      
+      if (isDuplicate) {
+        return new Response(
+          JSON.stringify({ 
+            duplicate: true,
+            message: `Usuário com nome ${nome_completo}, email ${email} e lote ${lote || 'não informado'} já existe` 
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 
+          }
+        )
+      }
     }
 
     // Create the user

@@ -407,7 +407,7 @@ export default function Admin() {
             },
           });
 
-          // Se for email duplicado, ignorar silenciosamente
+          // Se a edge function retornar duplicado (considerando nome + email + lote), ignorar
           if (data?.duplicate) {
             ignorados++;
             continue;
