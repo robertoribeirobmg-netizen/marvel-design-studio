@@ -764,6 +764,54 @@ export default function Admin() {
     }
   };
 
+  const handleExportCredentials = () => {
+    try {
+      // Filtrar apenas resultados bem-sucedidos com senha
+      const successfulImports = importResults.filter(r => r.status === 'success' && r.password);
+
+      if (successfulImports.length === 0) {
+        toast.error('Nenhuma credencial para exportar');
+        return;
+      }
+
+      // Preparar dados para o Excel
+      const excelData = successfulImports.map((result) => ({
+        'Linha': result.row,
+        'Nome Completo': result.nome,
+        'Email': result.email,
+        'Senha': result.password,
+        'Status': 'Criado com sucesso',
+      }));
+
+      // Criar workbook e worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Ajustar largura das colunas
+      const colWidths = [
+        { wch: 8 },  // Linha
+        { wch: 30 }, // Nome Completo
+        { wch: 30 }, // Email
+        { wch: 15 }, // Senha
+        { wch: 20 }, // Status
+      ];
+      ws['!cols'] = colWidths;
+
+      // Adicionar worksheet ao workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Credenciais');
+
+      // Gerar arquivo Excel
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
+      const fileName = `credenciais_importacao_${timestamp}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast.success(`${successfulImports.length} credenciais exportadas com sucesso!`);
+    } catch (error) {
+      console.error('Erro ao exportar credenciais:', error);
+      toast.error('Erro ao exportar credenciais');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -1530,9 +1578,22 @@ export default function Admin() {
       <Dialog open={showImportResults} onOpenChange={setShowImportResults}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
-            <DialogTitle>Resultados da Importação</DialogTitle>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Resultados da Importação</span>
+              {importResults.filter(r => r.status === 'success' && r.password).length > 0 && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExportCredentials}
+                  className="gap-2"
+                >
+                  <FileSpreadsheet className="h-4 w-4" />
+                  Exportar Credenciais
+                </Button>
+              )}
+            </DialogTitle>
             <DialogDescription>
-              Detalhes de cada linha processada da planilha
+              Detalhes de cada linha processada da planilha. As senhas foram geradas automaticamente.
             </DialogDescription>
           </DialogHeader>
           <ScrollArea className="max-h-[500px] pr-4">
