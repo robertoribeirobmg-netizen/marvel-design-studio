@@ -1027,7 +1027,7 @@ export default function Admin() {
 
             <TabsContent value="obras">
               <div className="space-y-6">
-                <DashboardComparativoObras />
+                <DashboardComparativoObras showVariacoes={true} />
                 <HistoricoGeralObras />
                 <AdminObras />
               </div>

@@ -14,7 +14,11 @@ interface EtapaObra {
   ordem: number;
 }
 
-export function DashboardComparativoObras() {
+interface DashboardComparativoObrasProps {
+  showVariacoes?: boolean;
+}
+
+export function DashboardComparativoObras({ showVariacoes = false }: DashboardComparativoObrasProps) {
   const [etapas, setEtapas] = useState<EtapaObra[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -275,55 +279,57 @@ export function DashboardComparativoObras() {
         </CardContent>
       </Card>
 
-      {/* Detalhamento de Etapas com Maior Diferença */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Etapas com Maior Variação</CardTitle>
-          <CardDescription>Etapas com maior diferença entre real e planejado</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {chartData
-              .sort((a, b) => Math.abs(b.diferenca) - Math.abs(a.diferenca))
-              .slice(0, 5)
-              .map((etapa, index) => {
-                const etapaCompleta = etapas.find(e => 
-                  e.nome.startsWith(etapa.nome.replace('...', ''))
-                );
-                
-                return (
-                  <div key={index} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium">{etapaCompleta?.nome}</span>
-                      <Badge 
-                        variant={etapa.diferenca >= 0 ? 'default' : 'destructive'}
-                        className="ml-2"
-                      >
-                        {etapa.diferenca > 0 ? '+' : ''}{etapa.diferenca}%
-                      </Badge>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Real: {etapa.Real}%</span>
-                        <span className="text-muted-foreground">Planejado: {etapa.Planejado}%</span>
+      {/* Detalhamento de Etapas com Maior Diferença - Apenas Admin */}
+      {showVariacoes && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Etapas com Maior Variação</CardTitle>
+            <CardDescription>Etapas com maior diferença entre real e planejado</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {chartData
+                .sort((a, b) => Math.abs(b.diferenca) - Math.abs(a.diferenca))
+                .slice(0, 5)
+                .map((etapa, index) => {
+                  const etapaCompleta = etapas.find(e => 
+                    e.nome.startsWith(etapa.nome.replace('...', ''))
+                  );
+                  
+                  return (
+                    <div key={index} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="font-medium">{etapaCompleta?.nome}</span>
+                        <Badge 
+                          variant={etapa.diferenca >= 0 ? 'default' : 'destructive'}
+                          className="ml-2"
+                        >
+                          {etapa.diferenca > 0 ? '+' : ''}{etapa.diferenca}%
+                        </Badge>
                       </div>
-                      <div className="relative h-2 bg-muted rounded-full overflow-hidden">
-                        <div 
-                          className="absolute h-full bg-primary transition-all"
-                          style={{ width: `${etapa.Real}%` }}
-                        />
-                        <div 
-                          className="absolute h-full border-2 border-green-500 border-dashed"
-                          style={{ width: `${etapa.Planejado}%` }}
-                        />
+                      <div className="space-y-1">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Real: {etapa.Real}%</span>
+                          <span className="text-muted-foreground">Planejado: {etapa.Planejado}%</span>
+                        </div>
+                        <div className="relative h-2 bg-muted rounded-full overflow-hidden">
+                          <div 
+                            className="absolute h-full bg-primary transition-all"
+                            style={{ width: `${etapa.Real}%` }}
+                          />
+                          <div 
+                            className="absolute h-full border-2 border-green-500 border-dashed"
+                            style={{ width: `${etapa.Planejado}%` }}
+                          />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
-          </div>
-        </CardContent>
-      </Card>
+                  );
+                })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
