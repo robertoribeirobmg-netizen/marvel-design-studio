@@ -524,6 +524,57 @@ export default function Admin() {
     }
   };
 
+  const handleExportToExcel = () => {
+    try {
+      // Preparar dados para o Excel
+      const excelData = filteredCooperados.map((cooperado) => ({
+        'Nome Completo': cooperado.nome_completo,
+        'CPF': cooperado.cpf || '-',
+        'Telefone': cooperado.telefone || '-',
+        'Quadra': cooperado.quadra || '-',
+        'Lote': cooperado.lote || '-',
+        'Fase': cooperado.fase || '-',
+        'Data da Compra': cooperado.data_compra 
+          ? new Date(cooperado.data_compra).toLocaleDateString('pt-BR')
+          : '-',
+        'Data de Cadastro': cooperado.data_cadastro 
+          ? new Date(cooperado.data_cadastro).toLocaleDateString('pt-BR')
+          : '-',
+        'Role': cooperado.user_roles?.some((r: any) => r.role === 'admin') ? 'Admin' : 'Cooperado',
+      }));
+
+      // Criar workbook e worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Ajustar largura das colunas
+      const colWidths = [
+        { wch: 30 }, // Nome Completo
+        { wch: 15 }, // CPF
+        { wch: 15 }, // Telefone
+        { wch: 10 }, // Quadra
+        { wch: 10 }, // Lote
+        { wch: 15 }, // Fase
+        { wch: 15 }, // Data da Compra
+        { wch: 15 }, // Data de Cadastro
+        { wch: 12 }, // Role
+      ];
+      ws['!cols'] = colWidths;
+
+      // Adicionar worksheet ao workbook
+      XLSX.utils.book_append_sheet(wb, ws, 'Cooperados');
+
+      // Gerar arquivo Excel
+      const fileName = `cooperados_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+
+      toast.success(`Excel gerado com sucesso! ${filteredCooperados.length} cooperados exportados.`);
+    } catch (error) {
+      console.error('Erro ao gerar Excel:', error);
+      toast.error('Erro ao exportar para Excel');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -731,6 +782,15 @@ export default function Admin() {
                     >
                       <FileText className="h-3 w-3" />
                       Exportar PDF
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleExportToExcel}
+                      className="h-7 gap-1"
+                    >
+                      <FileSpreadsheet className="h-3 w-3" />
+                      Exportar Excel
                     </Button>
                     {(filterNome || filterQuadra || filterLote || filterFase) && (
                       <Button
