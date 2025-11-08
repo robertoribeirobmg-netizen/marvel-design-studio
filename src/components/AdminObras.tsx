@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Edit, Upload, FileText, Image, Video, File, Trash2, Save, History as HistoryIcon } from 'lucide-react';
+import { Edit, Upload, FileText, Image, Video, File, Trash2, Save, History as HistoryIcon, AlertCircle } from 'lucide-react';
 import { HistoricoEtapaObra } from './HistoricoEtapaObra';
 
 interface EtapaObra {
@@ -46,6 +46,7 @@ export function AdminObras() {
     data_inicio: '',
     data_conclusao: '',
     descricao: '',
+    observacao: '',
   });
   const [uploadForm, setUploadForm] = useState({
     tipo: 'foto' as 'foto' | 'video' | 'pdf' | 'texto',
@@ -69,6 +70,7 @@ export function AdminObras() {
         data_inicio: selectedEtapa.data_inicio || '',
         data_conclusao: selectedEtapa.data_conclusao || '',
         descricao: selectedEtapa.descricao || '',
+        observacao: '',
       });
     }
   }, [selectedEtapa]);
@@ -103,25 +105,53 @@ export function AdminObras() {
   const handleUpdateEtapa = async () => {
     if (!selectedEtapa) return;
 
-    const { error } = await supabase
-      .from('etapas_obra')
-      .update({
-        percentual_concluido: editForm.percentual_concluido,
-        percentual_planejado: (editForm as any).percentual_planejado,
-        data_inicio: editForm.data_inicio || null,
-        data_conclusao: editForm.data_conclusao || null,
-        descricao: editForm.descricao || null,
-      })
-      .eq('id', selectedEtapa.id);
+    // Verificar se há mudança crítica no percentual (>10%)
+    const diferencaPercentual = Math.abs(
+      editForm.percentual_concluido - selectedEtapa.percentual_concluido
+    );
+    const mudancaCritica = diferencaPercentual > 10;
 
-    if (error) {
-      toast.error('Erro ao atualizar etapa');
+    if (mudancaCritica && !editForm.observacao.trim()) {
+      toast.error('Observação obrigatória para mudanças superiores a 10%');
       return;
     }
 
-    toast.success('Etapa atualizada com sucesso!');
-    loadEtapas();
-    setSelectedEtapa(null);
+    try {
+      const dataAntesUpdate = new Date().toISOString();
+
+      const { error } = await supabase
+        .from('etapas_obra')
+        .update({
+          percentual_concluido: editForm.percentual_concluido,
+          percentual_planejado: (editForm as any).percentual_planejado,
+          data_inicio: editForm.data_inicio || null,
+          data_conclusao: editForm.data_conclusao || null,
+          descricao: editForm.descricao || null,
+        })
+        .eq('id', selectedEtapa.id);
+
+      if (error) throw error;
+
+      // Se houver observação, adicionar aos registros de histórico criados pelo trigger
+      if (editForm.observacao.trim()) {
+        // Aguardar um pouco para garantir que o trigger finalizou
+        await new Promise(resolve => setTimeout(resolve, 100));
+
+        await supabase
+          .from('etapas_obra_historico')
+          .update({ observacao: editForm.observacao.trim() })
+          .eq('etapa_id', selectedEtapa.id)
+          .gte('data_alteracao', dataAntesUpdate)
+          .is('observacao', null);
+      }
+
+      toast.success('Etapa atualizada com sucesso!');
+      loadEtapas();
+      setSelectedEtapa(null);
+    } catch (error) {
+      console.error('Erro ao atualizar etapa:', error);
+      toast.error('Erro ao atualizar etapa');
+    }
   };
 
   const handleUploadArquivo = async () => {
@@ -317,6 +347,44 @@ export function AdminObras() {
                                   }
                                   rows={4}
                                 />
+                              </div>
+
+                              <div>
+                                <Label className="flex items-center gap-2">
+                                  Observação sobre a Alteração
+                                  {selectedEtapa && 
+                                   Math.abs(editForm.percentual_concluido - selectedEtapa.percentual_concluido) > 10 && (
+                                    <Badge variant="destructive" className="text-xs">
+                                      Obrigatório - Mudança &gt; 10%
+                                    </Badge>
+                                  )}
+                                </Label>
+                                <Textarea
+                                  value={editForm.observacao}
+                                  onChange={(e) =>
+                                    setEditForm({ ...editForm, observacao: e.target.value })
+                                  }
+                                  placeholder={
+                                    selectedEtapa && 
+                                    Math.abs(editForm.percentual_concluido - selectedEtapa.percentual_concluido) > 10
+                                      ? "Descreva o motivo desta mudança significativa no percentual..."
+                                      : "Adicione uma observação opcional sobre esta alteração..."
+                                  }
+                                  rows={3}
+                                  className={
+                                    selectedEtapa && 
+                                    Math.abs(editForm.percentual_concluido - selectedEtapa.percentual_concluido) > 10
+                                      ? "border-destructive"
+                                      : ""
+                                  }
+                                />
+                                {selectedEtapa && 
+                                 Math.abs(editForm.percentual_concluido - selectedEtapa.percentual_concluido) > 10 && (
+                                  <p className="text-xs text-destructive mt-1 flex items-center gap-1">
+                                    <AlertCircle className="h-3 w-3" />
+                                    Esta mudança requer uma justificativa detalhada
+                                  </p>
+                                )}
                               </div>
 
                               <Button onClick={handleUpdateEtapa} className="w-full">
