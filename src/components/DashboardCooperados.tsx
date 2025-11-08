@@ -86,6 +86,68 @@ export function DashboardCooperados({ cooperados }: DashboardCooperadosProps) {
       return acc;
     }, []);
 
+  // Dados para o gráfico comparativo de quadras ao longo do tempo
+  const cadastrosPorQuadraEMes = cooperados.reduce((acc: Record<string, Record<string, number>>, c) => {
+    if (c.data_cadastro && c.quadra) {
+      const data = new Date(c.data_cadastro);
+      const mesAno = `${String(data.getMonth() + 1).padStart(2, '0')}/${data.getFullYear()}`;
+      const quadra = c.quadra;
+      
+      if (!acc[quadra]) {
+        acc[quadra] = {};
+      }
+      acc[quadra][mesAno] = (acc[quadra][mesAno] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  // Obter todas as datas únicas e ordenar
+  const todasAsDatas = new Set<string>();
+  Object.values(cadastrosPorQuadraEMes).forEach(quadraData => {
+    Object.keys(quadraData).forEach(mesAno => todasAsDatas.add(mesAno));
+  });
+  
+  const datasOrdenadas = Array.from(todasAsDatas)
+    .map(mesAno => {
+      const [mes, ano] = mesAno.split('/');
+      return { mesAno, sortKey: `${ano}-${mes}` };
+    })
+    .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+    .map(d => d.mesAno);
+
+  // Top 5 quadras com mais cooperados
+  const topQuadras = Object.entries(cooperadosPorQuadra)
+    .filter(([quadra]) => quadra !== 'Sem quadra')
+    .sort(([, a], [, b]) => Number(b) - Number(a))
+    .slice(0, 5)
+    .map(([quadra]) => quadra);
+
+  // Cores para as quadras
+  const coresQuadras = [
+    'hsl(var(--primary))',
+    'hsl(var(--accent))',
+    'hsl(142, 76%, 36%)', // green
+    'hsl(262, 83%, 58%)', // purple
+    'hsl(346, 77%, 50%)', // red
+  ];
+
+  // Criar dados do gráfico comparativo com acumulado por quadra
+  const dadosGraficoQuadras = datasOrdenadas.map(mesAno => {
+    const dataPoint: any = { mes: mesAno };
+    
+    topQuadras.forEach((quadra, index) => {
+      // Calcular acumulado até este mês
+      const mesIndex = datasOrdenadas.indexOf(mesAno);
+      const acumulado = datasOrdenadas.slice(0, mesIndex + 1).reduce((sum, mes) => {
+        return sum + (cadastrosPorQuadraEMes[quadra]?.[mes] || 0);
+      }, 0);
+      
+      dataPoint[`Quadra ${quadra}`] = acumulado;
+    });
+    
+    return dataPoint;
+  });
+
   const handleGeneratePDF = () => {
     try {
       const estatisticas = {
@@ -230,6 +292,75 @@ export function DashboardCooperados({ cooperados }: DashboardCooperadosProps) {
           ) : (
             <p className="text-sm text-muted-foreground text-center py-8">
               Nenhum dado de cadastro disponível
+            </p>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Gráfico comparativo de evolução por quadra */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5 text-primary" />
+            Evolução Comparativa por Quadra
+          </CardTitle>
+          <CardDescription>
+            Crescimento acumulado das top 5 quadras ao longo do tempo
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dadosGraficoQuadras.length > 0 && topQuadras.length > 0 ? (
+            <>
+              <ResponsiveContainer width="100%" height={350}>
+                <LineChart data={dadosGraficoQuadras}>
+                  <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                  <XAxis 
+                    dataKey="mes" 
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <YAxis 
+                    className="text-xs"
+                    tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--popover))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '6px',
+                    }}
+                    labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
+                  />
+                  {topQuadras.map((quadra, index) => (
+                    <Line 
+                      key={quadra}
+                      type="monotone" 
+                      dataKey={`Quadra ${quadra}`}
+                      stroke={coresQuadras[index]}
+                      strokeWidth={2}
+                      name={`Quadra ${quadra}`}
+                      dot={{ fill: coresQuadras[index] }}
+                    />
+                  ))}
+                </LineChart>
+              </ResponsiveContainer>
+              <div className="mt-4 flex flex-wrap gap-3 justify-center">
+                {topQuadras.map((quadra, index) => (
+                  <div key={quadra} className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: coresQuadras[index] }}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Quadra {quadra}: {cooperadosPorQuadra[quadra]} cooperados
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              Nenhum dado de quadra disponível para comparação
             </p>
           )}
         </CardContent>
