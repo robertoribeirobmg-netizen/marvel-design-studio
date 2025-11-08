@@ -84,6 +84,10 @@ export default function Admin() {
     comDataCompra: 0,
   });
   
+  // Preview pagination state
+  const [previewPage, setPreviewPage] = useState(1);
+  const [previewItemsPerPage] = useState(50);
+  
   // Filter state
   const [filterNome, setFilterNome] = useState('');
   const [filterQuadra, setFilterQuadra] = useState('');
@@ -470,6 +474,7 @@ export default function Admin() {
       setExcelFile(file);
       setPreviewData(processedData);
       setPreviewStats(stats);
+      setPreviewPage(1); // Reset preview page
       setShowPreview(true);
     } catch (error: any) {
       toast.error('Erro ao processar planilha: ' + error.message);
@@ -1592,7 +1597,9 @@ export default function Admin() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {previewData.slice(0, 100).map((row, index) => (
+                {previewData
+                  .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+                  .map((row, index) => (
                   <TableRow key={index} className={!row.valid ? 'bg-muted/50' : ''}>
                     <TableCell className="text-xs text-muted-foreground">{row.row}</TableCell>
                     <TableCell className="font-medium">
@@ -1627,12 +1634,40 @@ export default function Admin() {
                 ))}
               </TableBody>
             </Table>
-            {previewData.length > 100 && (
-              <div className="p-4 text-center text-sm text-muted-foreground border-t">
-                Mostrando 100 de {previewData.length} registros no preview
-              </div>
-            )}
           </ScrollArea>
+
+          {/* Paginação do Preview */}
+          <div className="flex items-center justify-between px-2">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {Math.min((previewPage - 1) * previewItemsPerPage + 1, previewData.length)} a {Math.min(previewPage * previewItemsPerPage, previewData.length)} de {previewData.length} registros
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewPage(p => Math.max(1, p - 1))}
+                disabled={previewPage === 1}
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </Button>
+              <div className="flex items-center gap-1 text-sm">
+                <span className="text-muted-foreground">Página</span>
+                <span className="font-medium">{previewPage}</span>
+                <span className="text-muted-foreground">de</span>
+                <span className="font-medium">{Math.ceil(previewData.length / previewItemsPerPage)}</span>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPreviewPage(p => Math.min(Math.ceil(previewData.length / previewItemsPerPage), p + 1))}
+                disabled={previewPage >= Math.ceil(previewData.length / previewItemsPerPage)}
+              >
+                Próxima
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
 
           {/* Ações */}
           <div className="flex justify-end gap-3 pt-4 border-t">
