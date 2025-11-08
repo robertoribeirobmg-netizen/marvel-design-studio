@@ -1590,7 +1590,7 @@ export default function Admin() {
             </Button>
             <Button onClick={handleConfirmImport} disabled={previewStats.comEmail === 0 || previewStats.comNome === 0}>
               <Upload className="h-4 w-4 mr-2" />
-              Confirmar Importação
+              Iniciar Importação
             </Button>
           </div>
         </DialogContent>
