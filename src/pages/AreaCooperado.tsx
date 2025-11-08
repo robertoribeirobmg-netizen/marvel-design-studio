@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter, Calendar as CalendarIcon, X } from 'lucide-react';
+import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter, Calendar as CalendarIcon, X, Grid3x3, List } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -26,6 +26,7 @@ export default function AreaCooperado() {
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
   const [ordenacao, setOrdenacao] = useState<'desc' | 'asc'>('desc');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     if (user) {
@@ -264,15 +265,35 @@ export default function AreaCooperado() {
             </CardHeader>
             <CardContent>
               {/* Filters Header */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
                 <h4 className="text-sm font-medium">Filtros e Ordenação</h4>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
-                >
-                  {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
+                  >
+                    {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
+                  </Button>
+                  <div className="flex border rounded-md">
+                    <Button
+                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('grid')}
+                      className="rounded-r-none"
+                    >
+                      <Grid3x3 className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant={viewMode === 'list' ? 'default' : 'ghost'}
+                      size="sm"
+                      onClick={() => setViewMode('list')}
+                      className="rounded-l-none"
+                    >
+                      <List className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
               </div>
 
               {/* Category Filters */}
@@ -400,7 +421,7 @@ export default function AreaCooperado() {
                 <p className="text-center text-muted-foreground py-8">
                   Nenhuma foto disponível ainda
                 </p>
-              ) : (
+              ) : viewMode === 'grid' ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {fotos.map((foto, index) => (
                     <div key={foto.id} className="group">
@@ -440,6 +461,59 @@ export default function AreaCooperado() {
                         )}
                         <p className="text-xs text-muted-foreground">
                           {new Date(foto.data_upload).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {fotos.map((foto, index) => (
+                    <div 
+                      key={foto.id} 
+                      className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                    >
+                      {foto.foto_url ? (
+                        <div 
+                          className="shrink-0 w-24 h-24 rounded-md overflow-hidden cursor-pointer"
+                          onClick={() => openLightbox(index)}
+                        >
+                          <img
+                            src={foto.foto_url}
+                            alt={foto.titulo}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : foto.video_url ? (
+                        <div className="shrink-0 w-24 h-24 rounded-md overflow-hidden relative">
+                          <iframe
+                            src={foto.video_url}
+                            title={foto.titulo}
+                            className="w-full h-full"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          />
+                        </div>
+                      ) : null}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="font-semibold truncate">{foto.titulo}</h3>
+                          <Badge variant="secondary" className="text-xs shrink-0">
+                            {foto.categoria === 'fundacao' && 'Fundação'}
+                            {foto.categoria === 'estrutura' && 'Estrutura'}
+                            {foto.categoria === 'acabamento' && 'Acabamento'}
+                          </Badge>
+                        </div>
+                        {foto.descricao && (
+                          <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
+                            {foto.descricao}
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(foto.data_upload).toLocaleDateString('pt-BR', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          })}
                         </p>
                       </div>
                     </div>

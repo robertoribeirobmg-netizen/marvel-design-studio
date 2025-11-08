@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
@@ -38,6 +38,7 @@ export function AdminGaleria() {
   const [dateFrom, setDateFrom] = useState<Date>();
   const [dateTo, setDateTo] = useState<Date>();
   const [ordenacao, setOrdenacao] = useState<'desc' | 'asc'>('desc');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
   useEffect(() => {
     loadItems();
@@ -316,18 +317,38 @@ export function AdminGaleria() {
         {/* Date Filters */}
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <CardTitle className="text-base flex items-center gap-2">
                 <CalendarIcon className="h-4 w-4" />
                 Filtrar por Data
               </CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
-              >
-                {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
-              </Button>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
+                >
+                  {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
+                </Button>
+                <div className="flex border rounded-md">
+                  <Button
+                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('grid')}
+                    className="rounded-r-none"
+                  >
+                    <Grid3x3 className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant={viewMode === 'list' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setViewMode('list')}
+                    className="rounded-l-none"
+                  >
+                    <List className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             </div>
           </CardHeader>
           <CardContent>
@@ -414,7 +435,7 @@ export function AdminGaleria() {
             <p className="text-center text-muted-foreground py-8">
               Nenhum item na galeria ainda
             </p>
-          ) : (
+          ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {items.map((item) => (
                 <Card key={item.id}>
@@ -477,6 +498,74 @@ export function AdminGaleria() {
                     </div>
                   </CardContent>
                 </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {items.map((item) => (
+                <div 
+                  key={item.id} 
+                  className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
+                >
+                  {/* Thumbnail */}
+                  <div className="shrink-0 w-24 h-24 rounded-md overflow-hidden bg-muted">
+                    {item.foto_url ? (
+                      <img
+                        src={item.foto_url}
+                        alt={item.titulo}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : item.video_url ? (
+                      <div className="relative w-full h-full">
+                        <img
+                          src={getYouTubeThumbnail(item.video_url)}
+                          alt={item.titulo}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="bg-red-600 rounded-full p-2">
+                            <Video className="h-4 w-4 text-white" />
+                          </div>
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h4 className="font-semibold truncate">{item.titulo}</h4>
+                      <Badge variant="secondary" className="text-xs shrink-0">
+                        {item.categoria === 'fundacao' && 'Fundação'}
+                        {item.categoria === 'estrutura' && 'Estrutura'}
+                        {item.categoria === 'acabamento' && 'Acabamento'}
+                      </Badge>
+                    </div>
+                    
+                    {item.descricao && (
+                      <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
+                        {item.descricao}
+                      </p>
+                    )}
+
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(item.data_upload).toLocaleDateString('pt-BR', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric'
+                        })}
+                      </span>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(item.id, item.foto_url)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               ))}
             </div>
           )}
