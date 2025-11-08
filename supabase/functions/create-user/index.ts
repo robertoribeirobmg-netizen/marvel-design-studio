@@ -44,7 +44,7 @@ serve(async (req) => {
       throw new Error('Forbidden: Admin access required')
     }
 
-    const { email, password, nome_completo } = await req.json()
+    const { email, password, nome_completo, quadra, lote, fase, data_compra } = await req.json()
 
     // Create the user
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
@@ -52,9 +52,30 @@ serve(async (req) => {
       password,
       email_confirm: true,
       user_metadata: {
-        nome_completo
+        nome_completo,
+        quadra,
+        lote,
+        fase,
+        data_compra
       }
     })
+
+    if (createError) throw createError
+
+    // Update profile with additional fields
+    const { error: profileError } = await supabaseAdmin
+      .from('profiles')
+      .update({
+        quadra: quadra || null,
+        lote: lote || null,
+        fase: fase || null,
+        data_compra: data_compra || null
+      })
+      .eq('id', newUser.user.id)
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError)
+    }
 
     if (createError) throw createError
 

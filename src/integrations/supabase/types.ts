@@ -143,24 +143,36 @@ export type Database = {
         Row: {
           cpf: string | null
           data_cadastro: string
+          data_compra: string | null
+          fase: string | null
           id: string
+          lote: string | null
           nome_completo: string
+          quadra: string | null
           telefone: string | null
           updated_at: string
         }
         Insert: {
           cpf?: string | null
           data_cadastro?: string
+          data_compra?: string | null
+          fase?: string | null
           id: string
+          lote?: string | null
           nome_completo: string
+          quadra?: string | null
           telefone?: string | null
           updated_at?: string
         }
         Update: {
           cpf?: string | null
           data_cadastro?: string
+          data_compra?: string | null
+          fase?: string | null
           id?: string
+          lote?: string | null
           nome_completo?: string
+          quadra?: string | null
           telefone?: string | null
           updated_at?: string
         }

@@ -154,6 +154,10 @@ export default function Admin() {
         const email = row.email || row.Email;
         const password = row.senha || row.Senha || row.password || row.Password;
         const nome_completo = row.nome_completo || row.nome || row.Nome || row['Nome Completo'];
+        const quadra = row.quadra || row.Quadra || null;
+        const lote = row.lote || row.Lote || null;
+        const fase = row.fase || row.Fase || null;
+        const data_compra = row.data_compra || row.data || row.Data || row['Data Compra'] || row['Data da Compra'] || null;
 
         try {
           if (!email || !password || !nome_completo) {
@@ -165,6 +169,10 @@ export default function Admin() {
               email,
               password,
               nome_completo,
+              quadra,
+              lote,
+              fase,
+              data_compra,
             },
           });
 
@@ -407,7 +415,7 @@ export default function Admin() {
                 Importar Cooperados via Planilha
               </CardTitle>
               <CardDescription>
-                Envie uma planilha Excel (.xlsx) com as colunas: nome_completo, email e senha
+                Envie uma planilha Excel (.xlsx) com as colunas: nome_completo (ou nome), email, senha, quadra, lote, fase e data_compra (ou data)
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -422,7 +430,8 @@ export default function Admin() {
                     required
                   />
                   <p className="text-xs text-muted-foreground">
-                    A planilha deve conter as colunas: <strong>nome_completo</strong>, <strong>email</strong> e <strong>senha</strong>
+                    Colunas obrigatórias: <strong>nome_completo</strong> (ou nome), <strong>email</strong>, <strong>senha</strong><br/>
+                    Colunas opcionais: <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)
                   </p>
                 </div>
                 <Button type="submit" disabled={isImporting} className="w-full">
@@ -456,8 +465,9 @@ export default function Admin() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Nome</TableHead>
-                        <TableHead>Telefone</TableHead>
-                        <TableHead>Data Cadastro</TableHead>
+                        <TableHead>Quadra/Lote</TableHead>
+                        <TableHead>Fase</TableHead>
+                        <TableHead>Data Compra</TableHead>
                         <TableHead>Role</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
@@ -468,9 +478,16 @@ export default function Admin() {
                           <TableCell className="font-medium">
                             {cooperado.nome_completo}
                           </TableCell>
-                          <TableCell>{cooperado.telefone || '-'}</TableCell>
                           <TableCell>
-                            {new Date(cooperado.data_cadastro).toLocaleDateString('pt-BR')}
+                            {cooperado.quadra && cooperado.lote 
+                              ? `Q${cooperado.quadra} L${cooperado.lote}`
+                              : '-'}
+                          </TableCell>
+                          <TableCell>{cooperado.fase || '-'}</TableCell>
+                          <TableCell>
+                            {cooperado.data_compra 
+                              ? new Date(cooperado.data_compra).toLocaleDateString('pt-BR')
+                              : '-'}
                           </TableCell>
                           <TableCell>
                             {cooperado.user_roles?.some((r: any) => r.role === 'admin') ? (
