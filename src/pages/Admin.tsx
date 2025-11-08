@@ -26,6 +26,10 @@ export default function Admin() {
   const [newEmail, setNewEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [newNome, setNewNome] = useState('');
+  const [newQuadra, setNewQuadra] = useState('');
+  const [newLote, setNewLote] = useState('');
+  const [newFase, setNewFase] = useState('');
+  const [newDataCompra, setNewDataCompra] = useState('');
   const [isCreating, setIsCreating] = useState(false);
   
   // Excel import state
@@ -83,12 +87,16 @@ export default function Admin() {
     setIsCreating(true);
 
     try {
-      // Create user using admin function (you'll need to create this edge function)
+      // Create user using admin function
       const { data, error } = await supabase.functions.invoke('create-user', {
         body: {
           email: newEmail,
           password: newPassword,
           nome_completo: newNome,
+          quadra: newQuadra || null,
+          lote: newLote || null,
+          fase: newFase || null,
+          data_compra: newDataCompra || null,
         },
       });
 
@@ -98,6 +106,10 @@ export default function Admin() {
       setNewEmail('');
       setNewPassword('');
       setNewNome('');
+      setNewQuadra('');
+      setNewLote('');
+      setNewFase('');
+      setNewDataCompra('');
       loadCooperados();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao criar cooperado');
@@ -386,46 +398,85 @@ export default function Admin() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleCreateCooperado} className="grid md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="nome">Nome Completo</Label>
-                  <Input
-                    id="nome"
-                    type="text"
-                    placeholder="Nome do cooperado"
-                    value={newNome}
-                    onChange={(e) => setNewNome(e.target.value)}
-                    required
-                  />
+              <form onSubmit={handleCreateCooperado} className="space-y-4">
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="nome">Nome Completo *</Label>
+                    <Input
+                      id="nome"
+                      type="text"
+                      placeholder="Nome do cooperado"
+                      value={newNome}
+                      onChange={(e) => setNewNome(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">E-mail *</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="email@exemplo.com"
+                      value={newEmail}
+                      onChange={(e) => setNewEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">Senha *</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="Senha (min 6 caracteres)"
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      minLength={6}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="quadra">Quadra</Label>
+                    <Input
+                      id="quadra"
+                      type="text"
+                      placeholder="Ex: 1, 2, 3..."
+                      value={newQuadra}
+                      onChange={(e) => setNewQuadra(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="lote">Lote</Label>
+                    <Input
+                      id="lote"
+                      type="text"
+                      placeholder="Ex: 10, 20, 30..."
+                      value={newLote}
+                      onChange={(e) => setNewLote(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="fase">Fase</Label>
+                    <Input
+                      id="fase"
+                      type="text"
+                      placeholder="Ex: 1, 2, 3..."
+                      value={newFase}
+                      onChange={(e) => setNewFase(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="data-compra">Data da Compra</Label>
+                    <Input
+                      id="data-compra"
+                      type="date"
+                      value={newDataCompra}
+                      onChange={(e) => setNewDataCompra(e.target.value)}
+                    />
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">E-mail</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="email@exemplo.com"
-                    value={newEmail}
-                    onChange={(e) => setNewEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="Senha (min 6 caracteres)"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    required
-                    minLength={6}
-                  />
-                </div>
-                <div className="md:col-span-3">
-                  <Button type="submit" disabled={isCreating} className="w-full">
-                    {isCreating ? 'Criando...' : 'Criar Cooperado'}
-                  </Button>
-                </div>
+                <Button type="submit" disabled={isCreating} className="w-full">
+                  {isCreating ? 'Criando...' : 'Criar Cooperado'}
+                </Button>
               </form>
             </CardContent>
           </Card>
