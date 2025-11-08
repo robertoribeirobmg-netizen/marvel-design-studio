@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
@@ -52,6 +53,7 @@ export default function Admin() {
   const [showImportResults, setShowImportResults] = useState(false);
   const [isCancelling, setIsCancelling] = useState(false);
   const [createdUserIds, setCreatedUserIds] = useState<string[]>([]);
+  const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -264,6 +266,7 @@ export default function Admin() {
     setIsImporting(true);
     setIsCancelling(false);
     setCreatedUserIds([]);
+    setImportProgress({ current: 0, total: 0 });
     const results: Array<{
       row: number;
       nome: string;
@@ -285,11 +288,17 @@ export default function Admin() {
         return;
       }
 
+      // Definir o total de registros
+      setImportProgress({ current: 0, total: jsonData.length });
+
       let sucessos = 0;
       let erros = 0;
       let ignorados = 0;
 
       for (let i = 0; i < jsonData.length; i++) {
+        // Atualizar progresso
+        setImportProgress({ current: i + 1, total: jsonData.length });
+        
         // Verificar se foi cancelado
         if (isCancelling) {
           break;
@@ -404,12 +413,14 @@ export default function Admin() {
       
       setExcelFile(null);
       setCreatedUserIds([]);
+      setImportProgress({ current: 0, total: 0 });
       loadCooperados();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao processar planilha');
     } finally {
       setIsImporting(false);
       setIsCancelling(false);
+      setImportProgress({ current: 0, total: 0 });
     }
   };
 
@@ -726,6 +737,18 @@ export default function Admin() {
                     Colunas opcionais: <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)
                   </p>
                 </div>
+                
+                {/* Barra de progresso */}
+                {isImporting && importProgress.total > 0 && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                      <span>Processando registros...</span>
+                      <span>{importProgress.current} de {importProgress.total}</span>
+                    </div>
+                    <Progress value={(importProgress.current / importProgress.total) * 100} />
+                  </div>
+                )}
+                
                 <div className="flex gap-2">
                   <Button type="submit" disabled={isImporting} className="flex-1">
                     <Upload className="h-4 w-4 mr-2" />
