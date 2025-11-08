@@ -1651,6 +1651,39 @@ export default function Admin() {
 
             <TabsContent value="financeiro">
               <div className="space-y-6">
+                {/* Botão para importação automática direta */}
+                <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileSpreadsheet className="h-6 w-6 text-primary" />
+                      Importação Automática de Vendas
+                    </CardTitle>
+                    <CardDescription>
+                      Processe e importe dados financeiros diretamente do Excel para o banco de dados
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Arquivo já carregado: <code className="text-xs bg-muted px-2 py-1 rounded">temp-import.xlsx</code>
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Clique no botão para processar e salvar automaticamente no banco de dados
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/process-import')}
+                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <Upload className="h-5 w-5 mr-2" />
+                        Processar Arquivo
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                
                 <ImportadorFinanceiroVendas />
                 <FinanceiroAdmin />
               </div>
