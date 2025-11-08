@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -49,6 +49,10 @@ export default function Admin() {
   const [filterQuadra, setFilterQuadra] = useState('');
   const [filterLote, setFilterLote] = useState('');
   const [filterFase, setFilterFase] = useState('');
+  
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
   
   // Edit cooperado state
   const [editingCooperado, setEditingCooperado] = useState<any>(null);
@@ -453,6 +457,18 @@ export default function Admin() {
     setFilterQuadra('');
     setFilterLote('');
     setFilterFase('');
+    setCurrentPage(1); // Reset to first page when clearing filters
+  };
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredCooperados.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCooperados = filteredCooperados.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -636,7 +652,7 @@ export default function Admin() {
                 Lista de Cooperados ({filteredCooperados.length})
               </CardTitle>
               <CardDescription>
-                Use os filtros abaixo para buscar cooperados específicos
+                Use os filtros abaixo para buscar cooperados específicos. Mostrando {startIndex + 1}-{Math.min(endIndex, filteredCooperados.length)} de {filteredCooperados.length} cooperados
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -725,7 +741,7 @@ export default function Admin() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredCooperados.map((cooperado) => (
+                      {paginatedCooperados.map((cooperado) => (
                         <TableRow key={cooperado.id}>
                           <TableCell className="font-medium">
                             {cooperado.nome_completo}
@@ -770,6 +786,63 @@ export default function Admin() {
                       ))}
                     </TableBody>
                   </Table>
+                </div>
+              )}
+
+              {/* Pagination Controls */}
+              {filteredCooperados.length > itemsPerPage && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t">
+                  <div className="text-sm text-muted-foreground">
+                    Página {currentPage} de {totalPages}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage - 1)}
+                      disabled={currentPage === 1}
+                    >
+                      <ChevronLeft className="h-4 w-4 mr-1" />
+                      Anterior
+                    </Button>
+                    
+                    <div className="flex gap-1">
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                        let pageNumber;
+                        if (totalPages <= 5) {
+                          pageNumber = i + 1;
+                        } else if (currentPage <= 3) {
+                          pageNumber = i + 1;
+                        } else if (currentPage >= totalPages - 2) {
+                          pageNumber = totalPages - 4 + i;
+                        } else {
+                          pageNumber = currentPage - 2 + i;
+                        }
+                        
+                        return (
+                          <Button
+                            key={pageNumber}
+                            variant={currentPage === pageNumber ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => handlePageChange(pageNumber)}
+                            className="w-10"
+                          >
+                            {pageNumber}
+                          </Button>
+                        );
+                      })}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handlePageChange(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                    >
+                      Próxima
+                      <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                  </div>
                 </div>
               )}
             </CardContent>
