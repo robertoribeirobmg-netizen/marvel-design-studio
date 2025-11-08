@@ -1,9 +1,10 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Users, Home, Calendar, MapPin, FileText } from 'lucide-react';
+import { Users, Home, Calendar, MapPin, FileText, TrendingUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { toast } from 'sonner';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface DashboardCooperadosProps {
   cooperados: any[];
@@ -53,6 +54,37 @@ export function DashboardCooperados({ cooperados }: DashboardCooperadosProps) {
 
   // Cooperados com data de compra definida
   const cooperadosComDataCompra = cooperados.filter(c => c.data_compra).length;
+
+  // Dados para o gráfico de evolução temporal
+  const cadastrosPorMes = cooperados.reduce((acc: Record<string, number>, c) => {
+    if (c.data_cadastro) {
+      const data = new Date(c.data_cadastro);
+      const mesAno = `${String(data.getMonth() + 1).padStart(2, '0')}/${data.getFullYear()}`;
+      acc[mesAno] = (acc[mesAno] || 0) + 1;
+    }
+    return acc;
+  }, {});
+
+  // Criar array ordenado por data e calcular acumulado
+  const dadosGrafico = Object.entries(cadastrosPorMes)
+    .map(([mesAno, count]) => {
+      const [mes, ano] = mesAno.split('/');
+      return {
+        mesAno,
+        count: Number(count),
+        sortKey: `${ano}-${mes}`,
+      };
+    })
+    .sort((a, b) => a.sortKey.localeCompare(b.sortKey))
+    .reduce((acc: any[], item, index) => {
+      const acumulado = index === 0 ? item.count : acc[index - 1].acumulado + item.count;
+      acc.push({
+        mes: item.mesAno,
+        cadastros: item.count,
+        acumulado,
+      });
+      return acc;
+    }, []);
 
   const handleGeneratePDF = () => {
     try {
@@ -143,6 +175,65 @@ export function DashboardCooperados({ cooperados }: DashboardCooperadosProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Gráfico de evolução temporal */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5 text-primary" />
+            Evolução de Cadastros ao Longo do Tempo
+          </CardTitle>
+          <CardDescription>
+            Cadastros mensais e total acumulado
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {dadosGrafico.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={dadosGrafico}>
+                <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                <XAxis 
+                  dataKey="mes" 
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <YAxis 
+                  className="text-xs"
+                  tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: 'hsl(var(--popover))',
+                    border: '1px solid hsl(var(--border))',
+                    borderRadius: '6px',
+                  }}
+                  labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="cadastros" 
+                  stroke="hsl(var(--primary))" 
+                  strokeWidth={2}
+                  name="Cadastros no mês"
+                  dot={{ fill: 'hsl(var(--primary))' }}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="acumulado" 
+                  stroke="hsl(var(--accent))" 
+                  strokeWidth={2}
+                  name="Total acumulado"
+                  dot={{ fill: 'hsl(var(--accent))' }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              Nenhum dado de cadastro disponível
+            </p>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Distribuição por fase e quadra */}
       <div className="grid gap-4 md:grid-cols-2">
