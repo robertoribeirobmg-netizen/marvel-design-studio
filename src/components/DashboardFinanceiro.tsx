@@ -23,6 +23,9 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
     parcelasPendentes: 0,
     percentualPago: 0,
     taxaAdimplencia: 0,
+    parcelasVencidas: 0,
+    saldoDevedor: 0,
+    proximasParcelas: [] as any[],
   });
   const [chartData, setChartData] = useState<any[]>([]);
   const [monthlyData, setMonthlyData] = useState<any[]>([]);
@@ -53,18 +56,28 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
         setParcelas(parcelasData || []);
 
         // Calcular estatísticas
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        
         const pagas = parcelasData?.filter(p => p.status === 'paga') || [];
         const pendentes = parcelasData?.filter(p => p.status === 'pendente') || [];
         const vencidas = parcelasData?.filter(p => 
-          p.status === 'pendente' && new Date(p.data_vencimento) < new Date()
+          p.status === 'pendente' && new Date(p.data_vencimento) < hoje
         ) || [];
         
-        const totalPago = pagas.reduce((sum, p) => sum + (p.valor_pago || 0) + (p.juros || 0) + (p.multa || 0), 0);
+        const totalPago = pagas.reduce((sum, p) => sum + (p.valor_pago || 0) + (p.juros || 0) + (p.multa || 0) - (p.desconto || 0), 0);
         const totalPendente = pendentes.reduce((sum, p) => sum + p.valor_parcela, 0);
+        const saldoDevedor = invData.valor_total - totalPago;
         
         // Calcular taxa de adimplência (parcelas pagas no prazo / total de parcelas vencidas)
         const parcelasVencidas = pagas.length + vencidas.length;
         const taxaAdimplencia = parcelasVencidas > 0 ? (pagas.length / parcelasVencidas) * 100 : 100;
+        
+        // Próximas 5 parcelas a vencer
+        const proximasParcelas = pendentes
+          .filter(p => new Date(p.data_vencimento) >= hoje)
+          .sort((a, b) => new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime())
+          .slice(0, 5);
         
         setStats({
           totalPago,
@@ -73,6 +86,9 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
           parcelasPendentes: pendentes.length,
           percentualPago: (pagas.length / (parcelasData?.length || 1)) * 100,
           taxaAdimplencia,
+          parcelasVencidas: vencidas.length,
+          saldoDevedor,
+          proximasParcelas,
         });
 
         // Preparar dados para gráfico de evolução
@@ -172,7 +188,7 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
   return (
     <div className="space-y-6">
       {/* Resumo Financeiro */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-5 gap-4">
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -208,15 +224,32 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Pendente
+              Saldo Devedor
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold text-orange-600">
-              R$ {stats.totalPendente.toFixed(2)}
+              R$ {stats.saldoDevedor.toFixed(2)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               {stats.parcelasPendentes} parcelas pendentes
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className={stats.parcelasVencidas > 0 ? 'border-red-500' : ''}>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              {stats.parcelasVencidas > 0 && <AlertCircle className="h-4 w-4 text-red-500" />}
+              Parcelas Vencidas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className={`text-2xl font-bold ${stats.parcelasVencidas > 0 ? 'text-red-600' : 'text-green-600'}`}>
+              {stats.parcelasVencidas}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.parcelasVencidas > 0 ? 'Atenção necessária' : 'Em dia'}
             </p>
           </CardContent>
         </Card>
@@ -235,6 +268,87 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
           </CardContent>
         </Card>
       </div>
+
+      {/* Alertas de Inadimplência */}
+      {stats.parcelasVencidas > 0 && (
+        <Card className="border-red-500 bg-red-50 dark:bg-red-950">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-red-600 dark:text-red-400">
+              <AlertCircle className="h-5 w-5" />
+              Atenção: Parcelas Vencidas
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-red-600 dark:text-red-400 mb-4">
+              Você possui {stats.parcelasVencidas} parcela(s) vencida(s). Entre em contato com o financeiro para regularizar sua situação.
+            </p>
+            <div className="space-y-2">
+              {parcelas
+                .filter(p => p.status === 'pendente' && new Date(p.data_vencimento) < new Date())
+                .map(parcela => {
+                  const diasVencidos = Math.floor(
+                    (new Date().getTime() - new Date(parcela.data_vencimento).getTime()) / (1000 * 60 * 60 * 24)
+                  );
+                  return (
+                    <div key={parcela.id} className="flex justify-between items-center p-3 bg-white dark:bg-gray-900 rounded-lg border border-red-300 dark:border-red-800">
+                      <div>
+                        <p className="font-semibold">Parcela {parcela.numero_parcela}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Vencimento: {new Date(parcela.data_vencimento).toLocaleDateString('pt-BR')}
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-red-600">R$ {parcela.valor_parcela.toFixed(2)}</p>
+                        <Badge variant="destructive">{diasVencidos} dia(s) vencida</Badge>
+                      </div>
+                    </div>
+                  );
+                })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Próximas Parcelas */}
+      {stats.proximasParcelas.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              Próximas Parcelas a Vencer
+            </CardTitle>
+            <CardDescription>
+              Fique atento aos próximos vencimentos
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              {stats.proximasParcelas.map(parcela => {
+                const diasRestantes = Math.ceil(
+                  (new Date(parcela.data_vencimento).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+                );
+                return (
+                  <div key={parcela.id} className="flex justify-between items-center p-3 bg-muted rounded-lg">
+                    <div>
+                      <p className="font-semibold">Parcela {parcela.numero_parcela}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Vencimento: {new Date(parcela.data_vencimento).toLocaleDateString('pt-BR')}
+                        {parcela.descricao && ` - ${parcela.descricao}`}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">R$ {parcela.valor_parcela.toFixed(2)}</p>
+                      <Badge variant={diasRestantes <= 7 ? 'default' : 'secondary'}>
+                        {diasRestantes === 0 ? 'Vence hoje' : `${diasRestantes} dia(s)`}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Gráficos Financeiros */}
       <div className="grid md:grid-cols-2 gap-6">
@@ -472,6 +586,7 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Parcela</TableHead>
+                    <TableHead>Descrição</TableHead>
                     <TableHead>Vencimento</TableHead>
                     <TableHead>Valor</TableHead>
                     <TableHead>Juros/Multa</TableHead>
@@ -482,18 +597,29 @@ export function DashboardFinanceiro({ userId }: DashboardFinanceiroProps) {
                 </TableHeader>
                 <TableBody>
                   {parcelas.map((parcela) => {
-                    const isVencida = parcela.status === 'pendente' && 
-                      new Date(parcela.data_vencimento) < new Date();
+                    const hoje = new Date();
+                    hoje.setHours(0, 0, 0, 0);
+                    const dataVencimento = new Date(parcela.data_vencimento);
+                    const isVencida = parcela.status === 'pendente' && dataVencimento < hoje;
+                    const diasVencidos = isVencida 
+                      ? Math.floor((hoje.getTime() - dataVencimento.getTime()) / (1000 * 60 * 60 * 24))
+                      : 0;
                     
                     return (
-                      <TableRow key={parcela.id} className={isVencida ? 'bg-destructive/5' : ''}>
+                      <TableRow key={parcela.id} className={isVencida ? 'bg-red-50 dark:bg-red-950' : ''}>
                         <TableCell className="font-medium">
                           {parcela.numero_parcela}/{investimento.numero_parcelas}
                         </TableCell>
                         <TableCell>
-                          {new Date(parcela.data_vencimento).toLocaleDateString('pt-BR')}
+                          {parcela.descricao || '-'}
+                        </TableCell>
+                        <TableCell>
+                          {dataVencimento.toLocaleDateString('pt-BR')}
                           {isVencida && (
-                            <AlertCircle className="inline-block ml-2 h-4 w-4 text-destructive" />
+                            <div className="text-xs text-red-600 font-semibold mt-1 flex items-center gap-1">
+                              <AlertCircle className="h-3 w-3" />
+                              {diasVencidos} dia(s) vencida
+                            </div>
                           )}
                         </TableCell>
                         <TableCell>R$ {parcela.valor_parcela.toFixed(2)}</TableCell>

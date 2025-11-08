@@ -18,6 +18,7 @@ import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
+import { ImportadorFinanceiroVendas } from '@/components/ImportadorFinanceiroVendas';
 import { DashboardCooperados } from '@/components/DashboardCooperados';
 import { AdminObras } from '@/components/AdminObras';
 import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
@@ -1649,7 +1650,10 @@ export default function Admin() {
             </TabsContent>
 
             <TabsContent value="financeiro">
-              <FinanceiroAdmin />
+              <div className="space-y-6">
+                <ImportadorFinanceiroVendas />
+                <FinanceiroAdmin />
+              </div>
             </TabsContent>
 
             <TabsContent value="obras">

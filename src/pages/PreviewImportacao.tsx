@@ -24,17 +24,32 @@ interface PreviewRow {
   valid: boolean;
 }
 
+interface FinancialPreviewRow {
+  cliente: string;
+  quadraLote: string;
+  numeroParcelas: number;
+  parcelasValidas: number;
+  valorTotal: string;
+  valorPago: string;
+  parcelas: any[];
+  valido: boolean;
+}
+
 interface PreviewStats {
   total: number;
   valid: number;
   invalid: number;
-  autogenPasswords: number;
+  autogenPasswords?: number;
+  totalRegistros?: number;
+  registrosValidos?: number;
+  registrosInvalidos?: number;
+  totalParcelas?: number;
 }
 
 export default function PreviewImportacao() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { previewData, previewStats } = location.state || { previewData: [], previewStats: {} };
+  const { previewData, previewStats, isFinancialImport } = location.state || { previewData: [], previewStats: {}, isFinancialImport: false };
 
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [previewPage, setPreviewPage] = useState(1);
@@ -48,9 +63,16 @@ export default function PreviewImportacao() {
     }
 
     // Select all valid rows by default
-    const validRowsSet = new Set<number>(previewData.filter((r: PreviewRow) => r.valid).map((r: PreviewRow) => r.row));
-    setSelectedRows(validRowsSet);
-  }, [previewData, navigate]);
+    if (isFinancialImport) {
+      const validRowsSet = new Set<number>(
+        previewData.map((_: any, idx: number) => idx).filter((idx: number) => previewData[idx].valido)
+      );
+      setSelectedRows(validRowsSet);
+    } else {
+      const validRowsSet = new Set<number>(previewData.filter((r: PreviewRow) => r.valid).map((r: PreviewRow) => r.row));
+      setSelectedRows(validRowsSet);
+    }
+  }, [previewData, navigate, isFinancialImport]);
 
   const handleToggleRow = (rowNumber: number) => {
     setSelectedRows(prev => {
@@ -131,25 +153,25 @@ export default function PreviewImportacao() {
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Total de Registros</CardDescription>
-              <CardTitle className="text-3xl">{previewStats.total}</CardTitle>
+              <CardTitle className="text-3xl">{previewStats.totalRegistros || previewStats.total}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Registros Válidos</CardDescription>
-              <CardTitle className="text-3xl text-green-600">{previewStats.valid}</CardTitle>
+              <CardTitle className="text-3xl text-green-600">{previewStats.registrosValidos || previewStats.valid}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
               <CardDescription>Registros Inválidos</CardDescription>
-              <CardTitle className="text-3xl text-destructive">{previewStats.invalid}</CardTitle>
+              <CardTitle className="text-3xl text-destructive">{previewStats.registrosInvalidos || previewStats.invalid}</CardTitle>
             </CardHeader>
           </Card>
           <Card>
             <CardHeader className="pb-3">
-              <CardDescription>Senhas Geradas</CardDescription>
-              <CardTitle className="text-3xl text-primary">{previewStats.autogenPasswords}</CardTitle>
+              <CardDescription>{isFinancialImport ? 'Total de Parcelas' : 'Senhas Geradas'}</CardDescription>
+              <CardTitle className="text-3xl text-primary">{previewStats.totalParcelas || previewStats.autogenPasswords || 0}</CardTitle>
             </CardHeader>
           </Card>
         </div>

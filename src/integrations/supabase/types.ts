@@ -221,6 +221,9 @@ export type Database = {
           created_at: string
           data_pagamento: string | null
           data_vencimento: string
+          desconto: number | null
+          descricao: string | null
+          honorarios: number | null
           id: string
           investimento_id: string
           juros: number | null
@@ -236,6 +239,9 @@ export type Database = {
           created_at?: string
           data_pagamento?: string | null
           data_vencimento: string
+          desconto?: number | null
+          descricao?: string | null
+          honorarios?: number | null
           id?: string
           investimento_id: string
           juros?: number | null
@@ -251,6 +257,9 @@ export type Database = {
           created_at?: string
           data_pagamento?: string | null
           data_vencimento?: string
+          desconto?: number | null
+          descricao?: string | null
+          honorarios?: number | null
           id?: string
           investimento_id?: string
           juros?: number | null

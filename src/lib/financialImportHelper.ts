@@ -1,0 +1,127 @@
+import { supabase } from '@/integrations/supabase/client';
+
+export interface FinancialImportData {
+  cliente: string;
+  quadraLote: string;
+  parcelas: Array<{
+    numero: number;
+    descricao: string;
+    vencimento: string | null;
+    valor: number;
+    situacao: string;
+    dataRecebimento: string | null;
+    desconto: number;
+    juros: number;
+    honorarios: number;
+    valorPago: number;
+  }>;
+}
+
+export async function importFinancialData(data: FinancialImportData[]) {
+  const results = {
+    success: 0,
+    errors: [] as string[],
+  };
+
+  for (const cliente of data) {
+    try {
+      // Buscar ou criar o cooperado pelo quadra/lote
+      const [quadra, lote] = cliente.quadraLote.split('/').map(s => s.trim());
+      
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, nome_completo')
+        .eq('quadra', quadra)
+        .eq('lote', lote)
+        .maybeSingle();
+
+      if (profileError) {
+        results.errors.push(`Erro ao buscar cooperado ${cliente.cliente}: ${profileError.message}`);
+        continue;
+      }
+
+      if (!profile) {
+        results.errors.push(`Cooperado não encontrado: ${cliente.cliente} (Quadra/Lote: ${cliente.quadraLote})`);
+        continue;
+      }
+
+      // Calcular valor total e número de parcelas
+      const valorTotal = cliente.parcelas.reduce((sum, p) => sum + p.valor, 0);
+      const numeroParcelas = cliente.parcelas.length;
+      const valorParcela = numeroParcelas > 0 ? valorTotal / numeroParcelas : 0;
+      
+      // Buscar a primeira data de vencimento válida
+      const primeiraData = cliente.parcelas.find(p => p.vencimento)?.vencimento || new Date().toISOString().split('T')[0];
+
+      // Verificar se já existe um investimento para este cooperado
+      const { data: existingInv } = await supabase
+        .from('investimentos')
+        .select('id')
+        .eq('user_id', profile.id)
+        .maybeSingle();
+
+      let investimentoId: string;
+
+      if (existingInv) {
+        // Usar investimento existente
+        investimentoId = existingInv.id;
+      } else {
+        // Criar novo investimento
+        const { data: newInv, error: invError } = await supabase
+          .from('investimentos')
+          .insert({
+            user_id: profile.id,
+            valor_total: valorTotal,
+            numero_parcelas: numeroParcelas,
+            valor_parcela: valorParcela,
+            data_inicio: primeiraData,
+            observacoes: `Importado automaticamente - ${cliente.quadraLote}`,
+          })
+          .select()
+          .single();
+
+        if (invError) {
+          results.errors.push(`Erro ao criar investimento para ${cliente.cliente}: ${invError.message}`);
+          continue;
+        }
+
+        investimentoId = newInv.id;
+      }
+
+      // Inserir parcelas
+      const parcelasToInsert = cliente.parcelas
+        .filter(p => p.vencimento) // Apenas parcelas com data de vencimento
+        .map(p => ({
+          investimento_id: investimentoId,
+          numero_parcela: p.numero,
+          descricao: p.descricao,
+          valor_parcela: p.valor,
+          data_vencimento: p.vencimento!,
+          status: p.situacao.toLowerCase() === 'pago' ? 'paga' : 'pendente',
+          data_pagamento: p.dataRecebimento,
+          valor_pago: p.valorPago > 0 ? p.valorPago : null,
+          desconto: p.desconto,
+          juros: p.juros,
+          multa: 0, // Não temos multa na planilha, usando honorários como referência
+          honorarios: p.honorarios,
+        }));
+
+      if (parcelasToInsert.length > 0) {
+        const { error: parcelasError } = await supabase
+          .from('parcelas')
+          .insert(parcelasToInsert);
+
+        if (parcelasError) {
+          results.errors.push(`Erro ao inserir parcelas para ${cliente.cliente}: ${parcelasError.message}`);
+          continue;
+        }
+      }
+
+      results.success++;
+    } catch (error: any) {
+      results.errors.push(`Erro ao processar ${cliente.cliente}: ${error.message}`);
+    }
+  }
+
+  return results;
+}
