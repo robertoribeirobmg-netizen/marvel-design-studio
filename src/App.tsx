@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import AreaCooperado from "./pages/AreaCooperado";
 import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
+import PreviewImportacao from "./pages/PreviewImportacao";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -51,6 +52,14 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <Settings />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/preview-importacao"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <PreviewImportacao />
                     </ProtectedRoute>
                   }
                 />

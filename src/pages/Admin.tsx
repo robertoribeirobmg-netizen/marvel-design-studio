@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -30,6 +31,8 @@ import { CheckCircle2, XCircle } from 'lucide-react';
 
 export default function Admin() {
   const { signOut } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [cooperados, setCooperados] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
@@ -117,6 +120,17 @@ export default function Admin() {
   useEffect(() => {
     loadCooperados();
   }, []);
+  
+  // Handle return from preview page with selected data
+  useEffect(() => {
+    const state = location.state as any;
+    if (state?.startImport && state?.importData) {
+      // Start import with selected data
+      handleImportWithData(state.importData);
+      // Clear state to prevent re-import on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location.state]);
 
   // Função para gerar senha aleatória segura
   const generatePassword = () => {
@@ -479,12 +493,20 @@ export default function Admin() {
       setExcelFile(file);
       setPreviewData(processedData);
       setPreviewStats(stats);
-      setPreviewPage(1); // Reset preview page
-      // Select all valid rows by default
-      const validRowsSet = new Set(processedData.filter(r => r.valid).map(r => r.row));
-      setSelectedRows(validRowsSet);
       setIsProcessingFile(false);
-      setShowPreview(true);
+      
+      // Navigate to preview page
+      navigate('/preview-importacao', {
+        state: {
+          previewData: processedData,
+          previewStats: {
+            total: stats.total,
+            valid: processedData.filter(r => r.valid).length,
+            invalid: processedData.filter(r => !r.valid).length,
+            autogenPasswords: stats.total
+          }
+        }
+      });
     } catch (error: any) {
       toast.error('Erro ao processar planilha: ' + error.message);
       setIsProcessingFile(false);
@@ -682,6 +704,190 @@ export default function Admin() {
       setEstimatedTimeLeft('');
     }
   };
+  
+  const handleImportWithData = async (importData: any[]) => {
+    if (!importData || importData.length === 0) {
+      toast.error('Nenhum dado para importar');
+      return;
+    }
+
+    setIsImporting(true);
+    setIsCancelling(false);
+    setCreatedUserIds([]);
+    setImportProgress({ current: 0, total: 0 });
+    setStartTime(Date.now());
+    setEstimatedTimeLeft('');
+    const results: ImportResult[] = [];
+    const createdIds: string[] = [];
+
+    try {
+      const jsonData = importData;
+
+      // Definir o total de registros
+      setImportProgress({ current: 0, total: jsonData.length });
+
+      let sucessos = 0;
+      let erros = 0;
+      let ignorados = 0;
+
+      for (let i = 0; i < jsonData.length; i++) {
+        // Atualizar progresso
+        setImportProgress({ current: i + 1, total: jsonData.length });
+        
+        // Calcular tempo estimado restante
+        if (i > 0) {
+          const elapsedTime = Date.now() - startTime;
+          const avgTimePerRecord = elapsedTime / (i + 1);
+          const remainingRecords = jsonData.length - (i + 1);
+          const estimatedMs = avgTimePerRecord * remainingRecords;
+          
+          const minutes = Math.floor(estimatedMs / 60000);
+          const seconds = Math.floor((estimatedMs % 60000) / 1000);
+          
+          if (minutes > 0) {
+            setEstimatedTimeLeft(`${minutes}m ${seconds}s`);
+          } else {
+            setEstimatedTimeLeft(`${seconds}s`);
+          }
+        }
+        
+        // Verificar se foi cancelado
+        if (isCancelling) {
+          break;
+        }
+
+        const row = jsonData[i];
+        const email = row.email;
+        const nome_completo = row.nome_completo;
+        const cpf = row.cpf;
+        const telefone = row.telefone;
+        const quadra = row.quadra;
+        const lote = row.lote;
+        const fase = row.fase;
+        const data_compra = row.data_compra;
+
+        try {
+          if (!email || !nome_completo) {
+            throw new Error('Dados incompletos: email ou nome faltando');
+          }
+
+          // Gerar senha automaticamente
+          const autoPassword = generatePassword();
+
+          // Validar duplicação de quadra/lote se ambos forem fornecidos
+          if (quadra && lote) {
+            const { data: existing } = await supabase
+              .from('profiles')
+              .select('id, nome_completo')
+              .eq('quadra', quadra)
+              .eq('lote', lote)
+              .maybeSingle();
+
+            if (existing) {
+              throw new Error(`Quadra ${quadra} Lote ${lote} já cadastrado para ${existing.nome_completo}`);
+            }
+          }
+
+          const { data, error } = await supabase.functions.invoke('create-user', {
+            body: {
+              email,
+              password: autoPassword,
+              nome_completo,
+              cpf,
+              telefone,
+              quadra,
+              lote,
+              fase,
+              data_compra,
+            },
+          });
+
+          // Se a edge function retornar duplicado, ignorar
+          if (data?.duplicate) {
+            ignorados++;
+            continue;
+          }
+
+          if (error || data?.error) {
+            results.push({
+              row: row.row,
+              nome: nome_completo,
+              email,
+              status: 'error',
+              error: data?.error || error?.message || 'Erro desconhecido',
+            });
+            erros++;
+          } else {
+            results.push({
+              row: row.row,
+              nome: nome_completo,
+              email,
+              password: autoPassword,
+              status: 'success',
+            });
+            sucessos++;
+            // Rastrear ID do usuário criado
+            if (data?.user?.user?.id) {
+              createdIds.push(data.user.user.id);
+              setCreatedUserIds(prev => [...prev, data.user.user.id]);
+            }
+          }
+        } catch (error: any) {
+          results.push({
+            row: row.row,
+            nome: nome_completo || 'N/A',
+            email: email || 'N/A',
+            status: 'error',
+            error: error.message || 'Erro ao processar linha',
+          });
+          erros++;
+        }
+      }
+
+      const mensagem = ignorados > 0 
+        ? `Importação concluída: ${sucessos} criados, ${erros} erros, ${ignorados} emails duplicados ignorados`
+        : `Importação concluída: ${sucessos} criados, ${erros} erros`;
+
+      setImportResults(results.filter(r => r.status === 'error'));
+      if (results.some(r => r.status === 'error')) {
+        setShowImportResults(true);
+      }
+      
+      // Se foi cancelado, deletar todos os usuários criados
+      if (isCancelling && createdIds.length > 0) {
+        toast.info('Removendo registros criados...');
+        for (const userId of createdIds) {
+          try {
+            await supabase.functions.invoke('delete-user', {
+              body: { userId },
+            });
+          } catch (error) {
+            console.error('Erro ao remover usuário:', error);
+          }
+        }
+        toast.success('Importação cancelada e registros removidos');
+      } else if (!isCancelling) {
+        toast.success(mensagem);
+      }
+      
+      setExcelFile(null);
+      setPreviewData([]);
+      setCreatedUserIds([]);
+      setImportProgress({ current: 0, total: 0 });
+      setStartTime(0);
+      setEstimatedTimeLeft('');
+      loadCooperados();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao processar planilha');
+    } finally {
+      setIsImporting(false);
+      setIsCancelling(false);
+      setImportProgress({ current: 0, total: 0 });
+      setStartTime(0);
+      setEstimatedTimeLeft('');
+    }
+  };
+
 
   const handleCancelPreview = () => {
     setShowPreview(false);
