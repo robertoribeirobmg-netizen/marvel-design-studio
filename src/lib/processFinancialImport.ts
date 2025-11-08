@@ -64,7 +64,23 @@ const parseData = (dataStr: any): string | null => {
   }
 };
 
-export async function processFinancialFile(filePath: string) {
+export interface DetailedImportResults {
+  success: number;
+  errors: string[];
+  cooperadosDetalhes: Array<{
+    cliente: string;
+    quadraLote: string;
+    totalParcelas: number;
+    parcelasPagas: number;
+    parcelasVencidas: number;
+    parcelasAVencer: number;
+    valorTotal: number;
+    valorPago: number;
+    saldoDevedor: number;
+  }>;
+}
+
+export async function processFinancialFile(filePath: string): Promise<DetailedImportResults> {
   try {
     const response = await fetch(filePath);
     const arrayBuffer = await response.arrayBuffer();
@@ -104,32 +120,80 @@ export async function processFinancialFile(filePath: string) {
       clientesMap.get(clienteKey)!.push(parcela);
     }
 
-    // Preparar dados para importação
-    const importData: FinancialImportData[] = Array.from(clientesMap.entries()).map(([clienteKey, parcelas]) => {
+    // Preparar dados para importação com estatísticas
+    const importData: FinancialImportData[] = [];
+    const cooperadosDetalhes: DetailedImportResults['cooperadosDetalhes'] = [];
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+
+    Array.from(clientesMap.entries()).forEach(([clienteKey, parcelas]) => {
       const [cliente, quadraLote] = clienteKey.split('|');
       
-      return {
+      const parcelasMapped = parcelas.map((p, idx) => ({
+        numero: idx + 1,
+        descricao: p.descricao,
+        vencimento: parseData(p.vencimento),
+        valor: p.valor,
+        situacao: p.situacao,
+        dataRecebimento: parseData(p.dataRecebimento),
+        desconto: p.desconto,
+        juros: p.juros,
+        honorarios: p.honorarios,
+        valorPago: p.valorPago,
+      }));
+
+      // Calcular estatísticas
+      let parcelasPagas = 0;
+      let parcelasVencidas = 0;
+      let parcelasAVencer = 0;
+      let valorTotal = 0;
+      let valorPago = 0;
+
+      parcelasMapped.forEach(p => {
+        valorTotal += p.valor;
+        
+        if (p.situacao.toLowerCase() === 'pago') {
+          parcelasPagas++;
+          valorPago += p.valorPago;
+        } else if (p.vencimento) {
+          const dataVencimento = new Date(p.vencimento);
+          dataVencimento.setHours(0, 0, 0, 0);
+          
+          if (dataVencimento < hoje) {
+            parcelasVencidas++;
+          } else {
+            parcelasAVencer++;
+          }
+        }
+      });
+
+      importData.push({
         cliente,
         quadraLote,
-        parcelas: parcelas.map((p, idx) => ({
-          numero: idx + 1,
-          descricao: p.descricao,
-          vencimento: parseData(p.vencimento),
-          valor: p.valor,
-          situacao: p.situacao,
-          dataRecebimento: parseData(p.dataRecebimento),
-          desconto: p.desconto,
-          juros: p.juros,
-          honorarios: p.honorarios,
-          valorPago: p.valorPago,
-        })),
-      };
+        parcelas: parcelasMapped,
+      });
+
+      cooperadosDetalhes.push({
+        cliente,
+        quadraLote,
+        totalParcelas: parcelas.length,
+        parcelasPagas,
+        parcelasVencidas,
+        parcelasAVencer,
+        valorTotal,
+        valorPago,
+        saldoDevedor: valorTotal - valorPago,
+      });
     });
 
     // Importar dados
     const results = await importFinancialData(importData);
     
-    return results;
+    return {
+      success: results.success,
+      errors: results.errors,
+      cooperadosDetalhes,
+    };
   } catch (error: any) {
     throw new Error(`Erro ao processar arquivo: ${error.message}`);
   }
