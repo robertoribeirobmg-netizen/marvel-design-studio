@@ -50,6 +50,8 @@ export default function Admin() {
     error?: string;
   }>>([]);
   const [showImportResults, setShowImportResults] = useState(false);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [createdUserIds, setCreatedUserIds] = useState<string[]>([]);
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -260,6 +262,8 @@ export default function Admin() {
     }
 
     setIsImporting(true);
+    setIsCancelling(false);
+    setCreatedUserIds([]);
     const results: Array<{
       row: number;
       nome: string;
@@ -267,6 +271,7 @@ export default function Admin() {
       status: 'success' | 'error';
       error?: string;
     }> = [];
+    const createdIds: string[] = [];
 
     try {
       const data = await excelFile.arrayBuffer();
@@ -285,6 +290,11 @@ export default function Admin() {
       let ignorados = 0;
 
       for (let i = 0; i < jsonData.length; i++) {
+        // Verificar se foi cancelado
+        if (isCancelling) {
+          break;
+        }
+
         const row = jsonData[i];
         const email = row.email || row.Email;
         const password = row.senha || row.Senha || row.password || row.Password;
@@ -348,6 +358,11 @@ export default function Admin() {
               status: 'success',
             });
             sucessos++;
+            // Rastrear ID do usuário criado
+            if (data?.user?.user?.id) {
+              createdIds.push(data.user.user.id);
+              setCreatedUserIds(prev => [...prev, data.user.user.id]);
+            }
           }
         } catch (error: any) {
           results.push({
@@ -369,13 +384,32 @@ export default function Admin() {
       if (results.some(r => r.status === 'error')) {
         setShowImportResults(true);
       }
-      toast.success(mensagem);
+      
+      // Se foi cancelado, deletar todos os usuários criados
+      if (isCancelling && createdIds.length > 0) {
+        toast.info('Removendo registros criados...');
+        for (const userId of createdIds) {
+          try {
+            await supabase.functions.invoke('delete-user', {
+              body: { userId },
+            });
+          } catch (error) {
+            console.error('Erro ao remover usuário:', error);
+          }
+        }
+        toast.success('Importação cancelada e registros removidos');
+      } else if (!isCancelling) {
+        toast.success(mensagem);
+      }
+      
       setExcelFile(null);
+      setCreatedUserIds([]);
       loadCooperados();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao processar planilha');
     } finally {
       setIsImporting(false);
+      setIsCancelling(false);
     }
   };
 
@@ -692,10 +726,24 @@ export default function Admin() {
                     Colunas opcionais: <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)
                   </p>
                 </div>
-                <Button type="submit" disabled={isImporting} className="w-full">
-                  <Upload className="h-4 w-4 mr-2" />
-                  {isImporting ? 'Importando...' : 'Importar Cooperados'}
-                </Button>
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={isImporting} className="flex-1">
+                    <Upload className="h-4 w-4 mr-2" />
+                    {isImporting ? 'Importando...' : 'Importar Cooperados'}
+                  </Button>
+                  {isImporting && (
+                    <Button 
+                      type="button" 
+                      variant="destructive" 
+                      onClick={() => setIsCancelling(true)}
+                      disabled={isCancelling}
+                      className="flex-1"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      {isCancelling ? 'Cancelando...' : 'Cancelar e Limpar'}
+                    </Button>
+                  )}
+                </div>
               </form>
             </CardContent>
           </Card>
