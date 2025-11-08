@@ -16,6 +16,7 @@ import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
 import { DashboardCooperados } from '@/components/DashboardCooperados';
 import { AdminObras } from '@/components/AdminObras';
 import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
+import { TimelineObras } from '@/components/TimelineObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -1027,6 +1028,7 @@ export default function Admin() {
 
             <TabsContent value="obras">
               <div className="space-y-6">
+                <TimelineObras />
                 <DashboardComparativoObras showVariacoes={true} />
                 <HistoricoGeralObras />
                 <AdminObras />

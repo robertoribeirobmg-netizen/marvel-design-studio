@@ -11,6 +11,7 @@ import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
+import { TimelineObras } from '@/components/TimelineObras';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -227,6 +228,9 @@ export default function AreaCooperado() {
 
           {/* Dashboard Financeiro */}
           {user && <DashboardFinanceiro userId={user.id} />}
+
+          {/* Timeline de Obras */}
+          <TimelineObras />
 
           {/* Acompanhamento de Obras */}
           <Card>
