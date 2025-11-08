@@ -28,7 +28,8 @@ import { AdminGaleria } from '@/components/AdminGaleria';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, XCircle, Download } from 'lucide-react';
+import { downloadFinancialTemplate, downloadCooperadosTemplate } from '@/lib/excelTemplateGenerator';
 
 export default function Admin() {
   const { signOut } = useAuth();
@@ -1651,6 +1652,78 @@ export default function Admin() {
 
             <TabsContent value="financeiro">
               <div className="space-y-6">
+                {/* Template de importação */}
+                <Card className="border-blue-500/50 bg-gradient-to-r from-blue-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Download className="h-6 w-6 text-blue-500" />
+                      Templates de Importação
+                    </CardTitle>
+                    <CardDescription>
+                      Baixe os templates Excel com exemplos e instruções para facilitar sua importação
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="p-4 bg-background rounded-lg border hover:border-primary/50 transition-colors">
+                        <div className="space-y-3">
+                          <div>
+                            <h4 className="font-semibold mb-1">Template Financeiro</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Para importação de parcelas e dados de vendas
+                            </p>
+                          </div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• Colunas pré-configuradas</li>
+                            <li>• Exemplos de preenchimento</li>
+                            <li>• Instruções detalhadas</li>
+                          </ul>
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              downloadFinancialTemplate();
+                              toast.success('Template baixado com sucesso!');
+                            }}
+                            className="w-full"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Baixar Template Financeiro
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4 bg-background rounded-lg border hover:border-primary/50 transition-colors">
+                        <div className="space-y-3">
+                          <div>
+                            <h4 className="font-semibold mb-1">Template Cooperados</h4>
+                            <p className="text-xs text-muted-foreground">
+                              Para cadastro em lote de cooperados
+                            </p>
+                          </div>
+                          <ul className="text-xs text-muted-foreground space-y-1">
+                            <li>• Colunas pré-configuradas</li>
+                            <li>• Exemplos de preenchimento</li>
+                            <li>• Geração automática de senhas</li>
+                          </ul>
+                          <Button 
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              downloadCooperadosTemplate();
+                              toast.success('Template baixado com sucesso!');
+                            }}
+                            className="w-full"
+                          >
+                            <Download className="h-4 w-4 mr-2" />
+                            Baixar Template Cooperados
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Botão para importação automática direta */}
                 <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-transparent">
                   <CardHeader>
