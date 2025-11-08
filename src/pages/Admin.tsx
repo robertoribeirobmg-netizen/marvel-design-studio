@@ -779,24 +779,10 @@ export default function Admin() {
                   </div>
                 )}
                 
-                <div className="flex gap-2">
-                  <Button type="submit" disabled={isImporting} className="flex-1">
-                    <Upload className="h-4 w-4 mr-2" />
-                    {isImporting ? 'Importando...' : 'Importar Cooperados'}
-                  </Button>
-                  {isImporting && (
-                    <Button 
-                      type="button" 
-                      variant="destructive" 
-                      onClick={() => setIsCancelling(true)}
-                      disabled={isCancelling}
-                      className="flex-1"
-                    >
-                      <X className="h-4 w-4 mr-2" />
-                      {isCancelling ? 'Cancelando...' : 'Cancelar e Limpar'}
-                    </Button>
-                  )}
-                </div>
+                <Button type="submit" disabled={isImporting} className="w-full">
+                  <Upload className="h-4 w-4 mr-2" />
+                  {isImporting ? 'Importando...' : 'Importar Cooperados'}
+                </Button>
               </form>
             </CardContent>
           </Card>
@@ -819,6 +805,18 @@ export default function Admin() {
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <h3 className="font-medium text-sm">Filtros de Busca</h3>
                   <div className="ml-auto flex gap-2">
+                    {isImporting && (
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setIsCancelling(true)}
+                        disabled={isCancelling}
+                        className="h-7 gap-1"
+                      >
+                        <X className="h-3 w-3" />
+                        {isCancelling ? 'Cancelando...' : 'Cancelar Importação'}
+                      </Button>
+                    )}
                     <Button
                       variant="outline"
                       size="sm"
