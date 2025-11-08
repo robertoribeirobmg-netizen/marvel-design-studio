@@ -45,6 +45,8 @@ serve(async (req) => {
     }
 
     const { email, password, nome_completo, quadra, lote, fase, data_compra } = await req.json()
+    
+    console.log('Received data_compra:', data_compra, 'Type:', typeof data_compra)
 
     // Check if user already exists with same nome + email + lote
     const { data: existingProfiles } = await supabaseAdmin
@@ -110,6 +112,7 @@ serve(async (req) => {
     }
 
     // Update profile with additional fields
+    console.log('Updating profile with data_compra:', data_compra)
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
@@ -122,6 +125,8 @@ serve(async (req) => {
 
     if (profileError) {
       console.error('Error updating profile:', profileError)
+    } else {
+      console.log('Profile updated successfully with data_compra:', data_compra)
     }
 
     if (createError) throw createError

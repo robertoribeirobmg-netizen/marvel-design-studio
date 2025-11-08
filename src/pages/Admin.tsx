@@ -472,6 +472,8 @@ export default function Admin() {
             }
           }
 
+          console.log('Sending to create-user - data_compra:', data_compra, 'for user:', nome_completo);
+
           const { data, error } = await supabase.functions.invoke('create-user', {
             body: {
               email,
