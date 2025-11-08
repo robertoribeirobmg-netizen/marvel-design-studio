@@ -14,6 +14,89 @@ export type Database = {
   }
   public: {
     Tables: {
+      etapas_obra: {
+        Row: {
+          created_at: string
+          data_conclusao: string | null
+          data_inicio: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          ordem: number
+          percentual_concluido: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          data_conclusao?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          ordem: number
+          percentual_concluido?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          data_conclusao?: string | null
+          data_inicio?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          ordem?: number
+          percentual_concluido?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      etapas_obra_arquivos: {
+        Row: {
+          arquivo_url: string | null
+          conteudo_texto: string | null
+          created_at: string
+          data_upload: string
+          descricao: string | null
+          etapa_id: string
+          id: string
+          tipo: string
+          titulo: string
+          uploaded_by: string
+        }
+        Insert: {
+          arquivo_url?: string | null
+          conteudo_texto?: string | null
+          created_at?: string
+          data_upload?: string
+          descricao?: string | null
+          etapa_id: string
+          id?: string
+          tipo: string
+          titulo: string
+          uploaded_by: string
+        }
+        Update: {
+          arquivo_url?: string | null
+          conteudo_texto?: string | null
+          created_at?: string
+          data_upload?: string
+          descricao?: string | null
+          etapa_id?: string
+          id?: string
+          tipo?: string
+          titulo?: string
+          uploaded_by?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "etapas_obra_arquivos_etapa_id_fkey"
+            columns: ["etapa_id"]
+            isOneToOne: false
+            referencedRelation: "etapas_obra"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       investimentos: {
         Row: {
           created_at: string

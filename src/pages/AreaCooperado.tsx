@@ -8,6 +8,7 @@ import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
+import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -224,6 +225,22 @@ export default function AreaCooperado() {
 
           {/* Dashboard Financeiro */}
           {user && <DashboardFinanceiro userId={user.id} />}
+
+          {/* Acompanhamento de Obras */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-primary" />
+                Acompanhamento de Obras
+              </CardTitle>
+              <CardDescription>
+                Veja o andamento detalhado de cada etapa da construção
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <AcompanhamentoObras />
+            </CardContent>
+          </Card>
 
           {/* Photo Gallery */}
           <Card>

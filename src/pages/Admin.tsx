@@ -7,13 +7,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
 import { DashboardCooperados } from '@/components/DashboardCooperados';
+import { AdminObras } from '@/components/AdminObras';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -602,7 +603,7 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-4">
+            <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
                 Dashboard
@@ -614,6 +615,10 @@ export default function Admin() {
               <TabsTrigger value="financeiro" className="flex items-center gap-2">
                 <DollarSign className="h-4 w-4" />
                 Financeiro
+              </TabsTrigger>
+              <TabsTrigger value="obras" className="flex items-center gap-2">
+                <Building2 className="h-4 w-4" />
+                Obras
               </TabsTrigger>
               <TabsTrigger value="fotos" className="flex items-center gap-2">
                 <Camera className="h-4 w-4" />
@@ -1016,6 +1021,10 @@ export default function Admin() {
 
             <TabsContent value="financeiro">
               <FinanceiroAdmin />
+            </TabsContent>
+
+            <TabsContent value="obras">
+              <AdminObras />
             </TabsContent>
 
             <TabsContent value="fotos">
