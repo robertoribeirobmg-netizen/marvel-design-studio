@@ -7,8 +7,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X } from 'lucide-react';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 interface GaleriaItem {
   id: string;
@@ -31,22 +35,43 @@ export function AdminGaleria() {
     videoUrl: '',
   });
   const [file, setFile] = useState<File | null>(null);
+  const [dateFrom, setDateFrom] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>();
 
   useEffect(() => {
     loadItems();
-  }, []);
+  }, [dateFrom, dateTo]);
 
   const loadItems = async () => {
-    const { data, error } = await supabase
+    let query = supabase
       .from('obra_fotos')
-      .select('*')
-      .order('data_upload', { ascending: false });
+      .select('*');
+
+    // Aplicar filtros de data
+    if (dateFrom) {
+      const dateFromStr = format(dateFrom, 'yyyy-MM-dd');
+      query = query.gte('data_upload', dateFromStr);
+    }
+    
+    if (dateTo) {
+      const dateToStr = format(new Date(dateTo.getTime() + 86400000), 'yyyy-MM-dd'); // +1 dia para incluir o dia todo
+      query = query.lt('data_upload', dateToStr);
+    }
+
+    query = query.order('data_upload', { ascending: false });
+
+    const { data, error } = await query;
 
     if (error) {
       toast.error('Erro ao carregar galeria');
       return;
     }
     setItems(data || []);
+  };
+
+  const clearDateFilters = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
   };
 
   const extractYouTubeId = (url: string) => {
@@ -284,6 +309,91 @@ export function AdminGaleria() {
               <Upload className="h-4 w-4 mr-2" />
               {uploading ? 'Enviando...' : `Adicionar ${tipo === 'foto' ? 'Foto' : 'Vídeo'}`}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Date Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base flex items-center gap-2">
+              <CalendarIcon className="h-4 w-4" />
+              Filtrar por Data
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4 items-end">
+              <div className="space-y-2">
+                <Label>Data Início</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[200px] justify-start text-left font-normal",
+                        !dateFrom && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Selecione"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateFrom}
+                      onSelect={setDateFrom}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Data Fim</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-[200px] justify-start text-left font-normal",
+                        !dateTo && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dateTo ? format(dateTo, "dd/MM/yyyy") : "Selecione"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dateTo}
+                      onSelect={setDateTo}
+                      initialFocus
+                      disabled={(date) => dateFrom ? date < dateFrom : false}
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {(dateFrom || dateTo) && (
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={clearDateFilters}
+                  title="Limpar filtros de data"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            {(dateFrom || dateTo) && (
+              <div className="mt-3 text-sm text-muted-foreground">
+                Mostrando itens {dateFrom && `de ${format(dateFrom, "dd/MM/yyyy")}`} {dateTo && `até ${format(dateTo, "dd/MM/yyyy")}`}
+              </div>
+            )}
           </CardContent>
         </Card>
 

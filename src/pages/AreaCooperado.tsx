@@ -3,13 +3,17 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter } from 'lucide-react';
+import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter, Calendar as CalendarIcon, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar as CalendarComp } from '@/components/ui/calendar';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
+import { format } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -19,6 +23,8 @@ export default function AreaCooperado() {
   const [filtroCategoria, setFiltroCategoria] = useState<'todas' | 'fundacao' | 'estrutura' | 'acabamento'>('todas');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [dateFrom, setDateFrom] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>();
 
   useEffect(() => {
     if (user) {
@@ -48,12 +54,24 @@ export default function AreaCooperado() {
     try {
       let query = supabase
         .from('obra_fotos')
-        .select('*')
-        .order('data_upload', { ascending: false });
+        .select('*');
 
       if (filtroCategoria !== 'todas') {
         query = query.eq('categoria', filtroCategoria);
       }
+
+      // Aplicar filtros de data
+      if (dateFrom) {
+        const dateFromStr = format(dateFrom, 'yyyy-MM-dd');
+        query = query.gte('data_upload', dateFromStr);
+      }
+      
+      if (dateTo) {
+        const dateToStr = format(new Date(dateTo.getTime() + 86400000), 'yyyy-MM-dd'); // +1 dia para incluir o dia todo
+        query = query.lt('data_upload', dateToStr);
+      }
+
+      query = query.order('data_upload', { ascending: false });
 
       const { error, data } = await query;
 
@@ -64,9 +82,14 @@ export default function AreaCooperado() {
     }
   };
 
+  const clearDateFilters = () => {
+    setDateFrom(undefined);
+    setDateTo(undefined);
+  };
+
   useEffect(() => {
     loadFotos();
-  }, [filtroCategoria]);
+  }, [filtroCategoria, dateFrom, dateTo]);
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -240,7 +263,9 @@ export default function AreaCooperado() {
             </CardHeader>
             <CardContent>
               {/* Category Filters */}
-              <div className="mb-6 flex flex-wrap gap-2">
+              <div className="mb-4">
+                <h4 className="text-sm font-medium mb-3">Filtrar por Categoria</h4>
+                <div className="flex flex-wrap gap-2">
                 <Button
                   variant={filtroCategoria === 'todas' ? 'default' : 'outline'}
                   size="sm"
@@ -271,6 +296,91 @@ export default function AreaCooperado() {
                 >
                   Acabamento
                 </Button>
+                </div>
+              </div>
+
+              {/* Date Filters */}
+              <div className="mb-6 p-4 bg-muted/50 rounded-lg">
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <CalendarIcon className="h-4 w-4" />
+                  Filtrar por Data
+                </h4>
+                <div className="flex flex-wrap gap-3 items-end">
+                  <div className="space-y-2">
+                    <label className="text-xs text-muted-foreground">Data Início</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn(
+                            "w-[160px] justify-start text-left font-normal",
+                            !dateFrom && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Selecione"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComp
+                          mode="single"
+                          selected={dateFrom}
+                          onSelect={setDateFrom}
+                          initialFocus
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-xs text-muted-foreground">Data Fim</label>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn(
+                            "w-[160px] justify-start text-left font-normal",
+                            !dateTo && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-3 w-3" />
+                          {dateTo ? format(dateTo, "dd/MM/yyyy") : "Selecione"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComp
+                          mode="single"
+                          selected={dateTo}
+                          onSelect={setDateTo}
+                          initialFocus
+                          disabled={(date) => dateFrom ? date < dateFrom : false}
+                          className={cn("p-3 pointer-events-auto")}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  {(dateFrom || dateTo) && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={clearDateFilters}
+                      title="Limpar filtros de data"
+                    >
+                      <X className="h-3 w-3 mr-1" />
+                      Limpar
+                    </Button>
+                  )}
+                </div>
+
+                {(dateFrom || dateTo) && (
+                  <div className="mt-2 text-xs text-muted-foreground">
+                    Mostrando {dateFrom && `de ${format(dateFrom, "dd/MM/yyyy")}`} {dateTo && `até ${format(dateTo, "dd/MM/yyyy")}`}
+                  </div>
+                )}
               </div>
 
               {fotos.length === 0 ? (
