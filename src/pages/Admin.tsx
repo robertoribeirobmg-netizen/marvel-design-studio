@@ -353,8 +353,10 @@ export default function Admin() {
         ? `Importação concluída: ${sucessos} criados, ${erros} erros, ${ignorados} emails duplicados ignorados`
         : `Importação concluída: ${sucessos} criados, ${erros} erros`;
 
-      setImportResults(results);
-      setShowImportResults(true);
+      setImportResults(results.filter(r => r.status === 'error'));
+      if (results.some(r => r.status === 'error')) {
+        setShowImportResults(true);
+      }
       toast.success(mensagem);
       setExcelFile(null);
       loadCooperados();
