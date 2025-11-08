@@ -52,7 +52,7 @@ export default function Admin() {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   // Edit cooperado state
   const [editingCooperado, setEditingCooperado] = useState<any>(null);
@@ -471,6 +471,11 @@ export default function Admin() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1); // Reset to first page when changing items per page
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -790,10 +795,28 @@ export default function Admin() {
               )}
 
               {/* Pagination Controls */}
-              {filteredCooperados.length > itemsPerPage && (
-                <div className="flex items-center justify-between mt-6 pt-4 border-t">
-                  <div className="text-sm text-muted-foreground">
-                    Página {currentPage} de {totalPages}
+              {filteredCooperados.length > 0 && (
+                <div className="flex items-center justify-between mt-6 pt-4 border-t flex-wrap gap-4">
+                  <div className="flex items-center gap-4">
+                    <div className="text-sm text-muted-foreground">
+                      Página {currentPage} de {totalPages}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Label htmlFor="items-per-page" className="text-xs whitespace-nowrap">
+                        Itens por página:
+                      </Label>
+                      <select
+                        id="items-per-page"
+                        value={itemsPerPage}
+                        onChange={(e) => handleItemsPerPageChange(e.target.value)}
+                        className="flex h-9 w-20 rounded-md border border-input bg-background px-2 py-1 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      >
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                      </select>
+                    </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
