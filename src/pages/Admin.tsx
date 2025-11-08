@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -48,6 +48,17 @@ export default function Admin() {
   const [filterQuadra, setFilterQuadra] = useState('');
   const [filterLote, setFilterLote] = useState('');
   const [filterFase, setFilterFase] = useState('');
+  
+  // Edit cooperado state
+  const [editingCooperado, setEditingCooperado] = useState<any>(null);
+  const [editNome, setEditNome] = useState('');
+  const [editTelefone, setEditTelefone] = useState('');
+  const [editCpf, setEditCpf] = useState('');
+  const [editQuadra, setEditQuadra] = useState('');
+  const [editLote, setEditLote] = useState('');
+  const [editFase, setEditFase] = useState('');
+  const [editDataCompra, setEditDataCompra] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
   
   // Photo gallery state
   const [fotos, setFotos] = useState<any[]>([]);
@@ -135,6 +146,69 @@ export default function Admin() {
       }
     } finally {
       setIsCreating(false);
+    }
+  };
+
+
+  const handleEditCooperado = (cooperado: any) => {
+    setEditingCooperado(cooperado);
+    setEditNome(cooperado.nome_completo || '');
+    setEditTelefone(cooperado.telefone || '');
+    setEditCpf(cooperado.cpf || '');
+    setEditQuadra(cooperado.quadra || '');
+    setEditLote(cooperado.lote || '');
+    setEditFase(cooperado.fase || '');
+    setEditDataCompra(cooperado.data_compra || '');
+  };
+
+  const handleUpdateCooperado = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsUpdating(true);
+
+    try {
+      // Validar duplicação de quadra/lote se ambos forem fornecidos
+      if (editQuadra && editLote) {
+        const { data: existing } = await supabase
+          .from('profiles')
+          .select('id, nome_completo')
+          .eq('quadra', editQuadra)
+          .eq('lote', editLote)
+          .neq('id', editingCooperado.id)
+          .maybeSingle();
+
+        if (existing) {
+          toast.error(`Quadra ${editQuadra} Lote ${editLote} já está cadastrado para ${existing.nome_completo}`);
+          setIsUpdating(false);
+          return;
+        }
+      }
+
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          nome_completo: editNome,
+          telefone: editTelefone || null,
+          cpf: editCpf || null,
+          quadra: editQuadra || null,
+          lote: editLote || null,
+          fase: editFase || null,
+          data_compra: editDataCompra || null,
+        })
+        .eq('id', editingCooperado.id);
+
+      if (error) throw error;
+
+      toast.success('Cooperado atualizado com sucesso!');
+      setEditingCooperado(null);
+      loadCooperados();
+    } catch (error: any) {
+      if (error.message?.includes('unique_quadra_lote')) {
+        toast.error('Esta combinação de Quadra/Lote já está cadastrada');
+      } else {
+        toast.error(error.message || 'Erro ao atualizar cooperado');
+      }
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -661,13 +735,22 @@ export default function Admin() {
                             )}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeleteCooperado(cooperado.id)}
-                            >
-                              <Trash2 className="h-4 w-4 text-destructive" />
-                            </Button>
+                            <div className="flex justify-end gap-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleEditCooperado(cooperado)}
+                              >
+                                <Edit className="h-4 w-4 text-primary" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteCooperado(cooperado.id)}
+                              >
+                                <Trash2 className="h-4 w-4 text-destructive" />
+                              </Button>
+                            </div>
                           </TableCell>
                         </TableRow>
                       ))}
@@ -733,7 +816,104 @@ export default function Admin() {
                       onChange={(e) => setFotoDescricao(e.target.value)}
                     />
                   </div>
-                </div>
+
+      {/* Edit Cooperado Dialog */}
+      <Dialog open={!!editingCooperado} onOpenChange={(open) => !open && setEditingCooperado(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Editar Cooperado</DialogTitle>
+            <DialogDescription>
+              Atualize as informações do cooperado
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdateCooperado} className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="edit-nome">Nome Completo *</Label>
+                <Input
+                  id="edit-nome"
+                  type="text"
+                  value={editNome}
+                  onChange={(e) => setEditNome(e.target.value)}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-telefone">Telefone</Label>
+                <Input
+                  id="edit-telefone"
+                  type="text"
+                  placeholder="(00) 00000-0000"
+                  value={editTelefone}
+                  onChange={(e) => setEditTelefone(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-cpf">CPF</Label>
+                <Input
+                  id="edit-cpf"
+                  type="text"
+                  placeholder="000.000.000-00"
+                  value={editCpf}
+                  onChange={(e) => setEditCpf(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-quadra">Quadra</Label>
+                <Input
+                  id="edit-quadra"
+                  type="text"
+                  placeholder="Ex: 1, 2, 3..."
+                  value={editQuadra}
+                  onChange={(e) => setEditQuadra(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-lote">Lote</Label>
+                <Input
+                  id="edit-lote"
+                  type="text"
+                  placeholder="Ex: 10, 20, 30..."
+                  value={editLote}
+                  onChange={(e) => setEditLote(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-fase">Fase</Label>
+                <Input
+                  id="edit-fase"
+                  type="text"
+                  placeholder="Ex: 1, 2, 3..."
+                  value={editFase}
+                  onChange={(e) => setEditFase(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="edit-data-compra">Data da Compra</Label>
+                <Input
+                  id="edit-data-compra"
+                  type="date"
+                  value={editDataCompra}
+                  onChange={(e) => setEditDataCompra(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditingCooperado(null)}
+              >
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? 'Salvando...' : 'Salvar Alterações'}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
                 <div className="space-y-2">
                   <Label htmlFor="foto">Selecionar Foto</Label>
                   <Input
