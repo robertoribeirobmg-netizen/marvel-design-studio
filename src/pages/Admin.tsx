@@ -76,6 +76,8 @@ export default function Admin() {
     comEmail: 0,
     comSenha: 0,
     comNome: 0,
+    comCpf: 0,
+    comTelefone: 0,
     comQuadra: 0,
     comLote: 0,
     comFase: 0,
@@ -375,6 +377,8 @@ export default function Admin() {
       const processedData = jsonData.map((row, index) => {
         const email = row.email || row.Email;
         const nome_completo = row.nome_completo || row.nome || row.Nome || row['Nome Completo'];
+        const cpf = row.cpf || row.CPF || null;
+        const telefone = row.telefone || row.Telefone || row.phone || row.Phone || null;
         const quadra = row.quadra || row.Quadra || null;
         const lote = row.lote || row.Lote || null;
         const fase = row.fase || row.Fase || null;
@@ -399,6 +403,8 @@ export default function Admin() {
           row: index + 2,
           email,
           nome_completo,
+          cpf,
+          telefone,
           quadra,
           lote,
           fase,
@@ -413,6 +419,8 @@ export default function Admin() {
         comEmail: processedData.filter(d => d.email).length,
         comSenha: processedData.length, // Todas terão senha gerada automaticamente
         comNome: processedData.filter(d => d.nome_completo).length,
+        comCpf: processedData.filter(d => d.cpf).length,
+        comTelefone: processedData.filter(d => d.telefone).length,
         comQuadra: processedData.filter(d => d.quadra).length,
         comLote: processedData.filter(d => d.lote).length,
         comFase: processedData.filter(d => d.fase).length,
@@ -483,6 +491,8 @@ export default function Admin() {
         const row = jsonData[i];
         const email = row.email;
         const nome_completo = row.nome_completo;
+        const cpf = row.cpf;
+        const telefone = row.telefone;
         const quadra = row.quadra;
         const lote = row.lote;
         const fase = row.fase;
@@ -517,6 +527,8 @@ export default function Admin() {
               email,
               password: autoPassword,
               nome_completo,
+              cpf,
+              telefone,
               quadra,
               lote,
               fase,
@@ -619,6 +631,8 @@ export default function Admin() {
       comEmail: 0,
       comSenha: 0,
       comNome: 0,
+      comCpf: 0,
+      comTelefone: 0,
       comQuadra: 0,
       comLote: 0,
       comFase: 0,
@@ -985,7 +999,7 @@ export default function Admin() {
                   />
                   <p className="text-xs text-muted-foreground">
                     Colunas obrigatórias: <strong>nome_completo</strong> (ou nome), <strong>email</strong><br/>
-                    Colunas opcionais: <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)<br/>
+                    Colunas opcionais: <strong>cpf</strong>, <strong>telefone</strong>, <strong>quadra</strong>, <strong>lote</strong>, <strong>fase</strong>, <strong>data_compra</strong> (ou data)<br/>
                     <span className="text-primary font-medium">⚡ Senhas serão geradas automaticamente</span>
                   </p>
                 </div>
@@ -1447,7 +1461,7 @@ export default function Admin() {
           </DialogHeader>
           
           {/* Estatísticas */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-muted/50 rounded-lg">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3 p-4 bg-muted/50 rounded-lg">
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Total de Registros</p>
               <p className="text-2xl font-bold">{previewStats.total}</p>
@@ -1463,6 +1477,14 @@ export default function Admin() {
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Com Nome ✓</p>
               <p className="text-2xl font-bold text-green-600">{previewStats.comNome}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com CPF</p>
+              <p className="text-lg font-semibold">{previewStats.comCpf}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Telefone</p>
+              <p className="text-lg font-semibold">{previewStats.comTelefone}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs text-muted-foreground">Com Quadra</p>

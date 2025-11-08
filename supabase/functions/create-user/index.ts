@@ -44,7 +44,7 @@ serve(async (req) => {
       throw new Error('Forbidden: Admin access required')
     }
 
-    const { email, password, nome_completo, quadra, lote, fase, data_compra } = await req.json()
+    const { email, password, nome_completo, cpf, telefone, quadra, lote, fase, data_compra } = await req.json()
     
     console.log('Received data_compra:', data_compra, 'Type:', typeof data_compra)
 
@@ -84,6 +84,8 @@ serve(async (req) => {
       email_confirm: true,
       user_metadata: {
         nome_completo,
+        cpf,
+        telefone,
         quadra,
         lote,
         fase,
@@ -116,6 +118,8 @@ serve(async (req) => {
     const { error: profileError } = await supabaseAdmin
       .from('profiles')
       .update({
+        cpf: cpf || null,
+        telefone: telefone || null,
         quadra: quadra || null,
         lote: lote || null,
         fase: fase || null,
