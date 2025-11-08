@@ -14,6 +14,7 @@ import AreaCooperado from "./pages/AreaCooperado";
 import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
 import PreviewImportacao from "./pages/PreviewImportacao";
+import ProcessImport from "./pages/ProcessImport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -60,6 +61,14 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <PreviewImportacao />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/process-import"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ProcessImport />
                     </ProtectedRoute>
                   }
                 />
