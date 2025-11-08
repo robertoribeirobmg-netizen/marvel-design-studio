@@ -61,6 +61,18 @@ export default function Admin() {
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [selectedCooperados, setSelectedCooperados] = useState<string[]>([]);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewStats, setPreviewStats] = useState({
+    total: 0,
+    comEmail: 0,
+    comSenha: 0,
+    comNome: 0,
+    comQuadra: 0,
+    comLote: 0,
+    comFase: 0,
+    comDataCompra: 0,
+  });
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -300,13 +312,87 @@ export default function Admin() {
     );
   };
 
-  const handleExcelImport = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!excelFile) {
-      toast.error('Selecione um arquivo Excel');
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
+
+      if (jsonData.length === 0) {
+        toast.error('Planilha vazia');
+        return;
+      }
+
+      // Processar dados para preview
+      const processedData = jsonData.map((row, index) => {
+        const email = row.email || row.Email;
+        const password = row.senha || row.Senha || row.password || row.Password;
+        const nome_completo = row.nome_completo || row.nome || row.Nome || row['Nome Completo'];
+        const quadra = row.quadra || row.Quadra || null;
+        const lote = row.lote || row.Lote || null;
+        const fase = row.fase || row.Fase || null;
+        
+        let data_compra = row.data_compra || row.data || row.Data || row['Data Compra'] || row['Data da Compra'] || null;
+        if (data_compra && typeof data_compra === 'number') {
+          const excelEpoch = new Date(1899, 11, 30);
+          const date = new Date(excelEpoch.getTime() + data_compra * 86400000);
+          data_compra = date.toISOString().split('T')[0];
+        } else if (data_compra instanceof Date) {
+          data_compra = data_compra.toISOString().split('T')[0];
+        } else if (typeof data_compra === 'string' && data_compra.trim() !== '') {
+          const parsed = new Date(data_compra);
+          if (!isNaN(parsed.getTime())) {
+            data_compra = parsed.toISOString().split('T')[0];
+          }
+        } else {
+          data_compra = null;
+        }
+
+        return {
+          row: index + 2,
+          email,
+          password,
+          nome_completo,
+          quadra,
+          lote,
+          fase,
+          data_compra,
+          valid: !!(email && password && nome_completo)
+        };
+      });
+
+      // Calcular estatísticas
+      const stats = {
+        total: processedData.length,
+        comEmail: processedData.filter(d => d.email).length,
+        comSenha: processedData.filter(d => d.password).length,
+        comNome: processedData.filter(d => d.nome_completo).length,
+        comQuadra: processedData.filter(d => d.quadra).length,
+        comLote: processedData.filter(d => d.lote).length,
+        comFase: processedData.filter(d => d.fase).length,
+        comDataCompra: processedData.filter(d => d.data_compra).length,
+      };
+
+      setExcelFile(file);
+      setPreviewData(processedData);
+      setPreviewStats(stats);
+      setShowPreview(true);
+    } catch (error: any) {
+      toast.error('Erro ao processar planilha: ' + error.message);
+    }
+  };
+
+  const handleConfirmImport = async () => {
+    if (!excelFile || previewData.length === 0) {
+      toast.error('Nenhum dado para importar');
       return;
     }
 
+    setShowPreview(false);
     setIsImporting(true);
     setIsCancelling(false);
     setCreatedUserIds([]);
@@ -323,16 +409,7 @@ export default function Admin() {
     const createdIds: string[] = [];
 
     try {
-      const data = await excelFile.arrayBuffer();
-      const workbook = XLSX.read(data);
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet) as any[];
-
-      if (jsonData.length === 0) {
-        toast.error('Planilha vazia');
-        setIsImporting(false);
-        return;
-      }
+      const jsonData = previewData;
 
       // Definir o total de registros
       setImportProgress({ current: 0, total: jsonData.length });
@@ -368,31 +445,13 @@ export default function Admin() {
         }
 
         const row = jsonData[i];
-        const email = row.email || row.Email;
-        const password = row.senha || row.Senha || row.password || row.Password;
-        const nome_completo = row.nome_completo || row.nome || row.Nome || row['Nome Completo'];
-        const quadra = row.quadra || row.Quadra || null;
-        const lote = row.lote || row.Lote || null;
-        const fase = row.fase || row.Fase || null;
-        
-        // Processar data_compra - converter números do Excel para data
-        let data_compra = row.data_compra || row.data || row.Data || row['Data Compra'] || row['Data da Compra'] || null;
-        if (data_compra && typeof data_compra === 'number') {
-          // Excel armazena datas como números (dias desde 1900-01-01)
-          const excelEpoch = new Date(1899, 11, 30);
-          const date = new Date(excelEpoch.getTime() + data_compra * 86400000);
-          data_compra = date.toISOString().split('T')[0];
-        } else if (data_compra instanceof Date) {
-          data_compra = data_compra.toISOString().split('T')[0];
-        } else if (typeof data_compra === 'string' && data_compra.trim() !== '') {
-          // Tentar parsear string de data
-          const parsed = new Date(data_compra);
-          if (!isNaN(parsed.getTime())) {
-            data_compra = parsed.toISOString().split('T')[0];
-          }
-        } else {
-          data_compra = null;
-        }
+        const email = row.email;
+        const password = row.password;
+        const nome_completo = row.nome_completo;
+        const quadra = row.quadra;
+        const lote = row.lote;
+        const fase = row.fase;
+        const data_compra = row.data_compra;
 
         try {
           if (!email || !password || !nome_completo) {
@@ -493,6 +552,7 @@ export default function Admin() {
       }
       
       setExcelFile(null);
+      setPreviewData([]);
       setCreatedUserIds([]);
       setImportProgress({ current: 0, total: 0 });
       setStartTime(0);
@@ -507,6 +567,22 @@ export default function Admin() {
       setStartTime(0);
       setEstimatedTimeLeft('');
     }
+  };
+
+  const handleCancelPreview = () => {
+    setShowPreview(false);
+    setExcelFile(null);
+    setPreviewData([]);
+    setPreviewStats({
+      total: 0,
+      comEmail: 0,
+      comSenha: 0,
+      comNome: 0,
+      comQuadra: 0,
+      comLote: 0,
+      comFase: 0,
+      comDataCompra: 0,
+    });
   };
 
 
@@ -807,15 +883,15 @@ export default function Admin() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleExcelImport} className="space-y-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="excel">Selecionar Planilha Excel</Label>
                   <Input
                     id="excel"
                     type="file"
                     accept=".xlsx,.xls"
-                    onChange={(e) => setExcelFile(e.target.files?.[0] || null)}
-                    required
+                    onChange={handleFileSelect}
+                    disabled={isImporting}
                   />
                   <p className="text-xs text-muted-foreground">
                     Colunas obrigatórias: <strong>nome_completo</strong> (ou nome), <strong>email</strong>, <strong>senha</strong><br/>
@@ -836,14 +912,19 @@ export default function Admin() {
                         Tempo estimado restante: <span className="font-medium text-foreground">{estimatedTimeLeft}</span>
                       </div>
                     )}
+                    <Button 
+                      variant="destructive" 
+                      size="sm"
+                      onClick={() => setShowCancelDialog(true)}
+                      disabled={isCancelling}
+                      className="w-full"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      {isCancelling ? 'Cancelando...' : 'Cancelar Importação'}
+                    </Button>
                   </div>
                 )}
-                
-                <Button type="submit" disabled={isImporting} className="w-full">
-                  <Upload className="h-4 w-4 mr-2" />
-                  {isImporting ? 'Importando...' : 'Importar Cooperados'}
-                </Button>
-              </form>
+              </div>
             </CardContent>
           </Card>
 
@@ -1254,6 +1335,155 @@ export default function Admin() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Import Dialog */}
+      <Dialog open={showPreview} onOpenChange={(open) => !open && handleCancelPreview()}>
+        <DialogContent className="max-w-6xl max-h-[90vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileSpreadsheet className="h-5 w-5 text-primary" />
+              Preview da Importação
+            </DialogTitle>
+            <DialogDescription>
+              Revise os dados antes de confirmar a importação
+            </DialogDescription>
+          </DialogHeader>
+          
+          {/* Estatísticas */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 p-4 bg-muted/50 rounded-lg">
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Total de Registros</p>
+              <p className="text-2xl font-bold">{previewStats.total}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Email ✓</p>
+              <p className="text-2xl font-bold text-green-600">{previewStats.comEmail}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Senha ✓</p>
+              <p className="text-2xl font-bold text-green-600">{previewStats.comSenha}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Nome ✓</p>
+              <p className="text-2xl font-bold text-green-600">{previewStats.comNome}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Quadra</p>
+              <p className="text-lg font-semibold">{previewStats.comQuadra}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Lote</p>
+              <p className="text-lg font-semibold">{previewStats.comLote}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Fase</p>
+              <p className="text-lg font-semibold">{previewStats.comFase}</p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground">Com Data Compra</p>
+              <p className="text-lg font-semibold">{previewStats.comDataCompra}</p>
+            </div>
+          </div>
+
+          {/* Validação */}
+          <div className="space-y-2">
+            {previewStats.comEmail < previewStats.total && (
+              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 rounded-lg">
+                <XCircle className="h-4 w-4 text-yellow-600" />
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  {previewStats.total - previewStats.comEmail} registros sem email serão ignorados
+                </p>
+              </div>
+            )}
+            {previewStats.comSenha < previewStats.total && (
+              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 rounded-lg">
+                <XCircle className="h-4 w-4 text-yellow-600" />
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  {previewStats.total - previewStats.comSenha} registros sem senha serão ignorados
+                </p>
+              </div>
+            )}
+            {previewStats.comNome < previewStats.total && (
+              <div className="flex items-center gap-2 p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-900 rounded-lg">
+                <XCircle className="h-4 w-4 text-yellow-600" />
+                <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                  {previewStats.total - previewStats.comNome} registros sem nome serão ignorados
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Tabela de Preview */}
+          <ScrollArea className="h-[400px] rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">#</TableHead>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Senha</TableHead>
+                  <TableHead>Quadra</TableHead>
+                  <TableHead>Lote</TableHead>
+                  <TableHead>Fase</TableHead>
+                  <TableHead>Data Compra</TableHead>
+                  <TableHead className="w-20">Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {previewData.slice(0, 100).map((row, index) => (
+                  <TableRow key={index} className={!row.valid ? 'bg-muted/50' : ''}>
+                    <TableCell className="text-xs text-muted-foreground">{row.row}</TableCell>
+                    <TableCell className="font-medium">
+                      {row.nome_completo || <span className="text-muted-foreground italic">-</span>}
+                    </TableCell>
+                    <TableCell>
+                      {row.email || <span className="text-muted-foreground italic">-</span>}
+                    </TableCell>
+                    <TableCell>
+                      {row.password ? <span className="text-xs">••••••••</span> : <span className="text-muted-foreground italic">-</span>}
+                    </TableCell>
+                    <TableCell>
+                      {row.quadra || <span className="text-muted-foreground italic">-</span>}
+                    </TableCell>
+                    <TableCell>
+                      {row.lote || <span className="text-muted-foreground italic">-</span>}
+                    </TableCell>
+                    <TableCell>
+                      {row.fase || <span className="text-muted-foreground italic">-</span>}
+                    </TableCell>
+                    <TableCell>
+                      {row.data_compra || <span className="text-muted-foreground italic">-</span>}
+                    </TableCell>
+                    <TableCell>
+                      {row.valid ? (
+                        <Badge variant="default" className="text-xs">OK</Badge>
+                      ) : (
+                        <Badge variant="destructive" className="text-xs">Incompleto</Badge>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {previewData.length > 100 && (
+              <div className="p-4 text-center text-sm text-muted-foreground border-t">
+                Mostrando 100 de {previewData.length} registros no preview
+              </div>
+            )}
+          </ScrollArea>
+
+          {/* Ações */}
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={handleCancelPreview}>
+              Cancelar
+            </Button>
+            <Button onClick={handleConfirmImport} disabled={previewStats.comEmail === 0 || previewStats.comSenha === 0 || previewStats.comNome === 0}>
+              <Upload className="h-4 w-4 mr-2" />
+              Confirmar Importação
+            </Button>
+          </div>
         </DialogContent>
       </Dialog>
 
