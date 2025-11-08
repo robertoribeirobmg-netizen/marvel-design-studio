@@ -54,6 +54,8 @@ export default function Admin() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [createdUserIds, setCreatedUserIds] = useState<string[]>([]);
   const [importProgress, setImportProgress] = useState({ current: 0, total: 0 });
+  const [startTime, setStartTime] = useState<number>(0);
+  const [estimatedTimeLeft, setEstimatedTimeLeft] = useState<string>('');
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -267,6 +269,8 @@ export default function Admin() {
     setIsCancelling(false);
     setCreatedUserIds([]);
     setImportProgress({ current: 0, total: 0 });
+    setStartTime(Date.now());
+    setEstimatedTimeLeft('');
     const results: Array<{
       row: number;
       nome: string;
@@ -298,6 +302,23 @@ export default function Admin() {
       for (let i = 0; i < jsonData.length; i++) {
         // Atualizar progresso
         setImportProgress({ current: i + 1, total: jsonData.length });
+        
+        // Calcular tempo estimado restante
+        if (i > 0) {
+          const elapsedTime = Date.now() - startTime;
+          const avgTimePerRecord = elapsedTime / (i + 1);
+          const remainingRecords = jsonData.length - (i + 1);
+          const estimatedMs = avgTimePerRecord * remainingRecords;
+          
+          const minutes = Math.floor(estimatedMs / 60000);
+          const seconds = Math.floor((estimatedMs % 60000) / 1000);
+          
+          if (minutes > 0) {
+            setEstimatedTimeLeft(`${minutes}m ${seconds}s`);
+          } else {
+            setEstimatedTimeLeft(`${seconds}s`);
+          }
+        }
         
         // Verificar se foi cancelado
         if (isCancelling) {
@@ -414,6 +435,8 @@ export default function Admin() {
       setExcelFile(null);
       setCreatedUserIds([]);
       setImportProgress({ current: 0, total: 0 });
+      setStartTime(0);
+      setEstimatedTimeLeft('');
       loadCooperados();
     } catch (error: any) {
       toast.error(error.message || 'Erro ao processar planilha');
@@ -421,6 +444,8 @@ export default function Admin() {
       setIsImporting(false);
       setIsCancelling(false);
       setImportProgress({ current: 0, total: 0 });
+      setStartTime(0);
+      setEstimatedTimeLeft('');
     }
   };
 
@@ -746,6 +771,11 @@ export default function Admin() {
                       <span>{importProgress.current} de {importProgress.total}</span>
                     </div>
                     <Progress value={(importProgress.current / importProgress.total) * 100} />
+                    {estimatedTimeLeft && (
+                      <div className="text-sm text-muted-foreground text-center">
+                        Tempo estimado restante: <span className="font-medium text-foreground">{estimatedTimeLeft}</span>
+                      </div>
+                    )}
                   </div>
                 )}
                 
