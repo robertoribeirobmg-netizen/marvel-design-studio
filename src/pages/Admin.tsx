@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
@@ -58,6 +59,8 @@ export default function Admin() {
   const [startTime, setStartTime] = useState<number>(0);
   const [estimatedTimeLeft, setEstimatedTimeLeft] = useState<string>('');
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const [selectedCooperados, setSelectedCooperados] = useState<string[]>([]);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   
   // Filter state
   const [filterNome, setFilterNome] = useState('');
@@ -258,6 +261,43 @@ export default function Admin() {
     } catch (error: any) {
       toast.error(error.message || 'Erro ao remover cooperado');
     }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedCooperados.length === 0) return;
+    
+    try {
+      const deletePromises = selectedCooperados.map(id =>
+        supabase.functions.invoke('delete-user', {
+          body: { userId: id }
+        })
+      );
+      
+      await Promise.all(deletePromises);
+      
+      toast.success(`${selectedCooperados.length} cooperado(s) excluído(s) com sucesso`);
+      setSelectedCooperados([]);
+      setShowDeleteDialog(false);
+      loadCooperados();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao excluir cooperados');
+    }
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedCooperados.length === paginatedCooperados.length) {
+      setSelectedCooperados([]);
+    } else {
+      setSelectedCooperados(paginatedCooperados.map(c => c.id));
+    }
+  };
+
+  const toggleSelectCooperado = (id: string) => {
+    setSelectedCooperados(prev => 
+      prev.includes(id) 
+        ? prev.filter(cId => cId !== id)
+        : [...prev, id]
+    );
   };
 
   const handleExcelImport = async (e: React.FormEvent) => {
@@ -807,6 +847,17 @@ export default function Admin() {
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <h3 className="font-medium text-sm">Filtros de Busca</h3>
                   <div className="ml-auto flex gap-2">
+                    {selectedCooperados.length > 0 && (
+                      <Button 
+                        variant="destructive" 
+                        size="sm"
+                        onClick={() => setShowDeleteDialog(true)}
+                        className="h-7 gap-1"
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        Excluir ({selectedCooperados.length})
+                      </Button>
+                    )}
                     {isImporting && (
                       <Button 
                         variant="destructive" 
@@ -909,6 +960,12 @@ export default function Admin() {
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={paginatedCooperados.length > 0 && selectedCooperados.length === paginatedCooperados.length}
+                            onCheckedChange={toggleSelectAll}
+                          />
+                        </TableHead>
                         <TableHead>Nome</TableHead>
                         <TableHead>CPF</TableHead>
                         <TableHead>Telefone</TableHead>
@@ -923,6 +980,12 @@ export default function Admin() {
                     <TableBody>
                       {paginatedCooperados.map((cooperado) => (
                         <TableRow key={cooperado.id}>
+                          <TableCell>
+                            <Checkbox
+                              checked={selectedCooperados.includes(cooperado.id)}
+                              onCheckedChange={() => toggleSelectCooperado(cooperado.id)}
+                            />
+                          </TableCell>
                           <TableCell className="font-medium">
                             {cooperado.nome_completo}
                           </TableCell>
@@ -1247,6 +1310,28 @@ export default function Admin() {
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Sim, Cancelar e Excluir
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Bulk Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir Cooperados Selecionados?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Você está prestes a excluir <strong>{selectedCooperados.length} cooperado(s)</strong>. 
+              Esta ação não pode ser desfeita e todos os dados associados serão permanentemente removidos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Sim, Excluir
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
