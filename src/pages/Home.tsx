@@ -472,7 +472,7 @@ export default function Home() {
 
       {/* CTA Final */}
       <section className="py-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent" />
         <div className="container mx-auto relative z-10 text-center text-white">
           <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">Realize Seu Sonho Hoje</h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
