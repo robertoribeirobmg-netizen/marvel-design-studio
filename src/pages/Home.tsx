@@ -120,18 +120,18 @@ export default function Home() {
   ];
 
   const leisureAreas = [
-    { icon: Circle, name: 'Campo de Futebol', color: 'from-warning to-warning' },
-    { icon: Target, name: 'Quadra de Tênis', color: 'from-warning to-warning' },
-    { icon: Waves, name: 'Piscina Adulto', color: 'from-warning to-warning' },
-    { icon: Waves, name: 'Piscina Infantil', color: 'from-warning to-warning' },
-    { icon: Dumbbell, name: 'Academia Completa', color: 'from-warning to-warning' },
-    { icon: Users, name: 'Espaço Kids', color: 'from-warning to-warning' },
-    { icon: HomeIcon, name: 'Salão de Festas', color: 'from-warning to-warning' },
-    { icon: Building2, name: 'Coworking', color: 'from-warning to-warning' },
-    { icon: Volleyball, name: 'Quadra de Areia', color: 'from-warning to-warning' },
-    { icon: Circle, name: 'Quadra de Basquete', color: 'from-warning to-warning' },
-    { icon: Coffee, name: 'Bar da Piscina', color: 'from-warning to-warning' },
-    { icon: UtensilsCrossed, name: 'Restaurante', color: 'from-warning to-warning' },
+    { icon: Circle, name: 'Campo de Futebol', color: 'from-accent to-success' },
+    { icon: Target, name: 'Quadra de Tênis', color: 'from-warning to-secondary' },
+    { icon: Waves, name: 'Piscina Adulto', color: 'from-primary to-accent' },
+    { icon: Waves, name: 'Piscina Infantil', color: 'from-secondary to-warning' },
+    { icon: Dumbbell, name: 'Academia Completa', color: 'from-success to-primary' },
+    { icon: Users, name: 'Espaço Kids', color: 'from-warning to-accent' },
+    { icon: HomeIcon, name: 'Salão de Festas', color: 'from-accent to-secondary' },
+    { icon: Building2, name: 'Coworking', color: 'from-primary to-success' },
+    { icon: Volleyball, name: 'Quadra de Areia', color: 'from-secondary to-warning' },
+    { icon: Circle, name: 'Quadra de Basquete', color: 'from-warning to-primary' },
+    { icon: Coffee, name: 'Bar da Piscina', color: 'from-accent to-warning' },
+    { icon: UtensilsCrossed, name: 'Restaurante', color: 'from-success to-accent' },
   ];
 
   const differentials = [
