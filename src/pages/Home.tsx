@@ -26,19 +26,34 @@ import {
   UtensilsCrossed,
   Volleyball,
   Circle,
-  Target
+  Target,
+  X
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
 import heroBackground from "@/assets/hero-background-new.png";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import campoFutebol from "@/assets/lazer/campo-futebol.jpg";
+import quadraTenis from "@/assets/lazer/quadra-tenis.jpg";
+import piscinaAdulto from "@/assets/lazer/piscina-adulto.jpg";
+import piscinaInfantil from "@/assets/lazer/piscina-infantil.jpg";
+import academia from "@/assets/lazer/academia.jpg";
+import espacoKids from "@/assets/lazer/espaco-kids.jpg";
+import salaoFestas from "@/assets/lazer/salao-festas.jpg";
+import coworking from "@/assets/lazer/coworking.jpg";
+import quadraAreia from "@/assets/lazer/quadra-areia.jpg";
+import quadraBasquete from "@/assets/lazer/quadra-basquete.jpg";
+import barPiscina from "@/assets/lazer/bar-piscina.jpg";
+import restaurante from "@/assets/lazer/restaurante.jpg";
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [counts, setCounts] = useState({ cooperados: 0, area: 0, unidades: 0 });
   const [parallaxOffset, setParallaxOffset] = useState(0);
+  const [selectedArea, setSelectedArea] = useState<number | null>(null);
 
   // Scroll reveal hooks para cada seção
   const sobreReveal = useScrollReveal();
@@ -120,18 +135,18 @@ export default function Home() {
   ];
 
   const leisureAreas = [
-    { icon: Circle, name: 'Campo de Futebol', color: 'from-accent to-success' },
-    { icon: Target, name: 'Quadra de Tênis', color: 'from-warning to-secondary' },
-    { icon: Waves, name: 'Piscina Adulto', color: 'from-primary to-accent' },
-    { icon: Waves, name: 'Piscina Infantil', color: 'from-secondary to-warning' },
-    { icon: Dumbbell, name: 'Academia Completa', color: 'from-success to-primary' },
-    { icon: Users, name: 'Espaço Kids', color: 'from-warning to-accent' },
-    { icon: HomeIcon, name: 'Salão de Festas', color: 'from-accent to-secondary' },
-    { icon: Building2, name: 'Coworking', color: 'from-primary to-success' },
-    { icon: Volleyball, name: 'Quadra de Areia', color: 'from-secondary to-warning' },
-    { icon: Circle, name: 'Quadra de Basquete', color: 'from-warning to-primary' },
-    { icon: Coffee, name: 'Bar da Piscina', color: 'from-accent to-warning' },
-    { icon: UtensilsCrossed, name: 'Restaurante', color: 'from-success to-accent' },
+    { icon: Circle, name: 'Campo de Futebol', color: 'from-accent to-success', image: campoFutebol },
+    { icon: Target, name: 'Quadra de Tênis', color: 'from-warning to-secondary', image: quadraTenis },
+    { icon: Waves, name: 'Piscina Adulto', color: 'from-primary to-accent', image: piscinaAdulto },
+    { icon: Waves, name: 'Piscina Infantil', color: 'from-secondary to-warning', image: piscinaInfantil },
+    { icon: Dumbbell, name: 'Academia Completa', color: 'from-success to-primary', image: academia },
+    { icon: Users, name: 'Espaço Kids', color: 'from-warning to-accent', image: espacoKids },
+    { icon: HomeIcon, name: 'Salão de Festas', color: 'from-accent to-secondary', image: salaoFestas },
+    { icon: Building2, name: 'Coworking', color: 'from-primary to-success', image: coworking },
+    { icon: Volleyball, name: 'Quadra de Areia', color: 'from-secondary to-warning', image: quadraAreia },
+    { icon: Circle, name: 'Quadra de Basquete', color: 'from-warning to-primary', image: quadraBasquete },
+    { icon: Coffee, name: 'Bar da Piscina', color: 'from-accent to-warning', image: barPiscina },
+    { icon: UtensilsCrossed, name: 'Restaurante', color: 'from-success to-accent', image: restaurante },
   ];
 
   const differentials = [
@@ -390,6 +405,7 @@ export default function Home() {
             {leisureAreas.map((area, index) => (
               <div
                 key={index}
+                onClick={() => setSelectedArea(index)}
                 className="group p-6 bg-card rounded-2xl border border-border hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
               >
                 <div className={`w-12 h-12 bg-gradient-to-br ${area.color} rounded-xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform`}>
@@ -401,6 +417,41 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Modal de Áreas de Lazer */}
+      <Dialog open={selectedArea !== null} onOpenChange={() => setSelectedArea(null)}>
+        <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          {selectedArea !== null && (
+            <>
+              <button
+                onClick={() => setSelectedArea(null)}
+                className="absolute right-4 top-4 z-10 rounded-full bg-background/80 backdrop-blur-sm p-2 hover:bg-background transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <DialogTitle className="sr-only">{leisureAreas[selectedArea].name}</DialogTitle>
+              <div className="relative">
+                <img
+                  src={leisureAreas[selectedArea].image}
+                  alt={leisureAreas[selectedArea].name}
+                  className="w-full h-[500px] object-cover"
+                />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 to-transparent p-6">
+                  <div className={`inline-flex items-center gap-3 mb-2`}>
+                    <div className={`w-12 h-12 bg-gradient-to-br ${leisureAreas[selectedArea].color} rounded-xl flex items-center justify-center`}>
+                      {(() => {
+                        const IconComponent = leisureAreas[selectedArea].icon;
+                        return <IconComponent className="h-6 w-6 text-white" />;
+                      })()}
+                    </div>
+                  </div>
+                  <h2 className="text-3xl font-bold text-foreground">{leisureAreas[selectedArea].name}</h2>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Diferenciais */}
       <section id="diferenciais" className="py-20 px-4 bg-muted/30">
