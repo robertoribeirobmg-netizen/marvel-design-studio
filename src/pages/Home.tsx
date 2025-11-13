@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import logo from "@/assets/logo.png";
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
@@ -148,11 +149,8 @@ export default function Home() {
       }`}>
         <div className="container mx-auto px-4 h-20 flex items-center justify-between">
           <Link to="/">
-            <div className="flex items-center gap-2 cursor-pointer group">
-              <div className="relative">
-                <Sparkles className="h-8 w-8 text-primary group-hover:text-primary-hover transition-colors" />
-                <div className="absolute inset-0 bg-primary blur-xl opacity-20 group-hover:opacity-30 transition-opacity" />
-              </div>
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <img src={logo} alt="La Felicità" className="h-12 w-auto group-hover:scale-105 transition-transform" />
               <div>
                 <span className="font-bold text-xl text-foreground">La Felicità</span>
                 <p className="text-xs text-primary font-medium">Residencial</p>
@@ -491,8 +489,8 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <Sparkles className="h-6 w-6 text-primary" />
+              <div className="flex items-center gap-3 mb-4">
+                <img src={logo} alt="La Felicità" className="h-10 w-auto" />
                 <span className="font-bold text-lg">La Felicità</span>
               </div>
               <p className="text-sm text-muted-foreground">
