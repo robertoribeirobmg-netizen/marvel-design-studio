@@ -15,6 +15,7 @@ export default {
     extend: {
       fontFamily: {
         sans: ['Montserrat', 'sans-serif'],
+        display: ['Diana Zetta', 'Montserrat', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
