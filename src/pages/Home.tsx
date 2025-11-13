@@ -24,7 +24,9 @@ import {
   Dumbbell,
   Coffee,
   UtensilsCrossed,
-  Volleyball
+  Volleyball,
+  Circle,
+  Target
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -118,18 +120,18 @@ export default function Home() {
   ];
 
   const leisureAreas = [
-    { icon: Trophy, name: 'Campo de Futebol', color: 'from-emerald-500 to-emerald-600' },
-    { icon: Volleyball, name: 'Quadra de Tênis', color: 'from-blue-500 to-blue-600' },
-    { icon: Waves, name: 'Piscina Adulto', color: 'from-cyan-500 to-cyan-600' },
-    { icon: Heart, name: 'Piscina Infantil', color: 'from-pink-500 to-pink-600' },
-    { icon: Dumbbell, name: 'Academia Completa', color: 'from-purple-500 to-purple-600' },
-    { icon: Users, name: 'Espaço Kids', color: 'from-orange-500 to-orange-600' },
-    { icon: HomeIcon, name: 'Salão de Festas', color: 'from-red-500 to-red-600' },
-    { icon: Building2, name: 'Coworking', color: 'from-indigo-500 to-indigo-600' },
-    { icon: Volleyball, name: 'Quadra de Areia', color: 'from-yellow-500 to-yellow-600' },
-    { icon: Trophy, name: 'Quadra de Basquete', color: 'from-green-500 to-green-600' },
-    { icon: Coffee, name: 'Bar da Piscina', color: 'from-teal-500 to-teal-600' },
-    { icon: UtensilsCrossed, name: 'Restaurante', color: 'from-rose-500 to-rose-600' },
+    { icon: Circle, name: 'Campo de Futebol', color: 'from-accent to-success' },
+    { icon: Target, name: 'Quadra de Tênis', color: 'from-primary to-accent' },
+    { icon: Waves, name: 'Piscina Adulto', color: 'from-accent to-primary' },
+    { icon: Waves, name: 'Piscina Infantil', color: 'from-secondary to-warning' },
+    { icon: Dumbbell, name: 'Academia Completa', color: 'from-success to-primary' },
+    { icon: Users, name: 'Espaço Kids', color: 'from-warning to-secondary' },
+    { icon: HomeIcon, name: 'Salão de Festas', color: 'from-accent to-success' },
+    { icon: Building2, name: 'Coworking', color: 'from-primary to-success' },
+    { icon: Volleyball, name: 'Quadra de Areia', color: 'from-secondary to-warning' },
+    { icon: Circle, name: 'Quadra de Basquete', color: 'from-success to-accent' },
+    { icon: Coffee, name: 'Bar da Piscina', color: 'from-accent to-primary' },
+    { icon: UtensilsCrossed, name: 'Restaurante', color: 'from-primary to-accent' },
   ];
 
   const differentials = [
