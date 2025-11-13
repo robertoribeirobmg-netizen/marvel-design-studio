@@ -206,7 +206,7 @@ export default function Home() {
               <span className="text-sm font-medium text-primary">Empreendimento Exclusivo</span>
             </div>
             
-            <h1 className="font-display text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 text-primary">
               Residencial La Felicità
             </h1>
             
@@ -259,7 +259,7 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sobre o Projeto</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4">Um Empreendimento Único</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Um Empreendimento Único</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Desenvolvido pela COHAPM através do programa PHSPBA, unindo qualidade, transparência e realização de sonhos
             </p>
@@ -303,7 +303,7 @@ export default function Home() {
         <div className="container mx-auto relative z-10">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-secondary uppercase tracking-wider">PHSPBA</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4">Benefícios Exclusivos</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Benefícios Exclusivos</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Vantagens únicas para servidores públicos estaduais da Bahia
             </p>
@@ -352,7 +352,7 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-accent uppercase tracking-wider">Infraestrutura</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4">Áreas de Lazer Completas</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Áreas de Lazer Completas</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               12 espaços projetados para o seu bem-estar e da sua família
             </p>
@@ -379,7 +379,7 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Por Que Escolher</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4">Nossos Diferenciais</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Nossos Diferenciais</h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
@@ -401,7 +401,7 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-secondary uppercase tracking-wider">Depoimentos</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4">O Que Dizem Nossos Cooperados</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">O Que Dizem Nossos Cooperados</h2>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -433,7 +433,7 @@ export default function Home() {
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Localização</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4">Praia do Forte, Bahia</h2>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Praia do Forte, Bahia</h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               Uma das regiões mais valorizadas e procuradas do litoral norte baiano
             </p>
@@ -473,7 +473,7 @@ export default function Home() {
       <section className="py-20 px-4 relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-accent" />
         <div className="container mx-auto relative z-10 text-center text-white">
-          <h2 className="font-display text-4xl md:text-5xl font-bold mb-6">Realize Seu Sonho Hoje</h2>
+          <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">Realize Seu Sonho Hoje</h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
             Entre em contato e descubra como você pode fazer parte do Residencial La Felicità
           </p>
