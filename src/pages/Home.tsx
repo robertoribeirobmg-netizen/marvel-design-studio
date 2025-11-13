@@ -29,11 +29,21 @@ import {
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
+import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [counts, setCounts] = useState({ cooperados: 0, area: 0, unidades: 0 });
+
+  // Scroll reveal hooks para cada seção
+  const sobreReveal = useScrollReveal();
+  const beneficiosReveal = useScrollReveal();
+  const lazerReveal = useScrollReveal();
+  const diferenciaisReveal = useScrollReveal();
+  const depoimentosReveal = useScrollReveal();
+  const localizacaoReveal = useScrollReveal();
+  const ctaReveal = useScrollReveal();
 
   // Navbar scroll effect
   useEffect(() => {
@@ -257,7 +267,7 @@ export default function Home() {
 
       {/* Sobre Section */}
       <section id="sobre" className="py-20 px-4">
-        <div className="container mx-auto">
+        <div ref={sobreReveal.ref} className={`container mx-auto transition-all duration-700 ${sobreReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sobre o Projeto</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Um Empreendimento Único</h2>
@@ -301,7 +311,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-accent/10 to-primary/10" />
         <div className="absolute inset-0 opacity-5" style={{backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '20px 20px'}} />
         
-        <div className="container mx-auto relative z-10">
+        <div ref={beneficiosReveal.ref} className={`container mx-auto relative z-10 transition-all duration-700 ${beneficiosReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-secondary uppercase tracking-wider">PHSPBA</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Benefícios Exclusivos</h2>
@@ -350,7 +360,7 @@ export default function Home() {
 
       {/* Áreas de Lazer */}
       <section id="lazer" className="py-20 px-4">
-        <div className="container mx-auto">
+        <div ref={lazerReveal.ref} className={`container mx-auto transition-all duration-700 ${lazerReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-accent uppercase tracking-wider">Infraestrutura</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Áreas de Lazer Completas</h2>
@@ -377,7 +387,7 @@ export default function Home() {
 
       {/* Diferenciais */}
       <section id="diferenciais" className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto">
+        <div ref={diferenciaisReveal.ref} className={`container mx-auto transition-all duration-700 ${diferenciaisReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Por Que Escolher</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Nossos Diferenciais</h2>
@@ -399,7 +409,7 @@ export default function Home() {
 
       {/* Depoimentos */}
       <section className="py-20 px-4">
-        <div className="container mx-auto">
+        <div ref={depoimentosReveal.ref} className={`container mx-auto transition-all duration-700 ${depoimentosReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-secondary uppercase tracking-wider">Depoimentos</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">O Que Dizem Nossos Cooperados</h2>
@@ -431,7 +441,7 @@ export default function Home() {
 
       {/* Localização */}
       <section id="localizacao" className="py-20 px-4 bg-muted/30">
-        <div className="container mx-auto">
+        <div ref={localizacaoReveal.ref} className={`container mx-auto transition-all duration-700 ${localizacaoReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <div className="text-center mb-16">
             <span className="text-sm font-semibold text-primary uppercase tracking-wider">Localização</span>
             <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Praia do Forte, Bahia</h2>
@@ -472,8 +482,8 @@ export default function Home() {
 
       {/* CTA Final */}
       <section className="py-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent" />
-        <div className="container mx-auto relative z-10 text-center text-white">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary to-accent animate-gradient-x" />
+        <div ref={ctaReveal.ref} className={`container mx-auto relative z-10 text-center text-white transition-all duration-700 ${ctaReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
           <h2 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">Realize Seu Sonho Hoje</h2>
           <p className="text-xl mb-8 opacity-90 max-w-2xl mx-auto">
             Entre em contato e descubra como você pode fazer parte do Residencial La Felicità
