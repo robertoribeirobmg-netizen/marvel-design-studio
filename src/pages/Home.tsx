@@ -36,6 +36,7 @@ export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
   const [counts, setCounts] = useState({ cooperados: 0, area: 0, unidades: 0 });
+  const [parallaxOffset, setParallaxOffset] = useState(0);
 
   // Scroll reveal hooks para cada seção
   const sobreReveal = useScrollReveal();
@@ -46,10 +47,14 @@ export default function Home() {
   const localizacaoReveal = useScrollReveal();
   const ctaReveal = useScrollReveal();
 
-  // Navbar scroll effect
+  // Navbar scroll effect e parallax
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50);
+      const scrollPosition = window.scrollY;
+      setScrolled(scrollPosition > 50);
+      
+      // Efeito parallax - move a imagem mais devagar que o scroll
+      setParallaxOffset(scrollPosition * 0.5);
       
       // Detectar seção ativa
       const sections = ['sobre', 'beneficios', 'lazer', 'diferenciais', 'localizacao', 'contato'];
@@ -207,15 +212,18 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        {/* Background Image */}
+        {/* Background Image with Parallax */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${heroBackground})` }}
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-100 ease-out"
+          style={{ 
+            backgroundImage: `url(${heroBackground})`,
+            transform: `translateY(${parallaxOffset}px)`
+          }}
         />
-        {/* Dark Overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background/90" />
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 animate-gradient-x" />
+        {/* Dark Overlay for text readability - Opacidade reduzida */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/40 to-background/60" />
+        {/* Animated gradient overlay - Opacidade reduzida */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 animate-gradient-x" />
         
         <div className="container mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto animate-fade-in-up">
