@@ -236,29 +236,29 @@ export default function Home() {
               Residencial La Felicità
             </h1>
             
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8 leading-relaxed">
-              Seu sonho de ter uma casa de praia em <span className="text-primary font-semibold">Praia do Forte</span> está mais próximo do que você imagina
+            <p className="text-xl md:text-2xl text-foreground mb-8 leading-relaxed font-medium drop-shadow-lg">
+              Seu sonho de ter uma casa de praia em <span className="text-accent font-bold drop-shadow-[0_0_10px_rgba(11,145,68,0.8)]">Praia do Forte</span> está mais próximo do que você imagina
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 max-w-2xl mx-auto mb-12">
               <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-lg">
                   {counts.cooperados}+
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Cooperados</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Cooperados</div>
               </div>
               <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-secondary mb-1 break-words">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words drop-shadow-[0_2px_8px_rgba(11,145,68,0.6)]">
                   {counts.area.toLocaleString()}m²
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Área Total</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Área Total</div>
               </div>
               <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-lg">
                   {counts.unidades}
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Unidades</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Unidades</div>
               </div>
             </div>
 
