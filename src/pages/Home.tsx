@@ -31,7 +31,7 @@ import {
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
-import heroBackground from "@/assets/hero-background.png";
+import heroBackground from "@/assets/hero-background-new.png";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export default function Home() {
