@@ -220,10 +220,10 @@ export default function Home() {
             transform: `translateY(${parallaxOffset}px)`
           }}
         />
-        {/* Dark Overlay for text readability - Opacidade reduzida */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/40 to-background/60" />
-        {/* Animated gradient overlay - Opacidade reduzida */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/10 animate-gradient-x" />
+        {/* Dark Overlay for text readability - Contraste aumentado */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/80" />
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-accent/15 animate-gradient-x" />
         
         <div className="container mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto animate-fade-in-up">
@@ -237,25 +237,25 @@ export default function Home() {
             </h1>
             
             <p className="text-xl md:text-2xl text-foreground mb-8 leading-relaxed font-medium drop-shadow-lg">
-              Seu sonho de ter uma casa de praia em <span className="text-accent font-bold drop-shadow-[0_0_10px_rgba(11,145,68,0.8)]">Praia do Forte</span> está mais próximo do que você imagina
+              Seu sonho de ter uma casa de praia em <span className="text-primary font-bold drop-shadow-[0_2px_8px_rgba(33,69,41,0.9)]">Praia do Forte</span> está mais próximo do que você imagina
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 max-w-2xl mx-auto mb-12">
               <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-lg">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-lg animate-pulse">
                   {counts.cooperados}+
                 </div>
                 <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Cooperados</div>
               </div>
               <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words drop-shadow-[0_2px_8px_rgba(11,145,68,0.6)]">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words drop-shadow-[0_2px_8px_rgba(11,145,68,0.6)] animate-pulse">
                   {counts.area.toLocaleString()}m²
                 </div>
                 <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Área Total</div>
               </div>
               <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-lg">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-lg animate-pulse">
                   {counts.unidades}
                 </div>
                 <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Unidades</div>
