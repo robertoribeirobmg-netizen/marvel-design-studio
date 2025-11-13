@@ -147,18 +147,18 @@ export default function Home() {
           ? 'bg-background/95 backdrop-blur-lg shadow-md' 
           : 'bg-background/80 backdrop-blur-sm'
       }`}>
-        <div className="container mx-auto px-4 h-20 flex items-center justify-between">
+        <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
           <Link to="/">
-            <div className="flex items-center gap-3 cursor-pointer group">
-              <img src={logo} alt="La Felicità" className="h-12 w-auto group-hover:scale-105 transition-transform" />
-              <div>
-                <span className="font-bold text-xl text-foreground">La Felicità</span>
-                <p className="text-xs text-primary font-medium">Residencial</p>
+            <div className="flex items-center gap-2 md:gap-3 cursor-pointer group">
+              <img src={logo} alt="La Felicità" className="h-8 md:h-12 w-auto group-hover:scale-105 transition-transform" />
+              <div className="flex flex-col leading-tight">
+                <span className="font-bold text-sm md:text-xl text-foreground whitespace-nowrap">La Felicità</span>
+                <p className="text-[10px] md:text-xs text-primary font-medium">Residencial</p>
               </div>
             </div>
           </Link>
           
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {[
               { href: '#sobre', label: 'Sobre' },
               { href: '#beneficios', label: 'Benefícios' },
@@ -170,7 +170,7 @@ export default function Home() {
               <a
                 key={item.href}
                 href={item.href}
-                className={`text-sm font-medium transition-all duration-200 hover:text-primary relative group ${
+                className={`text-sm font-medium transition-all duration-200 hover:text-primary relative group whitespace-nowrap ${
                   activeSection === item.href.slice(1) ? 'text-primary' : 'text-muted-foreground'
                 }`}
               >
@@ -182,11 +182,12 @@ export default function Home() {
             ))}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link to="/login">
-              <Button className="bg-primary hover:bg-primary-hover shadow-lg shadow-primary/30 transition-all duration-200">
-                <Users className="mr-2 h-4 w-4" />
-                Área do Cooperado
+              <Button className="bg-primary hover:bg-primary-hover shadow-lg shadow-primary/30 transition-all duration-200 text-xs md:text-sm px-3 md:px-4 h-9 md:h-10">
+                <Users className="h-3 w-3 md:h-4 md:w-4 md:mr-2" />
+                <span className="hidden sm:inline">Área do Cooperado</span>
+                <span className="sm:hidden">Cooperado</span>
               </Button>
             </Link>
           </div>
@@ -215,24 +216,24 @@ export default function Home() {
             </p>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-4 md:gap-8 max-w-2xl mx-auto mb-12">
-              <div className="bg-card/50 backdrop-blur-sm p-6 rounded-2xl border border-border">
-                <div className="text-3xl md:text-4xl font-bold text-primary mb-1">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 max-w-2xl mx-auto mb-12">
+              <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1">
                   {counts.cooperados}+
                 </div>
-                <div className="text-sm text-muted-foreground">Cooperados</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Cooperados</div>
               </div>
-              <div className="bg-card/50 backdrop-blur-sm p-6 rounded-2xl border border-border">
-                <div className="text-3xl md:text-4xl font-bold text-secondary mb-1">
+              <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-secondary mb-1 break-words">
                   {counts.area.toLocaleString()}m²
                 </div>
-                <div className="text-sm text-muted-foreground">Área Total</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Área Total</div>
               </div>
-              <div className="bg-card/50 backdrop-blur-sm p-6 rounded-2xl border border-border">
-                <div className="text-3xl md:text-4xl font-bold text-accent mb-1">
+              <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1">
                   {counts.unidades}
                 </div>
-                <div className="text-sm text-muted-foreground">Unidades</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-muted-foreground">Unidades</div>
               </div>
             </div>
 
