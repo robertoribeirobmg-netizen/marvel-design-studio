@@ -280,7 +280,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="bg-primary hover:bg-primary-hover shadow-lg shadow-primary/30 group text-green-600">
+              <Button size="lg" className="bg-yellow-400 hover:bg-yellow-500 shadow-lg shadow-yellow-400/30 group text-green-700 font-semibold">
                 Quero Participar
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
