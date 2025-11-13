@@ -29,6 +29,7 @@ import {
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
+import heroBackground from "@/assets/hero-background.png";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 
 export default function Home() {
@@ -206,9 +207,15 @@ export default function Home() {
 
       {/* Hero Section */}
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-secondary/5 to-accent/5 animate-gradient-x" />
-        <div className="absolute top-20 right-10 w-72 h-72 bg-primary/10 rounded-full blur-3xl animate-blob" />
-        <div className="absolute bottom-10 left-10 w-96 h-96 bg-secondary/10 rounded-full blur-3xl animate-blob" style={{animationDelay: '2s'}} />
+        {/* Background Image */}
+        <div 
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: `url(${heroBackground})` }}
+        />
+        {/* Dark Overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/70 to-background/90" />
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-transparent to-accent/20 animate-gradient-x" />
         
         <div className="container mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto animate-fade-in-up">
