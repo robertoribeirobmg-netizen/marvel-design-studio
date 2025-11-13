@@ -436,7 +436,7 @@ export default function Home() {
                   alt={leisureAreas[selectedArea].name}
                   className="w-full h-[500px] object-cover"
                 />
-                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/95 to-transparent p-6">
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-background/70 to-transparent p-6">
                   <div className={`inline-flex items-center gap-3 mb-2`}>
                     <div className={`w-12 h-12 bg-gradient-to-br ${leisureAreas[selectedArea].color} rounded-xl flex items-center justify-center`}>
                       {(() => {
