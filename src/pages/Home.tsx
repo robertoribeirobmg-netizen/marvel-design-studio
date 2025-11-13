@@ -393,9 +393,9 @@ export default function Home() {
                 className="group p-6 bg-card rounded-2xl border border-border hover:shadow-xl hover:scale-105 transition-all duration-300 cursor-pointer"
               >
                 <div className={`w-12 h-12 bg-gradient-to-br ${area.color} rounded-xl flex items-center justify-center mb-4 group-hover:rotate-12 transition-transform`}>
-                  <area.icon className="h-6 w-6 text-white" />
+                  <area.icon className="h-6 w-6 text-warning" />
                 </div>
-                <h3 className="font-semibold text-sm md:text-base text-warning">{area.name}</h3>
+                <h3 className="font-semibold text-sm md:text-base">{area.name}</h3>
               </div>
             ))}
           </div>
