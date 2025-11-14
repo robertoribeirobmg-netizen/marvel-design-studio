@@ -335,6 +335,7 @@ export type Database = {
           cpf: string | null
           data_cadastro: string
           data_compra: string | null
+          email: string | null
           fase: string | null
           id: string
           lote: string | null
@@ -347,6 +348,7 @@ export type Database = {
           cpf?: string | null
           data_cadastro?: string
           data_compra?: string | null
+          email?: string | null
           fase?: string | null
           id: string
           lote?: string | null
@@ -359,6 +361,7 @@ export type Database = {
           cpf?: string | null
           data_cadastro?: string
           data_compra?: string | null
+          email?: string | null
           fase?: string | null
           id?: string
           lote?: string | null

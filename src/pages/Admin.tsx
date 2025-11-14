@@ -153,7 +153,7 @@ export default function Admin() {
 
   const loadCooperados = async () => {
     try {
-      // Buscar profiles
+      // Buscar profiles com email
       const { data: profiles, error: profilesError } = await supabase
         .from('profiles')
         .select('*')
@@ -168,19 +168,11 @@ export default function Admin() {
 
       if (rolesError) throw rolesError;
 
-      // Buscar emails do auth.users
-      const { data: { users }, error: usersError } = await supabase.auth.admin.listUsers();
-      
-      if (usersError) {
-        console.error('Error fetching users:', usersError);
-      }
-
-      // Juntar os dados com emails
+      // Juntar os dados com roles
       const profilesWithRoles = profiles?.map(profile => {
-        const user = users?.find((u: any) => u.id === profile.id);
         return {
           ...profile,
-          email: user?.email || '-',
+          email: profile.email || '-',
           user_roles: userRoles?.filter(role => role.user_id === profile.id) || []
         };
       }) || [];
