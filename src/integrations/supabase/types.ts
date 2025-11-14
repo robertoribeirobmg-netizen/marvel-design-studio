@@ -230,6 +230,7 @@ export type Database = {
           multa: number | null
           numero_parcela: number
           observacoes: string | null
+          renegociacao_id: string | null
           status: string
           updated_at: string
           valor_pago: number | null
@@ -248,6 +249,7 @@ export type Database = {
           multa?: number | null
           numero_parcela: number
           observacoes?: string | null
+          renegociacao_id?: string | null
           status?: string
           updated_at?: string
           valor_pago?: number | null
@@ -266,6 +268,7 @@ export type Database = {
           multa?: number | null
           numero_parcela?: number
           observacoes?: string | null
+          renegociacao_id?: string | null
           status?: string
           updated_at?: string
           valor_pago?: number | null
@@ -277,6 +280,52 @@ export type Database = {
             columns: ["investimento_id"]
             isOneToOne: false
             referencedRelation: "investimentos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parcelas_renegociacao_id_fkey"
+            columns: ["renegociacao_id"]
+            isOneToOne: false
+            referencedRelation: "renegociacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parcelas_renegociadas: {
+        Row: {
+          created_at: string
+          id: string
+          parcela_id: string
+          renegociacao_id: string
+          valor_original: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          parcela_id: string
+          renegociacao_id: string
+          valor_original: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          parcela_id?: string
+          renegociacao_id?: string
+          valor_original?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcelas_renegociadas_parcela_id_fkey"
+            columns: ["parcela_id"]
+            isOneToOne: false
+            referencedRelation: "parcelas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parcelas_renegociadas_renegociacao_id_fkey"
+            columns: ["renegociacao_id"]
+            isOneToOne: false
+            referencedRelation: "renegociacoes"
             referencedColumns: ["id"]
           },
         ]
@@ -319,6 +368,68 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      renegociacoes: {
+        Row: {
+          created_at: string
+          criado_por: string
+          data_renegociacao: string
+          id: string
+          investimento_id: string
+          numero_parcelas: number
+          observacoes: string | null
+          status: string
+          taxa_juros: number | null
+          updated_at: string
+          user_id: string
+          valor_entrada: number | null
+          valor_original: number
+          valor_parcela: number
+          valor_renegociado: number
+        }
+        Insert: {
+          created_at?: string
+          criado_por: string
+          data_renegociacao?: string
+          id?: string
+          investimento_id: string
+          numero_parcelas: number
+          observacoes?: string | null
+          status?: string
+          taxa_juros?: number | null
+          updated_at?: string
+          user_id: string
+          valor_entrada?: number | null
+          valor_original: number
+          valor_parcela: number
+          valor_renegociado: number
+        }
+        Update: {
+          created_at?: string
+          criado_por?: string
+          data_renegociacao?: string
+          id?: string
+          investimento_id?: string
+          numero_parcelas?: number
+          observacoes?: string | null
+          status?: string
+          taxa_juros?: number | null
+          updated_at?: string
+          user_id?: string
+          valor_entrada?: number | null
+          valor_original?: number
+          valor_parcela?: number
+          valor_renegociado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "renegociacoes_investimento_id_fkey"
+            columns: ["investimento_id"]
+            isOneToOne: false
+            referencedRelation: "investimentos"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
