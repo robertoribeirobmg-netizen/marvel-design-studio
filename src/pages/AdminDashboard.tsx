@@ -38,6 +38,8 @@ import { toast } from 'sonner';
 import { useParcelasData, ParcelaData } from '@/hooks/useParcelasData';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Line, LineChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface DadosBaixa {
   dataPagamento: string;
@@ -63,6 +65,20 @@ export default function AdminDashboard() {
   const [filtroCliente, setFiltroCliente] = useState('');
   const [filtroLote, setFiltroLote] = useState('');
   const [filtroSituacao, setFiltroSituacao] = useState<'TODOS' | 'PAGO' | 'A Vencer' | 'VENCIDO'>('A Vencer');
+
+  // Buscar dados de renegociações
+  const { data: renegociacoes = [] } = useQuery({
+    queryKey: ['renegociacoes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('renegociacoes')
+        .select('*')
+        .order('data_renegociacao', { ascending: true });
+      
+      if (error) throw error;
+      return data || [];
+    }
+  });
   
   // Processar arquivo Excel (Legacy - não recomendado)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -240,6 +256,36 @@ export default function AdminDashboard() {
 
     return dadosPorMes;
   }, [dados]);
+
+  // Dados para gráfico de renegociações
+  const chartDataRenegociacoes = useMemo(() => {
+    const hoje = new Date();
+    const mesesPassados = eachMonthOfInterval({
+      start: subMonths(hoje, 11),
+      end: hoje
+    });
+
+    const dadosPorMes = mesesPassados.map(mes => {
+      const inicioMes = startOfMonth(mes);
+      const fimMes = endOfMonth(mes);
+
+      const renegociacoesDoMes = renegociacoes.filter(r => {
+        const dataRenegociacao = new Date(r.data_renegociacao);
+        return dataRenegociacao >= inicioMes && dataRenegociacao <= fimMes;
+      });
+
+      const quantidadeRenegociacoes = renegociacoesDoMes.length;
+      const valorTotalRenegociado = renegociacoesDoMes.reduce((sum, r) => sum + Number(r.valor_renegociado), 0);
+
+      return {
+        mes: format(mes, 'MMM/yy', { locale: ptBR }),
+        quantidade: quantidadeRenegociacoes,
+        valor: valorTotalRenegociado
+      };
+    });
+
+    return dadosPorMes;
+  }, [renegociacoes]);
   
   const formatarMoeda = (valor: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -541,6 +587,90 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Gráfico de Renegociações */}
+            <Card className="border-0 shadow-lg mb-8">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">
+                  Evolução de Renegociações
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Quantidade e valor de renegociações nos últimos 12 meses
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer
+                  config={{
+                    quantidade: {
+                      label: 'Quantidade',
+                      color: 'hsl(var(--chart-3))',
+                    },
+                    valor: {
+                      label: 'Valor Total',
+                      color: 'hsl(var(--chart-4))',
+                    },
+                  }}
+                  className="h-[300px]"
+                >
+                  <BarChart data={chartDataRenegociacoes}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="mes" 
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      yAxisId="left"
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      label={{ value: 'Quantidade', angle: -90, position: 'insideLeft' }}
+                    />
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => 
+                        new Intl.NumberFormat('pt-BR', {
+                          notation: 'compact',
+                          style: 'currency',
+                          currency: 'BRL'
+                        }).format(value)
+                      }
+                    />
+                    <ChartTooltip 
+                      content={
+                        <ChartTooltipContent 
+                          formatter={(value, name) => {
+                            if (name === 'valor') {
+                              return new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                              }).format(value as number);
+                            }
+                            return value;
+                          }}
+                        />
+                      }
+                    />
+                    <Bar 
+                      yAxisId="left"
+                      dataKey="quantidade" 
+                      fill="hsl(var(--chart-3))"
+                      radius={[4, 4, 0, 0]}
+                      name="Quantidade"
+                    />
+                    <Bar 
+                      yAxisId="right"
+                      dataKey="valor" 
+                      fill="hsl(var(--chart-4))"
+                      radius={[4, 4, 0, 0]}
+                      name="Valor Total"
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
             {/* Filtros */}
             <Card className="border-0 shadow-lg mb-6">
