@@ -78,6 +78,40 @@ async function logSecurityEvent(
     });
 }
 
+// Helper function to log validation errors for analytics
+async function logValidationError(
+  supabase: any,
+  req: Request,
+  endpoint: string,
+  fieldName: string,
+  validationRule: string,
+  errorMessage: string,
+  attemptedValue?: any,
+  userId?: string
+) {
+  const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  const userAgent = req.headers.get('user-agent') || 'unknown';
+  
+  // Sanitize attempted value
+  let sanitizedValue = attemptedValue;
+  if (attemptedValue && typeof attemptedValue === 'string' && attemptedValue.length > 200) {
+    sanitizedValue = attemptedValue.substring(0, 200) + '...[truncated]';
+  }
+  
+  await supabase
+    .from('validation_errors')
+    .insert({
+      endpoint,
+      field_name: fieldName,
+      validation_rule: validationRule,
+      error_message: errorMessage,
+      attempted_value: sanitizedValue ? String(sanitizedValue) : null,
+      user_id: userId || null,
+      ip_address: ipAddress,
+      user_agent: userAgent
+    });
+}
+
 interface ParcelaExcel {
   quadraLote: string;
   cliente: string;
@@ -305,6 +339,24 @@ serve(async (req) => {
           `Linha ${i + 2}: ${issue.path.join('.')} - ${issue.message}`
         ).join('; ');
         validationErrors.push(errors);
+        
+        // Log each validation error for analytics
+        for (const issue of validationResult.error.issues) {
+          const fieldName = issue.path.join('.');
+          const attemptedValue = fieldName.split('.').reduce((obj, key) => obj?.[key], parcelaData as any);
+          
+          await logValidationError(
+            supabase,
+            req,
+            '/process-excel-import',
+            fieldName,
+            issue.code,
+            `Linha ${i + 2}: ${issue.message}`,
+            attemptedValue,
+            user?.id
+          );
+        }
+        
         console.warn(`Validation error on line ${i + 2}:`, errors);
         continue; // Skip invalid rows
       }

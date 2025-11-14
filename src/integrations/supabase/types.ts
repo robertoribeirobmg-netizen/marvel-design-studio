@@ -512,12 +512,72 @@ export type Database = {
         }
         Relationships: []
       }
+      validation_errors: {
+        Row: {
+          attempted_value: string | null
+          created_at: string
+          endpoint: string
+          error_message: string
+          field_name: string
+          id: string
+          ip_address: string | null
+          user_agent: string | null
+          user_id: string | null
+          validation_rule: string
+        }
+        Insert: {
+          attempted_value?: string | null
+          created_at?: string
+          endpoint: string
+          error_message: string
+          field_name: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          validation_rule: string
+        }
+        Update: {
+          attempted_value?: string | null
+          created_at?: string
+          endpoint?: string
+          error_message?: string
+          field_name?: string
+          id?: string
+          ip_address?: string | null
+          user_agent?: string | null
+          user_id?: string | null
+          validation_rule?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      detect_attack_patterns: {
+        Args: { threshold?: number; time_window?: unknown }
+        Returns: {
+          distinct_endpoints: number
+          distinct_fields: number
+          error_count: number
+          first_attempt: string
+          ip_address: string
+          last_attempt: string
+        }[]
+      }
+      get_validation_error_stats: {
+        Args: { time_period?: unknown }
+        Returns: {
+          error_count: number
+          field_name: string
+          last_occurrence: string
+          unique_ips: number
+          validation_rule: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
