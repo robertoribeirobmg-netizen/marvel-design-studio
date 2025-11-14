@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw } from 'lucide-react';
+import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw, FileDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format } from 'date-fns';
 import { RenegociacaoDividas } from './RenegociacaoDividas';
+import { gerarRelatorioRenegociacoes } from '@/lib/relatorioRenegociacoes';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface CooperadoFinanceiro {
   id: string;
@@ -37,6 +39,8 @@ export function FinanceiroAdmin() {
   const [showParcelasDialog, setShowParcelasDialog] = useState(false);
   const [showRenegociacaoDialog, setShowRenegociacaoDialog] = useState(false);
   const [processandoBaixa, setProcessandoBaixa] = useState(false);
+  const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
+  const [filtroRelatorio, setFiltroRelatorio] = useState<'todas' | 'ativas' | 'finalizadas'>('todas');
 
   useEffect(() => {
     loadDadosFinanceiros();
@@ -239,6 +243,69 @@ export function FinanceiroAdmin() {
     if (diasAtraso >= 60) return 'destructive';
     if (diasAtraso >= 30) return 'default';
     return 'secondary';
+  };
+
+  const handleGerarRelatorio = async () => {
+    try {
+      setGerandoRelatorio(true);
+      
+      // Buscar todas as renegociações
+      const { data: renegociacoes, error: renegociacoesError } = await supabase
+        .from('renegociacoes')
+        .select('*')
+        .order('data_renegociacao', { ascending: false });
+
+      if (renegociacoesError) throw renegociacoesError;
+
+      if (!renegociacoes || renegociacoes.length === 0) {
+        toast.error('Nenhuma renegociação encontrada');
+        return;
+      }
+
+      // Buscar dados dos cooperados
+      const userIds = [...new Set(renegociacoes.map(r => r.user_id))];
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, nome_completo, quadra, lote')
+        .in('id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      // Buscar parcelas de cada renegociação
+      const renegociacaoIds = renegociacoes.map(r => r.id);
+      const { data: parcelas, error: parcelasError } = await supabase
+        .from('parcelas')
+        .select('*')
+        .in('renegociacao_id', renegociacaoIds)
+        .order('numero_parcela');
+
+      if (parcelasError) throw parcelasError;
+
+      // Montar dados para o relatório
+      const dadosRelatorio = renegociacoes.map(renegociacao => {
+        const cooperado = profiles?.find(p => p.id === renegociacao.user_id);
+        const parcelasRenegociacao = parcelas?.filter(p => p.renegociacao_id === renegociacao.id) || [];
+
+        return {
+          ...renegociacao,
+          cooperado: {
+            nome_completo: cooperado?.nome_completo || 'Desconhecido',
+            quadra: cooperado?.quadra || null,
+            lote: cooperado?.lote || null,
+          },
+          parcelas: parcelasRenegociacao,
+        };
+      });
+
+      // Gerar PDF
+      await gerarRelatorioRenegociacoes(dadosRelatorio, filtroRelatorio);
+      toast.success('Relatório gerado com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao gerar relatório:', error);
+      toast.error('Erro ao gerar relatório: ' + error.message);
+    } finally {
+      setGerandoRelatorio(false);
+    }
   };
 
   if (isLoading) {
@@ -493,7 +560,7 @@ export function FinanceiroAdmin() {
                     </TableCell>
                     <TableCell>
                       {parcela.status === 'paga' ? (
-                        <Badge variant="success">
+                        <Badge variant="secondary" className="bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">
                           Paga em {format(new Date(parcela.data_pagamento), 'dd/MM/yyyy')}
                         </Badge>
                       ) : parcela.status === 'pendente' ? (
