@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationEllipsis } from '@/components/ui/pagination';
-import { ChevronLeft, ChevronRight, ArrowLeft, Upload, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ArrowLeft, Upload, Check, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface PreviewRow {
@@ -54,6 +54,8 @@ export default function PreviewImportacao() {
   const [selectedRows, setSelectedRows] = useState<Set<number>>(new Set());
   const [previewPage, setPreviewPage] = useState(1);
   const [previewItemsPerPage] = useState(50);
+  const [sortColumn, setSortColumn] = useState<string | null>(null);
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     if (!previewData || previewData.length === 0) {
@@ -86,16 +88,64 @@ export default function PreviewImportacao() {
     });
   };
 
+  const handleSort = (column: string) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const getSortedData = () => {
+    if (!sortColumn) return previewData;
+
+    return [...previewData].sort((a: any, b: any) => {
+      let aValue = a[sortColumn];
+      let bValue = b[sortColumn];
+
+      // Handle financial data specific columns
+      if (isFinancialImport) {
+        if (sortColumn === 'numeroParcelas' || sortColumn === 'parcelasValidas') {
+          aValue = Number(aValue);
+          bValue = Number(bValue);
+        } else if (sortColumn === 'valorTotal' || sortColumn === 'valorPago') {
+          // Remove currency formatting for comparison
+          aValue = parseFloat(aValue.replace(/[^\d,-]/g, '').replace(',', '.'));
+          bValue = parseFloat(bValue.replace(/[^\d,-]/g, '').replace(',', '.'));
+        }
+      } else {
+        // Handle user data specific columns
+        if (sortColumn === 'row') {
+          aValue = Number(aValue);
+          bValue = Number(bValue);
+        }
+      }
+
+      if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+      if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+  };
+
+  const renderSortIcon = (column: string) => {
+    if (sortColumn !== column) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 inline-block" />;
+    }
+    return sortDirection === 'asc' 
+      ? <ArrowUp className="ml-2 h-4 w-4 inline-block" />
+      : <ArrowDown className="ml-2 h-4 w-4 inline-block" />;
+  };
+
   const handleToggleAll = () => {
     if (isFinancialImport) {
-      const currentPageData = previewData
+      const sortedData = getSortedData();
+      const currentPageData = sortedData
         .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
         .filter((r: FinancialPreviewRow) => r.valido);
       
-      const currentPageIndices = currentPageData.map((_: any, idx: number) => 
-        (previewPage - 1) * previewItemsPerPage + previewData
-          .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
-          .indexOf(_)
+      const currentPageIndices = currentPageData.map((item: any) => 
+        previewData.indexOf(item)
       );
       
       const allSelected = currentPageIndices.every(idx => selectedRows.has(idx));
@@ -110,20 +160,22 @@ export default function PreviewImportacao() {
         return newSet;
       });
     } else {
-      const currentPageRows = previewData
+      const sortedData = getSortedData();
+      const currentPageRows = sortedData
         .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
-        .filter((r: PreviewRow) => r.valid)
-        .map((r: PreviewRow) => r.row);
+        .filter((r: PreviewRow) => r.valid);
 
-      const allSelected = currentPageRows.every(row => selectedRows.has(row));
-
+      const allSelected = currentPageRows.every((r: PreviewRow) => selectedRows.has(r.row));
+      
       setSelectedRows(prev => {
         const newSet = new Set(prev);
-        if (allSelected) {
-          currentPageRows.forEach(row => newSet.delete(row));
-        } else {
-          currentPageRows.forEach(row => newSet.add(row));
-        }
+        currentPageRows.forEach((r: PreviewRow) => {
+          if (allSelected) {
+            newSet.delete(r.row);
+          } else {
+            newSet.add(r.row);
+          }
+        });
         return newSet;
       });
     }
@@ -158,7 +210,7 @@ export default function PreviewImportacao() {
     navigate('/admin');
   };
 
-  const totalPages = Math.ceil(previewData.length / previewItemsPerPage);
+  const totalPages = Math.ceil(getSortedData().length / previewItemsPerPage);
 
   return (
     <div className="min-h-screen bg-background p-6">
@@ -278,36 +330,65 @@ export default function PreviewImportacao() {
                       <TableHead className="w-12">
                         <Checkbox
                           checked={
-                            previewData
+                            getSortedData()
                               .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
                               .filter((r: FinancialPreviewRow) => r.valido)
                               .length > 0 &&
-                            previewData
+                            getSortedData()
                               .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
                               .filter((r: FinancialPreviewRow) => r.valido)
-                              .every((_: any, idx: number) => {
-                                const globalIdx = (previewPage - 1) * previewItemsPerPage + 
-                                  previewData.slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage).indexOf(_);
+                              .every((item: any) => {
+                                const globalIdx = previewData.indexOf(item);
                                 return selectedRows.has(globalIdx);
                               })
                           }
                           onCheckedChange={handleToggleAll}
                         />
                       </TableHead>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead>Quadra/Lote</TableHead>
-                      <TableHead className="text-right">Nº Parcelas</TableHead>
-                      <TableHead className="text-right">Válidas</TableHead>
-                      <TableHead className="text-right">Valor Total</TableHead>
-                      <TableHead className="text-right">Valor Pago</TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        onClick={() => handleSort('cliente')}
+                      >
+                        Cliente{renderSortIcon('cliente')}
+                      </TableHead>
+                      <TableHead 
+                        className="cursor-pointer hover:bg-muted/50 select-none"
+                        onClick={() => handleSort('quadraLote')}
+                      >
+                        Quadra/Lote{renderSortIcon('quadraLote')}
+                      </TableHead>
+                      <TableHead 
+                        className="text-right cursor-pointer hover:bg-muted/50 select-none"
+                        onClick={() => handleSort('numeroParcelas')}
+                      >
+                        Nº Parcelas{renderSortIcon('numeroParcelas')}
+                      </TableHead>
+                      <TableHead 
+                        className="text-right cursor-pointer hover:bg-muted/50 select-none"
+                        onClick={() => handleSort('parcelasValidas')}
+                      >
+                        Válidas{renderSortIcon('parcelasValidas')}
+                      </TableHead>
+                      <TableHead 
+                        className="text-right cursor-pointer hover:bg-muted/50 select-none"
+                        onClick={() => handleSort('valorTotal')}
+                      >
+                        Valor Total{renderSortIcon('valorTotal')}
+                      </TableHead>
+                      <TableHead 
+                        className="text-right cursor-pointer hover:bg-muted/50 select-none"
+                        onClick={() => handleSort('valorPago')}
+                      >
+                        Valor Pago{renderSortIcon('valorPago')}
+                      </TableHead>
                       <TableHead className="w-28">Status</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {previewData
+                    {getSortedData()
                       .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
                       .map((row: FinancialPreviewRow, index: number) => {
-                        const globalIdx = (previewPage - 1) * previewItemsPerPage + index;
+                        const globalIdx = previewData.indexOf(row);
                         return (
                           <TableRow
                             key={index}
@@ -350,30 +431,65 @@ export default function PreviewImportacao() {
                     <TableHead className="w-12">
                       <Checkbox
                         checked={
-                          previewData
+                          getSortedData()
                             .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
                             .filter((r: PreviewRow) => r.valid)
                             .every((r: PreviewRow) => selectedRows.has(r.row)) &&
-                          previewData
+                          getSortedData()
                             .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
                             .filter((r: PreviewRow) => r.valid).length > 0
                         }
                         onCheckedChange={handleToggleAll}
                       />
                     </TableHead>
-                    <TableHead className="w-16">#</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Email</TableHead>
+                    <TableHead 
+                      className="w-16 cursor-pointer hover:bg-muted/50 select-none"
+                      onClick={() => handleSort('row')}
+                    >
+                      #{renderSortIcon('row')}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50 select-none"
+                      onClick={() => handleSort('nome_completo')}
+                    >
+                      Nome{renderSortIcon('nome_completo')}
+                    </TableHead>
+                    <TableHead 
+                      className="cursor-pointer hover:bg-muted/50 select-none"
+                      onClick={() => handleSort('email')}
+                    >
+                      Email{renderSortIcon('email')}
+                    </TableHead>
                     <TableHead className="w-24">Senha</TableHead>
-                    <TableHead className="w-24">Quadra</TableHead>
-                    <TableHead className="w-24">Lote</TableHead>
-                    <TableHead className="w-24">Fase</TableHead>
-                    <TableHead className="w-32">Data Compra</TableHead>
+                    <TableHead 
+                      className="w-24 cursor-pointer hover:bg-muted/50 select-none"
+                      onClick={() => handleSort('quadra')}
+                    >
+                      Quadra{renderSortIcon('quadra')}
+                    </TableHead>
+                    <TableHead 
+                      className="w-24 cursor-pointer hover:bg-muted/50 select-none"
+                      onClick={() => handleSort('lote')}
+                    >
+                      Lote{renderSortIcon('lote')}
+                    </TableHead>
+                    <TableHead 
+                      className="w-24 cursor-pointer hover:bg-muted/50 select-none"
+                      onClick={() => handleSort('fase')}
+                    >
+                      Fase{renderSortIcon('fase')}
+                    </TableHead>
+                    <TableHead 
+                      className="w-32 cursor-pointer hover:bg-muted/50 select-none"
+                      onClick={() => handleSort('data_compra')}
+                    >
+                      Data Compra{renderSortIcon('data_compra')}
+                    </TableHead>
                     <TableHead className="w-28">Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {previewData
+                  {getSortedData()
                     .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
                     .map((row: PreviewRow, index: number) => (
                       <TableRow
@@ -430,7 +546,7 @@ export default function PreviewImportacao() {
             {/* Pagination */}
             <div className="flex items-center justify-between px-2 py-4">
               <div className="text-sm text-muted-foreground">
-                Mostrando {Math.min((previewPage - 1) * previewItemsPerPage + 1, previewData.length)} a {Math.min(previewPage * previewItemsPerPage, previewData.length)} de {previewData.length} registros
+                Mostrando {Math.min((previewPage - 1) * previewItemsPerPage + 1, getSortedData().length)} a {Math.min(previewPage * previewItemsPerPage, getSortedData().length)} de {getSortedData().length} registros
               </div>
               <Pagination>
                 <PaginationContent>
