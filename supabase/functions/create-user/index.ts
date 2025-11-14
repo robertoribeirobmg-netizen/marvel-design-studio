@@ -1,10 +1,64 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// Validation schema for user creation
+const createUserSchema = z.object({
+  email: z.string()
+    .email('Email inválido')
+    .max(255, 'Email deve ter no máximo 255 caracteres')
+    .transform(val => val.toLowerCase().trim()),
+  password: z.string()
+    .min(8, 'Senha deve ter no mínimo 8 caracteres')
+    .max(100, 'Senha deve ter no máximo 100 caracteres')
+    .regex(/[A-Z]/, 'Senha deve conter pelo menos uma letra maiúscula')
+    .regex(/[a-z]/, 'Senha deve conter pelo menos uma letra minúscula')
+    .regex(/[0-9]/, 'Senha deve conter pelo menos um número'),
+  nome_completo: z.string()
+    .trim()
+    .min(1, 'Nome completo é obrigatório')
+    .max(200, 'Nome completo deve ter no máximo 200 caracteres')
+    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços'),
+  cpf: z.string()
+    .regex(/^\d{11}$/, 'CPF deve conter exatamente 11 dígitos')
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+  telefone: z.string()
+    .regex(/^\+?[1-9]\d{1,14}$/, 'Telefone inválido (formato: +5511999999999)')
+    .max(20, 'Telefone deve ter no máximo 20 caracteres')
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+  quadra: z.string()
+    .trim()
+    .max(50, 'Quadra deve ter no máximo 50 caracteres')
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+  lote: z.string()
+    .trim()
+    .max(50, 'Lote deve ter no máximo 50 caracteres')
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+  fase: z.string()
+    .trim()
+    .max(100, 'Fase deve ter no máximo 100 caracteres')
+    .optional()
+    .nullable()
+    .or(z.literal('')),
+  data_compra: z.string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data de compra deve estar no formato YYYY-MM-DD')
+    .optional()
+    .nullable()
+    .or(z.literal(''))
+})
 
 // Rate limiting configuration
 const RATE_LIMIT_WINDOW = 60000 // 1 minute
@@ -144,22 +198,34 @@ serve(async (req) => {
     }
 
     const requestData = await req.json()
-    const { email, password, nome_completo, cpf, telefone, quadra, lote, fase, data_compra } = requestData
     
-    // Validate required fields
-    if (!email || !password || !nome_completo) {
+    // Validate input data with Zod
+    const validationResult = createUserSchema.safeParse(requestData)
+    
+    if (!validationResult.success) {
+      const errors = validationResult.error.issues.map(issue => ({
+        field: issue.path.join('.'),
+        message: issue.message
+      }))
+      
       await logSecurityEvent(supabaseAdmin, 'validation_error', req, user.id, {
-        error: 'Missing required fields',
-        provided_fields: Object.keys(requestData)
+        error: 'Input validation failed',
+        validation_errors: errors
       })
+      
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: email, password, and nome_completo are required' }),
+        JSON.stringify({ 
+          error: 'Dados inválidos',
+          details: errors 
+        }),
         { 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 400 
         }
       )
     }
+    
+    const { email, password, nome_completo, cpf, telefone, quadra, lote, fase, data_compra } = validationResult.data
     
     console.log('Received data_compra:', data_compra, 'Type:', typeof data_compra)
 
