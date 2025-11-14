@@ -15,6 +15,8 @@ import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
 import PreviewImportacao from "./pages/PreviewImportacao";
 import ProcessImport from "./pages/ProcessImport";
+import AdminDashboard from "./pages/AdminDashboard";
+import ClienteDashboard from "./pages/ClienteDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -69,6 +71,22 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <ProcessImport />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/admin/dashboard-parcelas"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/cliente/dashboard"
+                  element={
+                    <ProtectedRoute>
+                      <ClienteDashboard />
                     </ProtectedRoute>
                   }
                 />
