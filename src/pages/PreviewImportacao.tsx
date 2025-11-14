@@ -87,22 +87,46 @@ export default function PreviewImportacao() {
   };
 
   const handleToggleAll = () => {
-    const currentPageRows = previewData
-      .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
-      .filter((r: PreviewRow) => r.valid)
-      .map((r: PreviewRow) => r.row);
+    if (isFinancialImport) {
+      const currentPageData = previewData
+        .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+        .filter((r: FinancialPreviewRow) => r.valido);
+      
+      const currentPageIndices = currentPageData.map((_: any, idx: number) => 
+        (previewPage - 1) * previewItemsPerPage + previewData
+          .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+          .indexOf(_)
+      );
+      
+      const allSelected = currentPageIndices.every(idx => selectedRows.has(idx));
+      
+      setSelectedRows(prev => {
+        const newSet = new Set(prev);
+        if (allSelected) {
+          currentPageIndices.forEach(idx => newSet.delete(idx));
+        } else {
+          currentPageIndices.forEach(idx => newSet.add(idx));
+        }
+        return newSet;
+      });
+    } else {
+      const currentPageRows = previewData
+        .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+        .filter((r: PreviewRow) => r.valid)
+        .map((r: PreviewRow) => r.row);
 
-    const allSelected = currentPageRows.every(row => selectedRows.has(row));
+      const allSelected = currentPageRows.every(row => selectedRows.has(row));
 
-    setSelectedRows(prev => {
-      const newSet = new Set(prev);
-      if (allSelected) {
-        currentPageRows.forEach(row => newSet.delete(row));
-      } else {
-        currentPageRows.forEach(row => newSet.add(row));
-      }
-      return newSet;
-    });
+      setSelectedRows(prev => {
+        const newSet = new Set(prev);
+        if (allSelected) {
+          currentPageRows.forEach(row => newSet.delete(row));
+        } else {
+          currentPageRows.forEach(row => newSet.add(row));
+        }
+        return newSet;
+      });
+    }
   };
 
   const handleConfirmImport = () => {
@@ -112,12 +136,22 @@ export default function PreviewImportacao() {
     }
 
     // Navigate back to admin with selected data
-    navigate('/admin', {
-      state: {
-        importData: previewData.filter((row: PreviewRow) => selectedRows.has(row.row)),
-        startImport: true
-      }
-    });
+    if (isFinancialImport) {
+      const selectedData = Array.from(selectedRows).map(idx => previewData[idx]);
+      navigate('/process-import', {
+        state: {
+          importData: selectedData,
+          isFinancialImport: true
+        }
+      });
+    } else {
+      navigate('/admin', {
+        state: {
+          importData: previewData.filter((row: PreviewRow) => selectedRows.has(row.row)),
+          startImport: true
+        }
+      });
+    }
   };
 
   const handleCancel = () => {
@@ -184,14 +218,28 @@ export default function PreviewImportacao() {
                 <div className="flex items-center gap-2">
                   <Check className="h-5 w-5 text-primary" />
                   <span className="text-lg font-medium">
-                    {selectedRows.size} de {previewData.filter((r: PreviewRow) => r.valid).length} registros selecionados
+                    {selectedRows.size} de {isFinancialImport 
+                      ? previewData.filter((r: FinancialPreviewRow) => r.valido).length 
+                      : previewData.filter((r: PreviewRow) => r.valid).length} registros selecionados
                   </span>
                 </div>
-                {selectedRows.size < previewData.filter((r: PreviewRow) => r.valid).length && (
+                {selectedRows.size < (isFinancialImport 
+                  ? previewData.filter((r: FinancialPreviewRow) => r.valido).length 
+                  : previewData.filter((r: PreviewRow) => r.valid).length) && (
                   <Button
                     variant="link"
                     size="sm"
-                    onClick={() => setSelectedRows(new Set(previewData.filter((r: PreviewRow) => r.valid).map((r: PreviewRow) => r.row)))}
+                    onClick={() => {
+                      if (isFinancialImport) {
+                        setSelectedRows(new Set(
+                          previewData
+                            .map((_: any, idx: number) => idx)
+                            .filter((idx: number) => previewData[idx].valido)
+                        ));
+                      } else {
+                        setSelectedRows(new Set(previewData.filter((r: PreviewRow) => r.valid).map((r: PreviewRow) => r.row)));
+                      }
+                    }}
                     className="h-auto p-0 text-primary"
                   >
                     Selecionar todos válidos
@@ -222,7 +270,81 @@ export default function PreviewImportacao() {
           </CardHeader>
           <CardContent>
             <ScrollArea className="h-[500px] rounded-md border">
-              <Table>
+              {isFinancialImport ? (
+                // Financial Import Table
+                <Table>
+                  <TableHeader className="sticky top-0 bg-background z-10">
+                    <TableRow>
+                      <TableHead className="w-12">
+                        <Checkbox
+                          checked={
+                            previewData
+                              .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+                              .filter((r: FinancialPreviewRow) => r.valido)
+                              .length > 0 &&
+                            previewData
+                              .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+                              .filter((r: FinancialPreviewRow) => r.valido)
+                              .every((_: any, idx: number) => {
+                                const globalIdx = (previewPage - 1) * previewItemsPerPage + 
+                                  previewData.slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage).indexOf(_);
+                                return selectedRows.has(globalIdx);
+                              })
+                          }
+                          onCheckedChange={handleToggleAll}
+                        />
+                      </TableHead>
+                      <TableHead>Cliente</TableHead>
+                      <TableHead>Quadra/Lote</TableHead>
+                      <TableHead className="text-right">Nº Parcelas</TableHead>
+                      <TableHead className="text-right">Válidas</TableHead>
+                      <TableHead className="text-right">Valor Total</TableHead>
+                      <TableHead className="text-right">Valor Pago</TableHead>
+                      <TableHead className="w-28">Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {previewData
+                      .slice((previewPage - 1) * previewItemsPerPage, previewPage * previewItemsPerPage)
+                      .map((row: FinancialPreviewRow, index: number) => {
+                        const globalIdx = (previewPage - 1) * previewItemsPerPage + index;
+                        return (
+                          <TableRow
+                            key={index}
+                            className={`${!row.valido ? 'bg-muted/50' : ''} ${selectedRows.has(globalIdx) ? 'bg-primary/5' : ''}`}
+                          >
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedRows.has(globalIdx)}
+                                onCheckedChange={() => handleToggleRow(globalIdx)}
+                                disabled={!row.valido}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">{row.cliente}</TableCell>
+                            <TableCell className="font-mono text-sm">{row.quadraLote}</TableCell>
+                            <TableCell className="text-right">{row.numeroParcelas}</TableCell>
+                            <TableCell className="text-right">
+                              <Badge variant={row.parcelasValidas === row.numeroParcelas ? "default" : "secondary"}>
+                                {row.parcelasValidas}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right font-medium">{row.valorTotal}</TableCell>
+                            <TableCell className="text-right text-green-600 font-medium">{row.valorPago}</TableCell>
+                            <TableCell>
+                              {row.valido ? (
+                                <Badge variant="default" className="bg-green-600">Válido</Badge>
+                              ) : (
+                                <Badge variant="destructive">Inválido</Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                  </TableBody>
+                </Table>
+              ) : (
+                // User Import Table
+                <Table>
                 <TableHeader className="sticky top-0 bg-background z-10">
                   <TableRow>
                     <TableHead className="w-12">
@@ -302,6 +424,7 @@ export default function PreviewImportacao() {
                     ))}
                 </TableBody>
               </Table>
+              )}
             </ScrollArea>
 
             {/* Pagination */}
