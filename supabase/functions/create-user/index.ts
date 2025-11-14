@@ -134,6 +134,42 @@ async function logSecurityEvent(
     })
 }
 
+// Helper function to log validation errors for analytics
+async function logValidationError(
+  supabase: any,
+  req: Request,
+  endpoint: string,
+  fieldName: string,
+  validationRule: string,
+  errorMessage: string,
+  attemptedValue?: any,
+  userId?: string
+) {
+  const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown'
+  const userAgent = req.headers.get('user-agent') || 'unknown'
+  
+  // Sanitize attempted value - don't store sensitive data
+  let sanitizedValue = attemptedValue
+  if (fieldName === 'password') {
+    sanitizedValue = '***REDACTED***'
+  } else if (attemptedValue && typeof attemptedValue === 'string' && attemptedValue.length > 200) {
+    sanitizedValue = attemptedValue.substring(0, 200) + '...[truncated]'
+  }
+  
+  await supabase
+    .from('validation_errors')
+    .insert({
+      endpoint,
+      field_name: fieldName,
+      validation_rule: validationRule,
+      error_message: errorMessage,
+      attempted_value: sanitizedValue ? String(sanitizedValue) : null,
+      user_id: userId || null,
+      ip_address: ipAddress,
+      user_agent: userAgent
+    })
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -207,6 +243,23 @@ serve(async (req) => {
         field: issue.path.join('.'),
         message: issue.message
       }))
+      
+      // Log each validation error for analytics
+      for (const issue of validationResult.error.issues) {
+        const fieldName = issue.path.join('.')
+        const attemptedValue = fieldName.split('.').reduce((obj, key) => obj?.[key], requestData as any)
+        
+        await logValidationError(
+          supabaseAdmin,
+          req,
+          '/create-user',
+          fieldName,
+          issue.code,
+          issue.message,
+          attemptedValue,
+          user.id
+        )
+      }
       
       await logSecurityEvent(supabaseAdmin, 'validation_error', req, user.id, {
         error: 'Input validation failed',

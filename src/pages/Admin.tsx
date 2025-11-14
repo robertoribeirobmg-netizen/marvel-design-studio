@@ -25,6 +25,7 @@ import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
 import { TimelineObras } from '@/components/TimelineObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { AdminGaleria } from '@/components/AdminGaleria';
+import { ValidationErrorsAnalytics } from '@/components/ValidationErrorsAnalytics';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -1146,7 +1147,7 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-5">
+            <TabsList className="grid w-full grid-cols-6">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
                 Dashboard
@@ -1166,6 +1167,10 @@ export default function Admin() {
               <TabsTrigger value="fotos" className="flex items-center gap-2">
                 <Camera className="h-4 w-4" />
                 Galeria
+              </TabsTrigger>
+              <TabsTrigger value="validation" className="flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                Validação
               </TabsTrigger>
             </TabsList>
 
@@ -1798,6 +1803,10 @@ export default function Admin() {
 
             <TabsContent value="fotos">
               <AdminGaleria />
+            </TabsContent>
+
+            <TabsContent value="validation">
+              <ValidationErrorsAnalytics />
             </TabsContent>
           </Tabs>
         </div>
