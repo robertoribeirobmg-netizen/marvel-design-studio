@@ -286,6 +286,55 @@ export default function AdminDashboard() {
 
     return dadosPorMes;
   }, [renegociacoes]);
+
+  // Dados para gráfico comparativo de inadimplência vs renegociações
+  const chartDataComparativo = useMemo(() => {
+    const hoje = new Date();
+    const mesesPassados = eachMonthOfInterval({
+      start: subMonths(hoje, 11),
+      end: hoje
+    });
+
+    const dadosPorMes = mesesPassados.map(mes => {
+      const inicioMes = startOfMonth(mes);
+      const fimMes = endOfMonth(mes);
+
+      // Taxa de inadimplência
+      const parcelasVencidasNoMes = dados.filter(p => {
+        const dataVencimento = new Date(p.vencimento);
+        return dataVencimento >= inicioMes && 
+               dataVencimento <= fimMes && 
+               p.situacao !== 'PAGO' &&
+               dataVencimento < hoje;
+      });
+
+      const totalVencidoNoMes = parcelasVencidasNoMes.reduce((sum, p) => sum + p.valor, 0);
+      const totalVencimentoNoMes = dados.filter(p => {
+        const dataVencimento = new Date(p.vencimento);
+        return dataVencimento >= inicioMes && dataVencimento <= fimMes;
+      }).reduce((sum, p) => sum + p.valor, 0);
+
+      const taxaInadimplencia = totalVencimentoNoMes > 0 
+        ? (totalVencidoNoMes / totalVencimentoNoMes) * 100 
+        : 0;
+
+      // Renegociações
+      const renegociacoesDoMes = renegociacoes.filter(r => {
+        const dataRenegociacao = new Date(r.data_renegociacao);
+        return dataRenegociacao >= inicioMes && dataRenegociacao <= fimMes;
+      });
+
+      const quantidadeRenegociacoes = renegociacoesDoMes.length;
+
+      return {
+        mes: format(mes, 'MMM/yy', { locale: ptBR }),
+        inadimplencia: taxaInadimplencia,
+        renegociacoes: quantidadeRenegociacoes
+      };
+    });
+
+    return dadosPorMes;
+  }, [dados, renegociacoes]);
   
   const formatarMoeda = (valor: number) => {
     return new Intl.NumberFormat('pt-BR', {
@@ -668,6 +717,84 @@ export default function AdminDashboard() {
                       name="Valor Total"
                     />
                   </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Gráfico Comparativo: Inadimplência vs Renegociações */}
+            <Card className="border-0 shadow-lg mb-8">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-gray-900">
+                  Inadimplência vs Renegociações
+                </CardTitle>
+                <p className="text-sm text-gray-600">
+                  Relação entre taxa de inadimplência e volume de renegociações
+                </p>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer
+                  config={{
+                    inadimplencia: {
+                      label: 'Taxa de Inadimplência (%)',
+                      color: 'hsl(var(--chart-2))',
+                    },
+                    renegociacoes: {
+                      label: 'Renegociações',
+                      color: 'hsl(var(--chart-3))',
+                    },
+                  }}
+                  className="h-[300px]"
+                >
+                  <LineChart data={chartDataComparativo}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                    <XAxis 
+                      dataKey="mes" 
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <YAxis 
+                      yAxisId="left"
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      tickFormatter={(value) => `${value}%`}
+                    />
+                    <YAxis 
+                      yAxisId="right"
+                      orientation="right"
+                      className="text-xs"
+                      tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                    />
+                    <ChartTooltip 
+                      content={
+                        <ChartTooltipContent 
+                          formatter={(value, name) => {
+                            if (name === 'inadimplencia') {
+                              return `${(value as number).toFixed(1)}%`;
+                            }
+                            return `${value} acordos`;
+                          }}
+                        />
+                      }
+                    />
+                    <Line 
+                      yAxisId="left"
+                      type="monotone" 
+                      dataKey="inadimplencia" 
+                      stroke="hsl(var(--chart-2))"
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--chart-2))' }}
+                      name="Taxa de Inadimplência (%)"
+                    />
+                    <Line 
+                      yAxisId="right"
+                      type="monotone" 
+                      dataKey="renegociacoes" 
+                      stroke="hsl(var(--chart-3))"
+                      strokeWidth={2}
+                      dot={{ fill: 'hsl(var(--chart-3))' }}
+                      name="Renegociações"
+                    />
+                  </LineChart>
                 </ChartContainer>
               </CardContent>
             </Card>
