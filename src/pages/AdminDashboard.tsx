@@ -31,11 +31,13 @@ import {
   X,
   Loader2
 } from 'lucide-react';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, startOfMonth, endOfMonth, eachMonthOfInterval, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
 import { useParcelasData, ParcelaData } from '@/hooks/useParcelasData';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Line, LineChart, Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 interface DadosBaixa {
   dataPagamento: string;
@@ -191,6 +193,52 @@ export default function AdminDashboard() {
         p.situacao === 'A Vencer' && new Date(p.vencimento) >= new Date()
       ).length
     };
+  }, [dados]);
+
+  // Dados para gráficos de evolução
+  const chartData = useMemo(() => {
+    const hoje = new Date();
+    const mesesPassados = eachMonthOfInterval({
+      start: subMonths(hoje, 11),
+      end: hoje
+    });
+
+    const dadosPorMes = mesesPassados.map(mes => {
+      const inicioMes = startOfMonth(mes);
+      const fimMes = endOfMonth(mes);
+
+      const parcelasDoMes = dados.filter(p => {
+        const dataPagamento = p.dataRecebimento ? new Date(p.dataRecebimento) : null;
+        return dataPagamento && dataPagamento >= inicioMes && dataPagamento <= fimMes;
+      });
+
+      const parcelasVencidasNoMes = dados.filter(p => {
+        const dataVencimento = new Date(p.vencimento);
+        return dataVencimento >= inicioMes && 
+               dataVencimento <= fimMes && 
+               p.situacao !== 'PAGO' &&
+               dataVencimento < hoje;
+      });
+
+      const totalPagoNoMes = parcelasDoMes.reduce((sum, p) => sum + p.valorPago, 0);
+      const totalVencidoNoMes = parcelasVencidasNoMes.reduce((sum, p) => sum + p.valor, 0);
+      const totalVencimentoNoMes = dados.filter(p => {
+        const dataVencimento = new Date(p.vencimento);
+        return dataVencimento >= inicioMes && dataVencimento <= fimMes;
+      }).reduce((sum, p) => sum + p.valor, 0);
+
+      const taxaInadimplencia = totalVencimentoNoMes > 0 
+        ? (totalVencidoNoMes / totalVencimentoNoMes) * 100 
+        : 0;
+
+      return {
+        mes: format(mes, 'MMM/yy', { locale: ptBR }),
+        pagamentos: totalPagoNoMes,
+        inadimplencia: taxaInadimplencia
+      };
+    });
+
+    return dadosPorMes;
   }, [dados]);
   
   const formatarMoeda = (valor: number) => {
@@ -376,6 +424,120 @@ export default function AdminDashboard() {
                   <p className="text-sm text-gray-600">
                     {stats.percentualPago.toFixed(1)}% pago
                   </p>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Gráficos de Evolução */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+              {/* Gráfico de Pagamentos */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    Evolução de Pagamentos
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Valores pagos nos últimos 12 meses
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={{
+                      pagamentos: {
+                        label: 'Pagamentos',
+                        color: 'hsl(var(--chart-1))',
+                      },
+                    }}
+                    className="h-[300px]"
+                  >
+                    <LineChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="mes" 
+                        className="text-xs"
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis 
+                        className="text-xs"
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tickFormatter={(value) => 
+                          new Intl.NumberFormat('pt-BR', {
+                            notation: 'compact',
+                            style: 'currency',
+                            currency: 'BRL'
+                          }).format(value)
+                        }
+                      />
+                      <ChartTooltip 
+                        content={
+                          <ChartTooltipContent 
+                            formatter={(value) => 
+                              new Intl.NumberFormat('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL'
+                              }).format(value as number)
+                            }
+                          />
+                        }
+                      />
+                      <Line 
+                        type="monotone" 
+                        dataKey="pagamentos" 
+                        stroke="hsl(var(--chart-1))"
+                        strokeWidth={2}
+                        dot={{ fill: 'hsl(var(--chart-1))' }}
+                      />
+                    </LineChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+
+              {/* Gráfico de Inadimplência */}
+              <Card className="border-0 shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold text-gray-900">
+                    Taxa de Inadimplência
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Percentual de inadimplência nos últimos 12 meses
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer
+                    config={{
+                      inadimplencia: {
+                        label: 'Inadimplência',
+                        color: 'hsl(var(--chart-2))',
+                      },
+                    }}
+                    className="h-[300px]"
+                  >
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+                      <XAxis 
+                        dataKey="mes" 
+                        className="text-xs"
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                      />
+                      <YAxis 
+                        className="text-xs"
+                        tick={{ fill: 'hsl(var(--muted-foreground))' }}
+                        tickFormatter={(value) => `${value}%`}
+                      />
+                      <ChartTooltip 
+                        content={
+                          <ChartTooltipContent 
+                            formatter={(value) => `${(value as number).toFixed(1)}%`}
+                          />
+                        }
+                      />
+                      <Bar 
+                        dataKey="inadimplencia" 
+                        fill="hsl(var(--chart-2))"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ChartContainer>
                 </CardContent>
               </Card>
             </div>
