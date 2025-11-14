@@ -14,10 +14,13 @@ import {
   Download,
   Filter,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Loader2
 } from 'lucide-react';
 import { format, parseISO, isBefore, isAfter } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useParcelasData } from '@/hooks/useParcelasData';
+import { useAuth } from '@/hooks/useAuth';
 
 // Tipos
 interface Parcela {
@@ -155,12 +158,30 @@ function processarDados(dados: any[]): ClienteData[] {
 }
 
 // Componente principal
-export default function ClienteDashboard({ dados = [] }: { dados?: any[] }) {
+export default function ClienteDashboard() {
+  const { user } = useAuth();
+  const { parcelas, isLoading } = useParcelasData(user?.id);
   const [clienteSelecionado, setClienteSelecionado] = useState<string>('');
   const [loteExpandido, setLoteExpandido] = useState<string>('');
   const [filtroSituacao, setFiltroSituacao] = useState<'TODOS' | 'PAGO' | 'A Vencer'>('TODOS');
   
-  const clientesProcessados = useMemo(() => processarDados(dados), [dados]);
+  const clientesProcessados = useMemo(() => {
+    // Transformar parcelas do hook para o formato esperado
+    const dadosFormatados = parcelas.map((p, index) => ({
+      'Quadra/Lote': p.quadraLote,
+      'Cliente': p.cliente,
+      'Descrição': p.descricao,
+      'Vencimento': p.vencimento,
+      'Valor': p.valor,
+      'Situação': p.situacao,
+      'Data Recebimento': p.dataRecebimento,
+      'Desconto': p.desconto,
+      'Juros': p.juros,
+      'Honorarios': p.honorarios,
+      'Valor Pago': p.valorPago
+    }));
+    return processarDados(dadosFormatados);
+  }, [parcelas]);
   
   const cliente = clientesProcessados.find(c => c.cliente === clienteSelecionado);
   
@@ -204,6 +225,17 @@ export default function ClienteDashboard({ dados = [] }: { dados?: any[] }) {
     
     return 'A Vencer';
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white p-6 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-gray-600">Carregando suas informações...</p>
+        </div>
+      </div>
+    );
+  }
 
   if (!clienteSelecionado) {
     return (

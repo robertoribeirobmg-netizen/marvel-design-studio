@@ -28,27 +28,14 @@ import {
   Download,
   Upload,
   AlertCircle,
-  X
+  X,
+  Loader2
 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import { toast } from 'sonner';
-
-interface Parcela {
-  id: string;
-  quadraLote: string;
-  cliente: string;
-  descricao: string;
-  vencimento: string;
-  valor: number;
-  situacao: 'PAGO' | 'A Vencer';
-  dataRecebimento?: string;
-  desconto: number;
-  juros: number;
-  honorarios: number;
-  valorPago: number;
-}
+import { useParcelasData, ParcelaData } from '@/hooks/useParcelasData';
 
 interface DadosBaixa {
   dataPagamento: string;
@@ -59,8 +46,8 @@ interface DadosBaixa {
 }
 
 export default function AdminDashboard() {
-  const [dados, setDados] = useState<Parcela[]>([]);
-  const [parcelaSelecionada, setParcelaSelecionada] = useState<Parcela | null>(null);
+  const { parcelas: dados, isLoading, atualizarParcela, refetch } = useParcelasData();
+  const [parcelaSelecionada, setParcelaSelecionada] = useState<ParcelaData | null>(null);
   const [modalBaixaAberto, setModalBaixaAberto] = useState(false);
   const [dadosBaixa, setDadosBaixa] = useState<DadosBaixa>({
     dataPagamento: format(new Date(), 'yyyy-MM-dd'),
@@ -75,46 +62,9 @@ export default function AdminDashboard() {
   const [filtroLote, setFiltroLote] = useState('');
   const [filtroSituacao, setFiltroSituacao] = useState<'TODOS' | 'PAGO' | 'A Vencer' | 'VENCIDO'>('A Vencer');
   
-  // Processar arquivo Excel
+  // Processar arquivo Excel (Legacy - não recomendado)
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const binaryStr = event.target?.result;
-        const workbook = XLSX.read(binaryStr, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
-        
-        const parcelasProcessadas: Parcela[] = jsonData.map((row: any, index) => ({
-          id: `${row['Quadra/Lote']}-${index}`,
-          quadraLote: row['Quadra/Lote'],
-          cliente: row['Cliente'],
-          descricao: row['Descrição'],
-          vencimento: row['Vencimento'],
-          valor: parseFloat(row['Valor']) || 0,
-          situacao: row['Situação'],
-          dataRecebimento: row['Data Recebimento'],
-          desconto: parseInt(row['Desconto']) || 0,
-          juros: parseFloat(row['Juros']) || 0,
-          honorarios: parseInt(row['Honorarios']) || 0,
-          valorPago: typeof row['Valor Pago'] === 'number' 
-            ? row['Valor Pago'] 
-            : parseFloat(row['Valor Pago']) || 0
-        }));
-        
-        setDados(parcelasProcessadas);
-        toast.success(`${parcelasProcessadas.length} parcelas carregadas com sucesso!`);
-      } catch (error) {
-        toast.error('Erro ao processar arquivo. Verifique o formato.');
-        console.error(error);
-      }
-    };
-    
-    reader.readAsBinaryString(file);
+    toast.info('Use o sistema de banco de dados para gerenciar parcelas');
   };
   
   // Exportar dados atualizados
@@ -140,7 +90,7 @@ export default function AdminDashboard() {
   };
   
   // Abrir modal de baixa
-  const abrirModalBaixa = (parcela: Parcela) => {
+  const abrirModalBaixa = (parcela: ParcelaData) => {
     setParcelaSelecionada(parcela);
     setDadosBaixa({
       dataPagamento: format(new Date(), 'yyyy-MM-dd'),
@@ -152,52 +102,42 @@ export default function AdminDashboard() {
     setModalBaixaAberto(true);
   };
   
-  // Dar baixa na parcela
-  const darBaixa = () => {
-    if (!parcelaSelecionada) return;
-    
-    const parcelasAtualizadas = dados.map(p => {
-      if (p.id === parcelaSelecionada.id) {
-        return {
-          ...p,
-          situacao: 'PAGO' as const,
-          dataRecebimento: dadosBaixa.dataPagamento,
-          valorPago: dadosBaixa.valorPago,
-          juros: dadosBaixa.juros,
-          honorarios: dadosBaixa.honorarios,
-          desconto: dadosBaixa.desconto
-        };
-      }
-      return p;
-    });
-    
-    setDados(parcelasAtualizadas);
-    setModalBaixaAberto(false);
-    setParcelaSelecionada(null);
-    toast.success('Baixa realizada com sucesso!');
-  };
-  
   // Estornar pagamento
-  const estornarPagamento = (parcela: Parcela) => {
+  const estornarPagamento = async (parcela: ParcelaData) => {
     if (!confirm('Deseja realmente estornar este pagamento?')) return;
     
-    const parcelasAtualizadas = dados.map(p => {
-      if (p.id === parcela.id) {
-        return {
-          ...p,
-          situacao: 'A Vencer' as const,
-          dataRecebimento: undefined,
-          valorPago: 0,
-          juros: 0,
-          honorarios: 0,
-          desconto: 0
-        };
-      }
-      return p;
-    });
-    
-    setDados(parcelasAtualizadas);
-    toast.success('Pagamento estornado com sucesso!');
+    try {
+      await atualizarParcela(parcela.parcelaId, {
+        data_pagamento: '',
+        valor_pago: 0,
+        juros: 0,
+        honorarios: 0,
+        desconto: 0
+      });
+      toast.success('Pagamento estornado com sucesso!');
+    } catch (error) {
+      // Error já tratado no hook
+    }
+  };
+
+  // Dar baixa em parcela
+  const handleDarBaixa = async () => {
+    if (!parcelaSelecionada) return;
+
+    try {
+      await atualizarParcela(parcelaSelecionada.parcelaId, {
+        data_pagamento: dadosBaixa.dataPagamento,
+        valor_pago: dadosBaixa.valorPago,
+        juros: dadosBaixa.juros,
+        honorarios: dadosBaixa.honorarios,
+        desconto: dadosBaixa.desconto
+      });
+
+      setModalBaixaAberto(false);
+      setParcelaSelecionada(null);
+    } catch (error) {
+      // Error já tratado no hook
+    }
   };
   
   // Filtrar parcelas
@@ -268,7 +208,7 @@ export default function AdminDashboard() {
     }
   };
   
-  const getStatusColor = (parcela: Parcela) => {
+  const getStatusColor = (parcela: ParcelaData) => {
     if (parcela.situacao === 'PAGO') {
       return 'bg-green-100 text-green-800 border-green-200';
     }
@@ -283,7 +223,7 @@ export default function AdminDashboard() {
     return 'bg-blue-100 text-blue-800 border-blue-200';
   };
   
-  const getStatusText = (parcela: Parcela) => {
+  const getStatusText = (parcela: ParcelaData) => {
     if (parcela.situacao === 'PAGO') return 'Pago';
     
     const hoje = new Date();
@@ -739,7 +679,7 @@ export default function AdminDashboard() {
               Cancelar
             </Button>
             <Button
-              onClick={darBaixa}
+              onClick={handleDarBaixa}
               className="bg-emerald-600 hover:bg-emerald-700"
             >
               <CheckCircle2 className="h-4 w-4 mr-2" />
