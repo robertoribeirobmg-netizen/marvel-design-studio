@@ -248,6 +248,27 @@ export default function AreaCooperado() {
             <Card className="hover:shadow-lg transition-shadow cursor-pointer">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Financeiro
+                </CardTitle>
+                <CardDescription>
+                  Visualize suas parcelas e pagamentos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => document.getElementById('dashboard-financeiro')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Ver Detalhes
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
                   <FileText className="h-5 w-5 text-primary" />
                   Documentos
                 </CardTitle>
@@ -265,7 +286,9 @@ export default function AreaCooperado() {
           </div>
 
           {/* Dashboard Financeiro */}
-          {user && <DashboardFinanceiro userId={user.id} />}
+          <div id="dashboard-financeiro">
+            {user && <DashboardFinanceiro userId={user.id} />}
+          </div>
 
           {/* Photo and Video Gallery */}
           <Card>
