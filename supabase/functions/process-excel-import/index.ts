@@ -7,6 +7,76 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Rate limiting configuration
+const RATE_LIMIT_WINDOW = 60000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 3; // 3 imports per minute (strict for heavy operations)
+
+// Helper function to check rate limit
+async function checkRateLimit(supabase: any, identifier: string, endpoint: string) {
+  const now = new Date();
+  const windowStart = new Date(now.getTime() - RATE_LIMIT_WINDOW);
+  
+  await supabase
+    .from('rate_limits')
+    .delete()
+    .lt('window_start', windowStart.toISOString());
+  
+  const { data: rateLimit } = await supabase
+    .from('rate_limits')
+    .select('*')
+    .eq('identifier', identifier)
+    .eq('endpoint', endpoint)
+    .gte('window_start', windowStart.toISOString())
+    .single();
+  
+  if (rateLimit) {
+    if (rateLimit.request_count >= MAX_REQUESTS_PER_WINDOW) {
+      return { allowed: false, remaining: 0 };
+    }
+    
+    await supabase
+      .from('rate_limits')
+      .update({ request_count: rateLimit.request_count + 1 })
+      .eq('id', rateLimit.id);
+    
+    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - rateLimit.request_count - 1 };
+  } else {
+    await supabase
+      .from('rate_limits')
+      .insert({
+        identifier,
+        endpoint,
+        request_count: 1,
+        window_start: now.toISOString()
+      });
+    
+    return { allowed: true, remaining: MAX_REQUESTS_PER_WINDOW - 1 };
+  }
+}
+
+// Helper function to log security events
+async function logSecurityEvent(
+  supabase: any, 
+  eventType: string, 
+  req: Request,
+  userId?: string,
+  details?: any
+) {
+  const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+  const userAgent = req.headers.get('user-agent') || 'unknown';
+  
+  await supabase
+    .from('security_logs')
+    .insert({
+      event_type: eventType,
+      user_id: userId || null,
+      ip_address: ipAddress,
+      user_agent: userAgent,
+      endpoint: '/process-excel-import',
+      details: details || {}
+    });
+}
+
 interface ParcelaExcel {
   quadraLote: string;
   cliente: string;
@@ -79,15 +149,76 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      await logSecurityEvent(supabase, 'failed_auth', req, undefined, { 
+        error: 'No authorization header' 
+      });
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+
+    if (authError || !user) {
+      await logSecurityEvent(supabase, 'failed_auth', req, undefined, { 
+        error: 'Invalid token' 
+      });
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 401 
+        }
+      );
+    }
+
+    // Check rate limit
+    const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
+    const rateLimitCheck = await checkRateLimit(supabase, ipAddress, '/process-excel-import');
+    
+    if (!rateLimitCheck.allowed) {
+      await logSecurityEvent(supabase, 'rate_limit_exceeded', req, user.id, {
+        endpoint: '/process-excel-import',
+        ip: ipAddress
+      });
+      return new Response(
+        JSON.stringify({ error: 'Too many import requests. Please wait before trying again.' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 429 
+        }
+      );
+    }
+
     // Get the Excel file from the request
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
+      await logSecurityEvent(supabase, 'validation_error', req, user.id, {
+        error: 'No file provided'
+      });
       throw new Error('Nenhum arquivo foi enviado');
     }
 
     console.log('Processando arquivo:', file.name);
+    
+    // Validate file type
+    if (!file.name.endsWith('.xlsx') && !file.name.endsWith('.xls')) {
+      await logSecurityEvent(supabase, 'validation_error', req, user.id, {
+        error: 'Invalid file type',
+        filename: file.name
+      });
+      throw new Error('Apenas arquivos Excel (.xlsx, .xls) são permitidos');
+    }
 
     // Read the Excel file
     const arrayBuffer = await file.arrayBuffer();
@@ -314,12 +445,44 @@ serve(async (req) => {
 
     console.log('Importação concluída:', results);
 
+    // Get user for logging
+    const userAuthHeader = req.headers.get('Authorization');
+    if (userAuthHeader) {
+      const userToken = userAuthHeader.replace('Bearer ', '');
+      const { data: { user: logUser } } = await supabase.auth.getUser(userToken);
+      
+      await logSecurityEvent(supabase, 'import_completed', req, logUser?.id, {
+        success_count: results.success,
+        errors_count: results.errors.length,
+        cooperados_count: results.cooperadosDetalhes.length
+      });
+    }
+
     return new Response(JSON.stringify(results), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
     console.error('Erro na função:', error);
+    
+    // Log import error
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+      const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+      const supabase = createClient(supabaseUrl, supabaseKey);
+      
+      const errorAuthHeader = req.headers.get('Authorization');
+      if (errorAuthHeader) {
+        const errorToken = errorAuthHeader.replace('Bearer ', '');
+        const { data: { user: errorUser } } = await supabase.auth.getUser(errorToken);
+        await logSecurityEvent(supabase, 'import_error', req, errorUser?.id, {
+          error: error.message
+        });
+      }
+    } catch (logError) {
+      console.error('Failed to log error event:', logError);
+    }
+    
     return new Response(
       JSON.stringify({ error: error.message }),
       {
