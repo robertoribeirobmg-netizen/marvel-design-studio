@@ -3,7 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, AlertCircle, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -12,8 +12,10 @@ import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
-import { format } from 'date-fns';
+import { useParcelasData } from '@/hooks/useParcelasData';
+import { format, differenceInDays, parseISO, isBefore, isAfter, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -29,6 +31,8 @@ export default function AreaCooperado() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
+
+  const { parcelas, isLoading: isLoadingParcelas } = useParcelasData(user?.id);
 
   useEffect(() => {
     if (user) {
@@ -113,6 +117,25 @@ export default function AreaCooperado() {
     setLightboxOpen(true);
   };
 
+  // Calcular notificações de parcelas
+  const hoje = new Date();
+  const parcelasVencendo = parcelas.filter(p => {
+    if (p.situacao === 'PAGO') return false;
+    const vencimento = parseISO(p.vencimento);
+    const diasRestantes = differenceInDays(vencimento, hoje);
+    return diasRestantes >= 0 && diasRestantes <= 7;
+  });
+
+  const parcelasAtrasadas = parcelas.filter(p => {
+    if (p.situacao === 'PAGO') return false;
+    const vencimento = parseISO(p.vencimento);
+    return isBefore(vencimento, hoje);
+  });
+
+  const totalEmAberto = parcelas
+    .filter(p => p.situacao !== 'PAGO')
+    .reduce((sum, p) => sum + p.valor, 0);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Header */}
@@ -151,6 +174,116 @@ export default function AreaCooperado() {
               Acompanhe aqui todas as informações sobre o Residencial La Felicità
             </p>
           </div>
+
+          {/* Notificações Financeiras */}
+          {!isLoadingParcelas && (parcelasAtrasadas.length > 0 || parcelasVencendo.length > 0) && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 mb-2">
+                <Bell className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Notificações</h3>
+              </div>
+              
+              {parcelasAtrasadas.length > 0 && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Parcelas em Atraso</AlertTitle>
+                  <AlertDescription className="mt-2 space-y-2">
+                    <p className="font-semibold">
+                      Você possui {parcelasAtrasadas.length} parcela(s) em atraso
+                    </p>
+                    <div className="space-y-1">
+                      {parcelasAtrasadas.slice(0, 3).map(parcela => {
+                        const diasAtraso = Math.abs(differenceInDays(parseISO(parcela.vencimento), hoje));
+                        return (
+                          <div key={parcela.id} className="flex justify-between items-center text-sm bg-destructive/10 p-2 rounded">
+                            <span>{parcela.descricao}</span>
+                            <div className="text-right">
+                              <p className="font-semibold">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parcela.valor)}
+                              </p>
+                              <p className="text-xs opacity-80">{diasAtraso} dia(s) de atraso</p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {parcelasAtrasadas.length > 3 && (
+                        <p className="text-sm opacity-80 pt-1">
+                          + {parcelasAtrasadas.length - 3} parcela(s) atrasada(s)
+                        </p>
+                      )}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2 bg-background hover:bg-background/90"
+                      onClick={() => document.getElementById('dashboard-financeiro')?.scrollIntoView({ behavior: 'smooth' })}
+                    >
+                      Ver Detalhes
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {parcelasVencendo.length > 0 && (
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertTitle>Parcelas Próximas do Vencimento</AlertTitle>
+                  <AlertDescription className="mt-2 space-y-2">
+                    <p className="font-semibold">
+                      {parcelasVencendo.length} parcela(s) vencem nos próximos 7 dias
+                    </p>
+                    <div className="space-y-1">
+                      {parcelasVencendo.slice(0, 3).map(parcela => {
+                        const diasRestantes = differenceInDays(parseISO(parcela.vencimento), hoje);
+                        return (
+                          <div key={parcela.id} className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded">
+                            <span>{parcela.descricao}</span>
+                            <div className="text-right">
+                              <p className="font-semibold">
+                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parcela.valor)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                Vence em {diasRestantes} dia(s)
+                              </p>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {parcelasVencendo.length > 3 && (
+                        <p className="text-sm text-muted-foreground pt-1">
+                          + {parcelasVencendo.length - 3} parcela(s) a vencer
+                        </p>
+                      )}
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm" 
+                      className="mt-2"
+                      onClick={() => document.getElementById('dashboard-financeiro')?.scrollIntoView({ behavior: 'smooth' })}
+                    >
+                      Ver Detalhes
+                    </Button>
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {totalEmAberto > 0 && (
+                <Card className="border-l-4 border-l-primary">
+                  <CardContent className="pt-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valor Total em Aberto</p>
+                        <p className="text-2xl font-bold text-primary">
+                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalEmAberto)}
+                        </p>
+                      </div>
+                      <TrendingUp className="h-8 w-8 text-primary opacity-50" />
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+          )}
 
           {/* Profile Info */}
           {isLoading ? (
