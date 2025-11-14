@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 import { read, utils } from 'https://deno.land/x/sheetjs@v0.18.3/xlsx.mjs';
+import { z } from 'https://deno.land/x/zod@v3.22.4/mod.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -90,6 +91,52 @@ interface ParcelaExcel {
   honorarios: number;
   valorPago: number;
 }
+
+// Validation schema for Excel parcela data
+const parcelaSchema = z.object({
+  quadraLote: z.string()
+    .trim()
+    .min(1, 'Quadra/Lote é obrigatório')
+    .max(100, 'Quadra/Lote deve ter no máximo 100 caracteres')
+    .regex(/^[a-zA-Z0-9\s\/\-]+$/, 'Quadra/Lote contém caracteres inválidos'),
+  cliente: z.string()
+    .trim()
+    .min(1, 'Nome do cliente é obrigatório')
+    .max(200, 'Nome do cliente deve ter no máximo 200 caracteres')
+    .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome do cliente deve conter apenas letras e espaços'),
+  descricao: z.string()
+    .trim()
+    .max(500, 'Descrição deve ter no máximo 500 caracteres')
+    .optional()
+    .default(''),
+  vencimento: z.string()
+    .min(1, 'Data de vencimento é obrigatória'),
+  valor: z.number()
+    .min(0, 'Valor não pode ser negativo')
+    .max(999999999, 'Valor excede o limite máximo'),
+  situacao: z.string()
+    .trim()
+    .max(50, 'Situação deve ter no máximo 50 caracteres'),
+  dataRecebimento: z.string()
+    .optional()
+    .default(''),
+  desconto: z.number()
+    .min(0, 'Desconto não pode ser negativo')
+    .max(999999999, 'Desconto excede o limite máximo')
+    .default(0),
+  juros: z.number()
+    .min(0, 'Juros não pode ser negativo')
+    .max(999999999, 'Juros excede o limite máximo')
+    .default(0),
+  honorarios: z.number()
+    .min(0, 'Honorários não pode ser negativo')
+    .max(999999999, 'Honorários excede o limite máximo')
+    .default(0),
+  valorPago: z.number()
+    .min(0, 'Valor pago não pode ser negativo')
+    .max(999999999, 'Valor pago excede o limite máximo')
+    .default(0)
+})
 
 const parseValorMonetario = (valor: any): number => {
   if (typeof valor === 'number') return valor;
@@ -230,11 +277,13 @@ serve(async (req) => {
 
     const linhas = jsonData.slice(1);
     const parcelasExcel: ParcelaExcel[] = [];
+    const validationErrors: string[] = [];
     
-    for (const linha of linhas) {
+    for (let i = 0; i < linhas.length; i++) {
+      const linha = linhas[i];
       if (!linha[0] || !linha[1]) continue;
       
-      parcelasExcel.push({
+      const parcelaData = {
         quadraLote: linha[0]?.toString().trim() || '',
         cliente: linha[1]?.toString().trim() || '',
         descricao: linha[2]?.toString().trim() || '',
@@ -246,10 +295,47 @@ serve(async (req) => {
         juros: parseValorMonetario(linha[8]),
         honorarios: parseValorMonetario(linha[9]),
         valorPago: parseValorMonetario(linha[10]),
+      };
+      
+      // Validate each parcela
+      const validationResult = parcelaSchema.safeParse(parcelaData);
+      
+      if (!validationResult.success) {
+        const errors = validationResult.error.issues.map(issue => 
+          `Linha ${i + 2}: ${issue.path.join('.')} - ${issue.message}`
+        ).join('; ');
+        validationErrors.push(errors);
+        console.warn(`Validation error on line ${i + 2}:`, errors);
+        continue; // Skip invalid rows
+      }
+      
+      parcelasExcel.push(validationResult.data);
+    }
+    
+    // If too many validation errors, abort
+    if (validationErrors.length > 50) {
+      await logSecurityEvent(supabase, 'validation_error', req, user?.id, {
+        error: 'Too many validation errors in Excel file',
+        error_count: validationErrors.length
       });
+      
+      return new Response(
+        JSON.stringify({ 
+          error: 'Muitos erros de validação no arquivo Excel',
+          details: validationErrors.slice(0, 20) // Return first 20 errors
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      );
     }
 
     console.log('Parcelas processadas:', parcelasExcel.length);
+    
+    if (validationErrors.length > 0) {
+      console.warn(`${validationErrors.length} linhas com erros de validação foram ignoradas`);
+    }
 
     // Agrupar por cliente
     const clientesMap = new Map<string, ParcelaExcel[]>();
@@ -268,6 +354,7 @@ serve(async (req) => {
     const results = {
       success: 0,
       errors: [] as string[],
+      validationWarnings: validationErrors,
       cooperadosDetalhes: [] as any[],
     };
 
@@ -454,6 +541,7 @@ serve(async (req) => {
       await logSecurityEvent(supabase, 'import_completed', req, logUser?.id, {
         success_count: results.success,
         errors_count: results.errors.length,
+        validation_warnings_count: results.validationWarnings.length,
         cooperados_count: results.cooperadosDetalhes.length
       });
     }
