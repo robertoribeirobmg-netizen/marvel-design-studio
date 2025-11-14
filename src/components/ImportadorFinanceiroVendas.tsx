@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Upload, FileSpreadsheet } from 'lucide-react';
+import { Upload, FileSpreadsheet, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 import { useNavigate } from 'react-router-dom';
@@ -27,6 +27,16 @@ export function ImportadorFinanceiroVendas() {
   const [excelFile, setExcelFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const navigate = useNavigate();
+
+  const downloadTemplate = () => {
+    const link = document.createElement('a');
+    link.href = '/temp-import.xlsx';
+    link.download = 'template_importacao_financeira.xlsx';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    toast.success('Template de exemplo baixado com sucesso!');
+  };
 
   const parseValorMonetario = (valor: string): number => {
     if (typeof valor === 'number') return valor;
@@ -292,6 +302,27 @@ export function ImportadorFinanceiroVendas() {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
+          {/* Botão de Download do Template */}
+          <div className="bg-muted/50 border border-border rounded-lg p-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h4 className="text-sm font-medium mb-1">Precisa de um exemplo?</h4>
+                <p className="text-xs text-muted-foreground">
+                  Baixe o template de exemplo com dados reais formatados corretamente
+                </p>
+              </div>
+              <Button 
+                onClick={downloadTemplate}
+                variant="outline"
+                size="sm"
+                className="ml-4"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Baixar Template
+              </Button>
+            </div>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="excel-vendas">Arquivo Excel (.xlsx)</Label>
             <Input
