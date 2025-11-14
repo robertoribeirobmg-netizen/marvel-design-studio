@@ -81,6 +81,102 @@ export function ImportadorFinanceiroVendas() {
     }
   };
 
+  const processarArquivoServidor = async () => {
+    setIsProcessing(true);
+    try {
+      const response = await fetch('/temp-import.xlsx');
+      const blob = await response.blob();
+      const file = new File([blob], 'temp-import.xlsx', { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      
+      const data = await file.arrayBuffer();
+      const workbook = XLSX.read(data);
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+
+      const linhas = jsonData.slice(1) as any[][];
+      const parcelasExcel: ParcelaExcel[] = [];
+      
+      for (const linha of linhas) {
+        if (!linha[0] || !linha[1]) continue;
+        
+        parcelasExcel.push({
+          quadraLote: linha[0]?.toString().trim() || '',
+          cliente: linha[1]?.toString().trim() || '',
+          descricao: linha[2]?.toString().trim() || '',
+          vencimento: linha[3]?.toString() || '',
+          valor: parseValorMonetario(linha[4]),
+          situacao: linha[5]?.toString().trim() || '',
+          dataRecebimento: linha[6]?.toString() || '',
+          desconto: parseValorMonetario(linha[7]),
+          juros: parseValorMonetario(linha[8]),
+          honorarios: parseValorMonetario(linha[9]),
+          valorPago: parseValorMonetario(linha[10]),
+        });
+      }
+
+      const clientesMap = new Map<string, ParcelaExcel[]>();
+      
+      for (const parcela of parcelasExcel) {
+        const clienteKey = `${parcela.cliente}|${parcela.quadraLote}`;
+        if (!clientesMap.has(clienteKey)) {
+          clientesMap.set(clienteKey, []);
+        }
+        clientesMap.get(clienteKey)!.push(parcela);
+      }
+
+      const previewData = Array.from(clientesMap.entries()).map(([clienteKey, parcelas]) => {
+        const [cliente, quadraLote] = clienteKey.split('|');
+        const valorTotal = parcelas.reduce((sum, p) => sum + p.valor, 0);
+        const valorPago = parcelas.reduce((sum, p) => sum + p.valorPago, 0);
+        const parcelas_validas = parcelas.filter(p => p.vencimento).length;
+        
+        return {
+          cliente,
+          quadraLote,
+          numeroParcelas: parcelas.length,
+          parcelasValidas: parcelas_validas,
+          valorTotal: valorTotal.toFixed(2),
+          valorPago: valorPago.toFixed(2),
+          parcelas: parcelas.map((p, idx) => ({
+            numero: idx + 1,
+            descricao: p.descricao,
+            vencimento: parseData(p.vencimento),
+            valor: p.valor,
+            situacao: p.situacao,
+            dataRecebimento: parseData(p.dataRecebimento),
+            desconto: p.desconto,
+            juros: p.juros,
+            honorarios: p.honorarios,
+            valorPago: p.valorPago,
+          })),
+          valido: parcelas_validas > 0 && cliente && quadraLote,
+        };
+      });
+
+      const stats = {
+        totalRegistros: previewData.length,
+        registrosValidos: previewData.filter(r => r.valido).length,
+        registrosInvalidos: previewData.filter(r => !r.valido).length,
+        totalParcelas: previewData.reduce((sum, r) => sum + r.numeroParcelas, 0),
+      };
+
+      navigate('/preview-importacao', {
+        state: {
+          previewData,
+          previewStats: stats,
+          isFinancialImport: true,
+        }
+      });
+
+      toast.success(`${previewData.length} cooperados processados para preview`);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao processar arquivo do servidor');
+      console.error('Erro ao processar arquivo do servidor:', error);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   const processarExcel = async () => {
     if (!excelFile) {
       toast.error('Selecione um arquivo Excel');
@@ -208,14 +304,25 @@ export function ImportadorFinanceiroVendas() {
               Formato esperado: Quadra/Lote | Cliente | Descrição | Vencimento | Valor | Situação | Data Recebimento | Desconto | Juros | Honorários | Valor Pago
             </p>
           </div>
-          <Button 
-            onClick={processarExcel} 
-            disabled={isProcessing || !excelFile}
-            className="w-full"
-          >
-            <Upload className="h-4 w-4 mr-2" />
-            {isProcessing ? 'Processando...' : 'Processar e Visualizar'}
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={processarExcel} 
+              disabled={isProcessing || !excelFile}
+              className="flex-1"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              {isProcessing ? 'Processando...' : 'Processar e Visualizar'}
+            </Button>
+            <Button 
+              onClick={processarArquivoServidor} 
+              disabled={isProcessing}
+              variant="secondary"
+              className="flex-1"
+            >
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              {isProcessing ? 'Processando...' : 'Processar Arquivo Enviado'}
+            </Button>
+          </div>
         </div>
       </CardContent>
     </Card>
