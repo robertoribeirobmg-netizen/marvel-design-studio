@@ -27,10 +27,6 @@ import ImportacaoParcelasCohapm from "./pages/ImportacaoParcelasCohapm";
 import ReconciliacaoCohapm from "./pages/ReconciliacaoCohapm";
 import HistoricoSincronizacoes from "./pages/HistoricoSincronizacoes";
 import DashboardAnaliticoCohapm from "./pages/DashboardAnaliticoCohapm";
-import FinanceiroDashboard from "./pages/FinanceiroDashboard";
-import FinanceiroContratos from "./pages/FinanceiroContratos";
-import FinanceiroParcelas from "./pages/FinanceiroParcelas";
-import FinanceiroRelatorios from "./pages/FinanceiroRelatorios";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -184,10 +180,6 @@ const App = () => (
                     </ProtectedRoute>
                   }
                 />
-                <Route path="/financeiro-dashboard" element={<ProtectedRoute adminOnly><FinanceiroDashboard /></ProtectedRoute>} />
-                <Route path="/financeiro-contratos" element={<ProtectedRoute adminOnly><FinanceiroContratos /></ProtectedRoute>} />
-                <Route path="/financeiro-parcelas" element={<ProtectedRoute adminOnly><FinanceiroParcelas /></ProtectedRoute>} />
-                <Route path="/financeiro-relatorios" element={<ProtectedRoute adminOnly><FinanceiroRelatorios /></ProtectedRoute>} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

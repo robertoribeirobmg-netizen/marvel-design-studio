@@ -17,7 +17,6 @@ import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FinanceiroAdmin } from '@/components/FinanceiroAdmin';
 import { ImportadorFinanceiroVendas } from '@/components/ImportadorFinanceiroVendas';
 import { DashboardCooperados } from '@/components/DashboardCooperados';
 import { AdminObras } from '@/components/AdminObras';
@@ -26,6 +25,7 @@ import { TimelineObras } from '@/components/TimelineObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { AdminGaleria } from '@/components/AdminGaleria';
 import { ValidationErrorsAnalytics } from '@/components/ValidationErrorsAnalytics';
+import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -2100,8 +2100,7 @@ export default function Admin() {
                   </CardContent>
                 </Card>
                 
-                <ImportadorFinanceiroVendas />
-                <FinanceiroAdmin />
+                <FinanceiroAdminDashboard />
               </div>
             </TabsContent>
 

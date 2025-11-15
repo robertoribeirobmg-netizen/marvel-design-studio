@@ -9,9 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComp } from '@/components/ui/calendar';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
-import { DashboardFinanceiro } from '@/components/DashboardFinanceiro';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
+import { FinanceiroCooperadoDashboard } from '@/components/cooperado/FinanceiroCooperadoDashboard';
 import { useParcelasData } from '@/hooks/useParcelasData';
 import { format, differenceInDays, parseISO, isBefore, isAfter, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -420,7 +420,7 @@ export default function AreaCooperado() {
 
           {/* Dashboard Financeiro */}
           <div id="dashboard-financeiro">
-            {user && <DashboardFinanceiro userId={user.id} />}
+            {user && <FinanceiroCooperadoDashboard userId={user.id} />}
           </div>
 
           {/* Photo and Video Gallery */}
