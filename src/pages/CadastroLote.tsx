@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Upload, FileSpreadsheet, ArrowLeft, AlertCircle, CheckCircle2, XCircle, Users } from 'lucide-react';
+import { Upload, FileSpreadsheet, ArrowLeft, AlertCircle, CheckCircle2, XCircle, Users, ArrowRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import * as XLSX from 'xlsx';
+import ColumnMappingSelector from '@/components/ColumnMappingSelector';
 
 interface CooperadoData {
   nome_completo: string;
@@ -70,13 +71,30 @@ const normalizarNome = (nome: string): string => {
   return nome.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
 };
 
+interface ColumnMapping {
+  [key: string]: number | null;
+}
+
 export default function CadastroLote() {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [cooperados, setCooperados] = useState<CooperadoData[]>([]);
   const [showPreview, setShowPreview] = useState(false);
+  const [showMapping, setShowMapping] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
+  const [excelData, setExcelData] = useState<any[][]>([]);
+  const [columnMapping, setColumnMapping] = useState<ColumnMapping>({
+    nome_completo: null,
+    email: null,
+    cpf: null,
+    telefone: null,
+    quadra: null,
+    lote: null,
+    fase: null,
+    data_compra: null,
+  });
   const [resultado, setResultado] = useState<{
     success: number;
     errors: Array<{ nome: string; error: string }>;
@@ -91,6 +109,7 @@ export default function CadastroLote() {
       }
       setFile(selectedFile);
       setShowPreview(false);
+      setShowMapping(false);
       setResultado(null);
     }
   };
@@ -108,49 +127,69 @@ export default function CadastroLote() {
       const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
       const sheetData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 }) as any[][];
 
-      const cooperadosData: CooperadoData[] = [];
-
-      // Log primeira linha para debug
-      if (sheetData.length > 1) {
-        console.log('Primeira linha de dados (exemplo):', sheetData[1]);
-        console.log('Headers detectados:', sheetData[0]);
+      if (sheetData.length < 2) {
+        throw new Error('O arquivo deve conter pelo menos uma linha de cabeçalho e uma linha de dados');
       }
 
-      // Pular o cabeçalho (linha 0)
-      for (let i = 1; i < sheetData.length; i++) {
-        const row = sheetData[i];
+      // Extrair headers da primeira linha
+      const headers = sheetData[0].map((h: any) => String(h || '').trim());
+      setExcelHeaders(headers);
+      setExcelData(sheetData);
+
+      // Tentar auto-mapear colunas baseado nos nomes
+      const autoMapping: ColumnMapping = {
+        nome_completo: null,
+        email: null,
+        cpf: null,
+        telefone: null,
+        quadra: null,
+        lote: null,
+        fase: null,
+        data_compra: null,
+      };
+
+      headers.forEach((header, index) => {
+        const headerLower = header.toLowerCase();
+        if (headerLower.includes('nome')) autoMapping.nome_completo = index;
+        else if (headerLower.includes('email') || headerLower.includes('e-mail')) autoMapping.email = index;
+        else if (headerLower.includes('cpf')) autoMapping.cpf = index;
+        else if (headerLower.includes('telefone') || headerLower.includes('fone') || headerLower.includes('celular')) autoMapping.telefone = index;
+        else if (headerLower.includes('quadra')) autoMapping.quadra = index;
+        else if (headerLower.includes('lote')) autoMapping.lote = index;
+        else if (headerLower.includes('fase')) autoMapping.fase = index;
+        else if (headerLower.includes('data') && headerLower.includes('compra')) autoMapping.data_compra = index;
+      });
+
+      setColumnMapping(autoMapping);
+      setShowMapping(true);
+      toast.success('Arquivo processado! Configure o mapeamento das colunas');
+    } catch (error: any) {
+      console.error('Erro ao processar arquivo:', error);
+      toast.error('Erro ao processar o arquivo: ' + error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleConfirmMapping = async () => {
+    // Validar mapeamento obrigatório
+    if (columnMapping.nome_completo === null || columnMapping.email === null) {
+      toast.error('Nome e Email são campos obrigatórios');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const cooperadosData: CooperadoData[] = [];
+
+      // Processar dados usando mapeamento definido pelo usuário
+      for (let i = 1; i < excelData.length; i++) {
+        const row = excelData[i];
         
-        // Log para debug das primeiras 3 linhas
-        if (i <= 3) {
-          console.log(`Linha ${i}:`, row);
-        }
+        const nomeRaw = columnMapping.nome_completo !== null ? String(row[columnMapping.nome_completo] || '').trim() : '';
+        const emailRaw = columnMapping.email !== null ? String(row[columnMapping.email] || '').trim().toLowerCase() : '';
         
-        // Tentar detectar automaticamente qual coluna tem o nome
-        let nomeCol = 0;
-        let emailCol = 1;
-        let cpfCol = 2;
-        let telefoneCol = 3;
-        let quadraCol = 4;
-        let loteCol = 5;
-        let faseCol = 6;
-        let dataCompraCol = 7;
-        
-        // Se a primeira coluna parece ser um CPF, ajustar mapeamento
-        const primeiraColuna = String(row[0] || '').trim();
-        if (/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(primeiraColuna) || /^\d{11}$/.test(primeiraColuna.replace(/\D/g, ''))) {
-          // Layout alternativo: CPF | Telefone | Nome | Email | Quadra | Lote | Fase | Data
-          cpfCol = 0;
-          telefoneCol = 1;
-          nomeCol = 2;
-          emailCol = 3;
-          quadraCol = 4;
-          loteCol = 5;
-          faseCol = 6;
-          dataCompraCol = 7;
-        }
-        
-        const nomeRaw = String(row[nomeCol] || '').trim();
-        if (!nomeRaw) continue;
+        if (!nomeRaw || !emailRaw) continue;
         
         // Verificar se o nome parece válido (tem pelo menos 2 palavras)
         if (nomeRaw.split(/\s+/).length < 2) {
@@ -158,8 +197,7 @@ export default function CadastroLote() {
           continue;
         }
 
-        const emailRaw = String(row[emailCol] || '').trim().toLowerCase();
-        if (!emailRaw || !emailRaw.includes('@')) {
+        if (!emailRaw.includes('@')) {
           console.warn(`Email inválido na linha ${i}:`, emailRaw);
           continue;
         }
@@ -167,17 +205,13 @@ export default function CadastroLote() {
         const cooperado: CooperadoData = {
           nome_completo: normalizarNome(nomeRaw),
           email: emailRaw,
-          cpf: normalizarCPF(String(row[cpfCol] || '').trim()),
-          telefone: normalizarTelefone(String(row[telefoneCol] || '').trim()),
-          quadra: String(row[quadraCol] || '').trim() || undefined,
-          lote: String(row[loteCol] || '').trim() || undefined,
-          fase: String(row[faseCol] || '').trim() || undefined,
-          data_compra: normalizarData(String(row[dataCompraCol] || '').trim()),
+          cpf: columnMapping.cpf !== null ? normalizarCPF(String(row[columnMapping.cpf] || '').trim()) : undefined,
+          telefone: columnMapping.telefone !== null ? normalizarTelefone(String(row[columnMapping.telefone] || '').trim()) : undefined,
+          quadra: columnMapping.quadra !== null ? String(row[columnMapping.quadra] || '').trim() || undefined : undefined,
+          lote: columnMapping.lote !== null ? String(row[columnMapping.lote] || '').trim() || undefined : undefined,
+          fase: columnMapping.fase !== null ? String(row[columnMapping.fase] || '').trim() || undefined : undefined,
+          data_compra: columnMapping.data_compra !== null ? normalizarData(String(row[columnMapping.data_compra] || '').trim()) : undefined,
         };
-        
-        if (i <= 3) {
-          console.log(`Cooperado processado (linha ${i}):`, cooperado);
-        }
 
         cooperadosData.push(cooperado);
       }
@@ -335,7 +369,7 @@ export default function CadastroLote() {
       </div>
 
       {/* Upload Section */}
-      {!showPreview && !resultado && (
+      {!showMapping && !showPreview && !resultado && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -396,6 +430,51 @@ export default function CadastroLote() {
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* Mapping Section */}
+      {showMapping && !showPreview && (
+        <div className="space-y-6">
+          <ColumnMappingSelector
+            excelHeaders={excelHeaders}
+            excelData={excelData}
+            columnMapping={columnMapping}
+            onMappingChange={(field, columnIndex) => {
+              setColumnMapping(prev => ({
+                ...prev,
+                [field]: columnIndex
+              }));
+            }}
+          />
+
+          <div className="flex justify-between">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setShowMapping(false);
+                setFile(null);
+              }}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar
+            </Button>
+            
+            <Button
+              onClick={handleConfirmMapping}
+              disabled={columnMapping.nome_completo === null || columnMapping.email === null || isProcessing}
+              size="lg"
+            >
+              {isProcessing ? (
+                <>Processando...</>
+              ) : (
+                <>
+                  Continuar para Preview
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       )}
 
       {/* Preview Section */}
