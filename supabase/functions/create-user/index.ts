@@ -24,40 +24,36 @@ const createUserSchema = z.object({
     .min(1, 'Nome completo é obrigatório')
     .max(200, 'Nome completo deve ter no máximo 200 caracteres')
     .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços'),
-  cpf: z.string()
-    .regex(/^\d{11}$/, 'CPF deve conter exatamente 11 dígitos')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
-  telefone: z.string()
-    .regex(/^\+?[1-9]\d{1,14}$/, 'Telefone inválido (formato: +5511999999999)')
-    .max(20, 'Telefone deve ter no máximo 20 caracteres')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
-  quadra: z.string()
-    .trim()
-    .max(50, 'Quadra deve ter no máximo 50 caracteres')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
-  lote: z.string()
-    .trim()
-    .max(50, 'Lote deve ter no máximo 50 caracteres')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
-  fase: z.string()
-    .trim()
-    .max(100, 'Fase deve ter no máximo 100 caracteres')
-    .optional()
-    .nullable()
-    .or(z.literal('')),
-  data_compra: z.string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, 'Data de compra deve estar no formato YYYY-MM-DD')
-    .optional()
-    .nullable()
-    .or(z.literal(''))
+  cpf: z.union([
+    z.string().regex(/^\d{11}$/, 'CPF deve conter exatamente 11 dígitos'),
+    z.null(),
+    z.undefined()
+  ]).optional(),
+  telefone: z.union([
+    z.string().regex(/^\+?[1-9]\d{1,14}$/, 'Telefone inválido (formato: +5511999999999)').max(20),
+    z.null(),
+    z.undefined()
+  ]).optional(),
+  quadra: z.union([
+    z.string().trim().max(50, 'Quadra deve ter no máximo 50 caracteres'),
+    z.null(),
+    z.undefined()
+  ]).optional(),
+  lote: z.union([
+    z.string().trim().max(50, 'Lote deve ter no máximo 50 caracteres'),
+    z.null(),
+    z.undefined()
+  ]).optional(),
+  fase: z.union([
+    z.string().trim().max(100, 'Fase deve ter no máximo 100 caracteres'),
+    z.null(),
+    z.undefined()
+  ]).optional(),
+  data_compra: z.union([
+    z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Data de compra deve estar no formato YYYY-MM-DD'),
+    z.null(),
+    z.undefined()
+  ]).optional()
 })
 
 // Rate limiting configuration
@@ -235,8 +231,19 @@ serve(async (req) => {
 
     const requestData = await req.json()
     
+    // Pre-process data: convert empty strings to null for optional fields
+    const preprocessedData = {
+      ...requestData,
+      cpf: requestData.cpf && requestData.cpf.trim() !== '' ? requestData.cpf : null,
+      telefone: requestData.telefone && requestData.telefone.trim() !== '' ? requestData.telefone : null,
+      quadra: requestData.quadra && requestData.quadra.trim() !== '' ? requestData.quadra : null,
+      lote: requestData.lote && requestData.lote.trim() !== '' ? requestData.lote : null,
+      fase: requestData.fase && requestData.fase.trim() !== '' ? requestData.fase : null,
+      data_compra: requestData.data_compra && requestData.data_compra.trim() !== '' ? requestData.data_compra : null,
+    }
+    
     // Validate input data with Zod
-    const validationResult = createUserSchema.safeParse(requestData)
+    const validationResult = createUserSchema.safeParse(preprocessedData)
     
     if (!validationResult.success) {
       const errors = validationResult.error.issues.map(issue => ({

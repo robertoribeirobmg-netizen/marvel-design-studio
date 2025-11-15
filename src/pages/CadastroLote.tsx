@@ -24,6 +24,52 @@ interface CooperadoData {
   duplicateReason?: string;
 }
 
+// Funções auxiliares de normalização
+const normalizarCPF = (cpf: string | undefined): string | undefined => {
+  if (!cpf) return undefined;
+  const cleaned = cpf.replace(/\D/g, '');
+  return cleaned.length === 11 ? cleaned : undefined;
+};
+
+const normalizarTelefone = (telefone: string | undefined): string | undefined => {
+  if (!telefone) return undefined;
+  const cleaned = telefone.replace(/\D/g, '');
+  if (cleaned.length === 11) return `+55${cleaned}`;
+  if (cleaned.length === 10) return `+55${cleaned}`;
+  if (cleaned.startsWith('55') && cleaned.length === 13) return `+${cleaned}`;
+  return cleaned.length >= 10 ? `+55${cleaned}` : undefined;
+};
+
+const normalizarData = (data: string | undefined): string | undefined => {
+  if (!data) return undefined;
+  
+  // Se já está no formato YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(data)) return data;
+  
+  // Se está no formato dd/MM/yyyy
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(data)) {
+    const [dia, mes, ano] = data.split('/');
+    return `${ano}-${mes}-${dia}`;
+  }
+  
+  // Tentar converter número do Excel (dias desde 1900-01-01)
+  if (/^\d+$/.test(data)) {
+    const excelDate = parseInt(data);
+    const date = new Date((excelDate - 25569) * 86400 * 1000);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+  
+  return undefined;
+};
+
+const normalizarNome = (nome: string): string => {
+  // Remove caracteres que não são letras, espaços ou acentos
+  return nome.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
+};
+
 export default function CadastroLote() {
   const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
@@ -69,18 +115,18 @@ export default function CadastroLote() {
         const row = sheetData[i];
         if (!row[0]) continue; // Pular linhas vazias
 
-        const nome = String(row[0] || '').trim();
-        if (!nome) continue;
+        const nomeRaw = String(row[0] || '').trim();
+        if (!nomeRaw) continue;
 
         const cooperado: CooperadoData = {
-          nome_completo: nome,
-          email: String(row[1] || '').trim(),
-          cpf: String(row[2] || '').trim() || undefined,
-          telefone: String(row[3] || '').trim() || undefined,
+          nome_completo: normalizarNome(nomeRaw),
+          email: String(row[1] || '').trim().toLowerCase(),
+          cpf: normalizarCPF(String(row[2] || '').trim()),
+          telefone: normalizarTelefone(String(row[3] || '').trim()),
           quadra: String(row[4] || '').trim() || undefined,
           lote: String(row[5] || '').trim() || undefined,
           fase: String(row[6] || '').trim() || undefined,
-          data_compra: String(row[7] || '').trim() || undefined,
+          data_compra: normalizarData(String(row[7] || '').trim()),
         };
 
         cooperadosData.push(cooperado);
