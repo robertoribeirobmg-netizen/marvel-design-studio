@@ -6,6 +6,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { Play, CheckCircle2, XCircle, Info, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import * as XLSX from 'xlsx';
 
 export function ProcessarCOHAPMAuto() {
   const [isProcessing, setIsProcessing] = useState(false);
@@ -15,41 +16,82 @@ export function ProcessarCOHAPMAuto() {
 
   const handleProcessar = async () => {
     setIsProcessing(true);
-    setProgress(10);
+    setProgress(0);
     setError(null);
     setStats(null);
 
     try {
       toast.info('Carregando arquivo Excel...');
-      setProgress(20);
+      setProgress(5);
 
+      // Carregar arquivo
       const fileResponse = await fetch('/compradores_cohapm_dados_completos.xlsx');
       if (!fileResponse.ok) throw new Error('Arquivo não encontrado');
 
       const fileBlob = await fileResponse.blob();
       const arrayBuffer = await fileBlob.arrayBuffer();
-      const base64Data = btoa(
-        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
 
-      toast.info('Enviando para processamento...');
-      setProgress(40);
+      toast.info('Processando Excel no navegador...');
+      setProgress(15);
 
-      const { data, error: functionError } = await supabase.functions.invoke('process-cohapm-auto', {
-        method: 'POST',
-        body: { fileData: base64Data }
-      });
+      // Parse Excel no CLIENTE (evita timeout no Edge Function)
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data: any[] = XLSX.utils.sheet_to_json(worksheet);
 
-      if (functionError) throw functionError;
+      console.log(`📊 Total de registros: ${data.length}`);
+      toast.info(`${data.length} registros encontrados`);
+      setProgress(25);
+
+      // Processar em lotes de 10 registros
+      const BATCH_SIZE = 10;
+      const totalBatches = Math.ceil(data.length / BATCH_SIZE);
+      
+      const globalStats = {
+        total: data.length,
+        inseridos: 0,
+        atualizados: 0,
+        erros: 0,
+      };
+
+      for (let i = 0; i < totalBatches; i++) {
+        const batch = data.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+        
+        try {
+          const { data: result, error: batchError } = await supabase.functions.invoke(
+            'batch-insert-cohapm',
+            {
+              body: { batch }
+            }
+          );
+
+          if (batchError) throw batchError;
+
+          if (result?.stats) {
+            globalStats.inseridos += result.stats.inseridos;
+            globalStats.atualizados += result.stats.atualizados;
+            globalStats.erros += result.stats.erros;
+          }
+
+          // Atualizar progresso
+          const progressPercent = 25 + ((i + 1) / totalBatches) * 70;
+          setProgress(progressPercent);
+
+          console.log(`✅ Lote ${i + 1}/${totalBatches} processado`);
+        } catch (err: any) {
+          console.error(`Erro no lote ${i + 1}:`, err);
+          globalStats.erros += batch.length;
+        }
+
+        // Pequena pausa entre lotes
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
 
       setProgress(100);
-      toast.success(data.message || 'Processamento iniciado!', {
-        description: 'Os dados serão importados em background'
-      });
-
-      setStats({
-        totalRegistros: data.totalRegistros,
-        mensagem: data.message
+      setStats(globalStats);
+      
+      toast.success('Processamento concluído!', {
+        description: `${globalStats.inseridos} inseridos, ${globalStats.atualizados} atualizados, ${globalStats.erros} erros`
       });
 
     } catch (err: any) {
@@ -58,7 +100,7 @@ export function ProcessarCOHAPMAuto() {
       toast.error('Erro ao processar dados COHAPM');
     } finally {
       setIsProcessing(false);
-      setTimeout(() => setProgress(0), 1000);
+      setTimeout(() => setProgress(0), 2000);
     }
   };
 
@@ -67,7 +109,7 @@ export function ProcessarCOHAPMAuto() {
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          <strong>Processamento Automático:</strong> Importa 726 compradores COHAPM automaticamente.
+          <strong>Processamento Otimizado:</strong> O Excel é processado no navegador e enviado em lotes de 10 registros.
         </AlertDescription>
       </Alert>
 
@@ -77,13 +119,17 @@ export function ProcessarCOHAPMAuto() {
             <Play className="h-5 w-5 text-primary" />
             Processar Dados COHAPM
           </CardTitle>
-          <CardDescription>Processamento em background - lotes de 50 registros</CardDescription>
+          <CardDescription>Importação automática de 726 compradores</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {isProcessing && (
             <div className="space-y-2">
               <Progress value={progress} />
-              <p className="text-xs text-muted-foreground text-center">Enviando dados...</p>
+              <p className="text-xs text-muted-foreground text-center">
+                {progress < 25 ? 'Carregando arquivo...' : 
+                 progress < 95 ? 'Importando dados...' : 
+                 'Finalizando...'}
+              </p>
             </div>
           )}
 
@@ -94,8 +140,23 @@ export function ProcessarCOHAPMAuto() {
             </Alert>
           )}
 
-          <Button onClick={handleProcessar} disabled={isProcessing} className="w-full" size="lg">
-            {isProcessing ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" />Processando...</> : <><Play className="h-4 w-4 mr-2" />Iniciar</>}
+          <Button 
+            onClick={handleProcessar} 
+            disabled={isProcessing} 
+            className="w-full" 
+            size="lg"
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Processando...
+              </>
+            ) : (
+              <>
+                <Play className="h-4 w-4 mr-2" />
+                Iniciar Importação
+              </>
+            )}
           </Button>
         </CardContent>
       </Card>
@@ -105,17 +166,28 @@ export function ProcessarCOHAPMAuto() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-success" />
-              Em Processamento
+              Processamento Concluído
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                <strong>{stats.mensagem}</strong>
-                <p className="mt-2 text-sm">{stats.totalRegistros} registros em processamento background.</p>
-              </AlertDescription>
-            </Alert>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Total</p>
+                <p className="text-2xl font-bold">{stats.total}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Inseridos</p>
+                <p className="text-2xl font-bold text-success">{stats.inseridos}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Atualizados</p>
+                <p className="text-2xl font-bold text-primary">{stats.atualizados}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm text-muted-foreground">Erros</p>
+                <p className="text-2xl font-bold text-destructive">{stats.erros}</p>
+              </div>
+            </div>
           </CardContent>
         </Card>
       )}
