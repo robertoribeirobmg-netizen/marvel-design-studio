@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check, GitCompare } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -1914,6 +1914,39 @@ export default function Admin() {
                       >
                         <DollarSign className="h-5 w-5 mr-2" />
                         Importar Parcelas
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Reconciliação COHAPM */}
+                <Card className="border-primary/50 bg-gradient-to-r from-teal-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <GitCompare className="h-6 w-6 text-primary" />
+                      Reconciliação COHAPM
+                    </CardTitle>
+                    <CardDescription>
+                      Compare e vincule dados COHAPM com cooperados existentes
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Identificação automática de divergências
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Vincule compradores por CPF e analise diferenças nos dados
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/reconciliacao-cohapm')}
+                        className="bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <GitCompare className="h-5 w-5 mr-2" />
+                        Reconciliar
                       </Button>
                     </div>
                   </CardContent>
