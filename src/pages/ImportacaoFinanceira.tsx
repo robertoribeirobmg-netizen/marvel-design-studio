@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import * as XLSX from 'xlsx';
 
 export default function ImportacaoFinanceira() {
+  const navigate = useNavigate();
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [resultado, setResultado] = useState<{
@@ -83,25 +85,17 @@ export default function ImportacaoFinanceira() {
         parcelasPorCliente[cliente].push(parcela);
       }
 
-      // Enviar para a edge function
-      const { data: responseData, error } = await supabase.functions.invoke('import-financial-data', {
-        body: { parcelasPorCliente },
+      // Analisar dados primeiro (dry run)
+      const { data: analiseData, error: analiseError } = await supabase.functions.invoke('import-financial-data', {
+        body: { parcelasPorCliente, dryRun: true },
       });
 
-      if (error) throw error;
+      if (analiseError) throw analiseError;
 
-      setResultado(responseData);
-
-      if (responseData.success) {
-        const mensagens = [];
-        if (responseData.investimentosCriados) mensagens.push(`${responseData.investimentosCriados} investimentos criados`);
-        if (responseData.parcelasCriadas) mensagens.push(`${responseData.parcelasCriadas} parcelas criadas`);
-        if (responseData.parcelasAtualizadas) mensagens.push(`${responseData.parcelasAtualizadas} parcelas atualizadas`);
-        
-        toast.success(`Importação concluída! ${mensagens.join(', ')}.`);
-      } else {
-        toast.error('Erro na importação: ' + responseData.error);
-      }
+      // Navegar para preview
+      navigate('/preview-importacao-financeira', {
+        state: { parcelasPorCliente, analise: analiseData }
+      });
     } catch (error: any) {
       console.error('Erro ao importar:', error);
       toast.error('Erro ao processar o arquivo: ' + error.message);
