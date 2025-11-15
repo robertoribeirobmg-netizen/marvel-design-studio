@@ -218,6 +218,7 @@ export type Database = {
       }
       parcelas: {
         Row: {
+          comprovante_url: string | null
           created_at: string
           data_pagamento: string | null
           data_vencimento: string
@@ -237,6 +238,7 @@ export type Database = {
           valor_parcela: number
         }
         Insert: {
+          comprovante_url?: string | null
           created_at?: string
           data_pagamento?: string | null
           data_vencimento: string
@@ -256,6 +258,7 @@ export type Database = {
           valor_parcela: number
         }
         Update: {
+          comprovante_url?: string | null
           created_at?: string
           data_pagamento?: string | null
           data_vencimento?: string
