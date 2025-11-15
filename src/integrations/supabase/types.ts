@@ -16,52 +16,142 @@ export type Database = {
     Tables: {
       compradores_cohapm: {
         Row: {
+          bairro: string | null
+          cep: string | null
+          cidade: string | null
+          complemento: string | null
           cpf_cnpj: string | null
+          cpf_conjuge: string | null
           created_at: string | null
           data_extracao: string | null
+          data_nascimento: string | null
+          data_venda: string | null
           email: string | null
           empreendimento: string | null
+          endereco: string | null
+          estado: string | null
+          estado_civil: string | null
           fonte: string | null
           grupo: string | null
           id: string
+          lote: string | null
+          nacionalidade: string | null
+          naturalidade: string | null
           nome: string
+          nome_conjuge: string | null
+          numero: string | null
+          observacoes: string | null
+          parcelas_atrasadas: number | null
+          parcelas_pagas: number | null
           profile_id: string | null
+          profissao: string | null
+          quadra: string | null
+          rg: string | null
+          rg_conjuge: string | null
+          situacao_financeira: string | null
+          status_contrato: string | null
           telefone: string | null
+          telefone2: string | null
           tipo: string | null
           tipo_classificado: string | null
+          total_contratos: number | null
+          total_parcelas: number | null
           updated_at: string | null
+          valor_pago: number | null
+          valor_pendente: number | null
+          valor_total_contratos: number | null
         }
         Insert: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
           cpf_cnpj?: string | null
+          cpf_conjuge?: string | null
           created_at?: string | null
           data_extracao?: string | null
+          data_nascimento?: string | null
+          data_venda?: string | null
           email?: string | null
           empreendimento?: string | null
+          endereco?: string | null
+          estado?: string | null
+          estado_civil?: string | null
           fonte?: string | null
           grupo?: string | null
           id: string
+          lote?: string | null
+          nacionalidade?: string | null
+          naturalidade?: string | null
           nome: string
+          nome_conjuge?: string | null
+          numero?: string | null
+          observacoes?: string | null
+          parcelas_atrasadas?: number | null
+          parcelas_pagas?: number | null
           profile_id?: string | null
+          profissao?: string | null
+          quadra?: string | null
+          rg?: string | null
+          rg_conjuge?: string | null
+          situacao_financeira?: string | null
+          status_contrato?: string | null
           telefone?: string | null
+          telefone2?: string | null
           tipo?: string | null
           tipo_classificado?: string | null
+          total_contratos?: number | null
+          total_parcelas?: number | null
           updated_at?: string | null
+          valor_pago?: number | null
+          valor_pendente?: number | null
+          valor_total_contratos?: number | null
         }
         Update: {
+          bairro?: string | null
+          cep?: string | null
+          cidade?: string | null
+          complemento?: string | null
           cpf_cnpj?: string | null
+          cpf_conjuge?: string | null
           created_at?: string | null
           data_extracao?: string | null
+          data_nascimento?: string | null
+          data_venda?: string | null
           email?: string | null
           empreendimento?: string | null
+          endereco?: string | null
+          estado?: string | null
+          estado_civil?: string | null
           fonte?: string | null
           grupo?: string | null
           id?: string
+          lote?: string | null
+          nacionalidade?: string | null
+          naturalidade?: string | null
           nome?: string
+          nome_conjuge?: string | null
+          numero?: string | null
+          observacoes?: string | null
+          parcelas_atrasadas?: number | null
+          parcelas_pagas?: number | null
           profile_id?: string | null
+          profissao?: string | null
+          quadra?: string | null
+          rg?: string | null
+          rg_conjuge?: string | null
+          situacao_financeira?: string | null
+          status_contrato?: string | null
           telefone?: string | null
+          telefone2?: string | null
           tipo?: string | null
           tipo_classificado?: string | null
+          total_contratos?: number | null
+          total_parcelas?: number | null
           updated_at?: string | null
+          valor_pago?: number | null
+          valor_pendente?: number | null
+          valor_total_contratos?: number | null
         }
         Relationships: [
           {
@@ -83,13 +173,17 @@ export type Database = {
           id: number
           imobiliaria: string | null
           lote: string | null
+          metragem: number | null
           numero_contrato: string | null
+          numero_ficha: string | null
           numero_parcelas: number | null
+          observacoes_contrato: string | null
           quadra: string | null
           situacao: string | null
           status: string | null
           updated_at: string | null
           valor_entrada: number | null
+          valor_financiado: number | null
           valor_parcela: number | null
           valor_total: number | null
         }
@@ -102,13 +196,17 @@ export type Database = {
           id?: number
           imobiliaria?: string | null
           lote?: string | null
+          metragem?: number | null
           numero_contrato?: string | null
+          numero_ficha?: string | null
           numero_parcelas?: number | null
+          observacoes_contrato?: string | null
           quadra?: string | null
           situacao?: string | null
           status?: string | null
           updated_at?: string | null
           valor_entrada?: number | null
+          valor_financiado?: number | null
           valor_parcela?: number | null
           valor_total?: number | null
         }
@@ -121,13 +219,17 @@ export type Database = {
           id?: number
           imobiliaria?: string | null
           lote?: string | null
+          metragem?: number | null
           numero_contrato?: string | null
+          numero_ficha?: string | null
           numero_parcelas?: number | null
+          observacoes_contrato?: string | null
           quadra?: string | null
           situacao?: string | null
           status?: string | null
           updated_at?: string | null
           valor_entrada?: number | null
+          valor_financiado?: number | null
           valor_parcela?: number | null
           valor_total?: number | null
         }
@@ -137,6 +239,20 @@ export type Database = {
             columns: ["comprador_id"]
             isOneToOne: false
             referencedRelation: "compradores_cohapm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_cohapm_comprador_id_fkey"
+            columns: ["comprador_id"]
+            isOneToOne: false
+            referencedRelation: "vw_inadimplentes_cohapm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contratos_cohapm_comprador_id_fkey"
+            columns: ["comprador_id"]
+            isOneToOne: false
+            referencedRelation: "vw_resumo_financeiro_cohapm"
             referencedColumns: ["id"]
           },
         ]
@@ -423,55 +539,97 @@ export type Database = {
       }
       parcelas_cohapm: {
         Row: {
+          agencia: string | null
+          banco: string | null
+          codigo_remessa: string | null
           comprador_id: string | null
+          conta: string | null
           contrato_id: number | null
           created_at: string | null
+          data_lancamento: string | null
           data_pagamento: string | null
+          data_recebimento: string | null
           data_vencimento: string | null
           dias_atraso: number | null
+          forma_pagamento: string | null
           id: number
+          numero_baixa: string | null
+          numero_lancamento: string | null
           numero_parcela: number | null
+          observacoes_parcela: string | null
+          periodo_fim: string | null
+          periodo_inicio: string | null
           status: string | null
           updated_at: string | null
           valor_desconto: number | null
           valor_juros: number | null
           valor_multa: number | null
+          valor_original: number | null
           valor_pago: number | null
           valor_parcela: number | null
+          valor_total_calculado: number | null
         }
         Insert: {
+          agencia?: string | null
+          banco?: string | null
+          codigo_remessa?: string | null
           comprador_id?: string | null
+          conta?: string | null
           contrato_id?: number | null
           created_at?: string | null
+          data_lancamento?: string | null
           data_pagamento?: string | null
+          data_recebimento?: string | null
           data_vencimento?: string | null
           dias_atraso?: number | null
+          forma_pagamento?: string | null
           id?: number
+          numero_baixa?: string | null
+          numero_lancamento?: string | null
           numero_parcela?: number | null
+          observacoes_parcela?: string | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
           status?: string | null
           updated_at?: string | null
           valor_desconto?: number | null
           valor_juros?: number | null
           valor_multa?: number | null
+          valor_original?: number | null
           valor_pago?: number | null
           valor_parcela?: number | null
+          valor_total_calculado?: number | null
         }
         Update: {
+          agencia?: string | null
+          banco?: string | null
+          codigo_remessa?: string | null
           comprador_id?: string | null
+          conta?: string | null
           contrato_id?: number | null
           created_at?: string | null
+          data_lancamento?: string | null
           data_pagamento?: string | null
+          data_recebimento?: string | null
           data_vencimento?: string | null
           dias_atraso?: number | null
+          forma_pagamento?: string | null
           id?: number
+          numero_baixa?: string | null
+          numero_lancamento?: string | null
           numero_parcela?: number | null
+          observacoes_parcela?: string | null
+          periodo_fim?: string | null
+          periodo_inicio?: string | null
           status?: string | null
           updated_at?: string | null
           valor_desconto?: number | null
           valor_juros?: number | null
           valor_multa?: number | null
+          valor_original?: number | null
           valor_pago?: number | null
           valor_parcela?: number | null
+          valor_total_calculado?: number | null
         }
         Relationships: [
           {
@@ -479,6 +637,20 @@ export type Database = {
             columns: ["comprador_id"]
             isOneToOne: false
             referencedRelation: "compradores_cohapm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parcelas_cohapm_comprador_id_fkey"
+            columns: ["comprador_id"]
+            isOneToOne: false
+            referencedRelation: "vw_inadimplentes_cohapm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parcelas_cohapm_comprador_id_fkey"
+            columns: ["comprador_id"]
+            isOneToOne: false
+            referencedRelation: "vw_resumo_financeiro_cohapm"
             referencedColumns: ["id"]
           },
           {
@@ -782,10 +954,63 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      vw_inadimplentes_cohapm: {
+        Row: {
+          cpf_cnpj: string | null
+          email: string | null
+          id: string | null
+          lote: string | null
+          nome: string | null
+          parcelas_atrasadas: number | null
+          primeira_parcela_atrasada: string | null
+          quadra: string | null
+          telefone: string | null
+          total_parcelas_em_atraso: number | null
+          ultima_parcela_atrasada: string | null
+          valor_pendente: number | null
+        }
+        Relationships: []
+      }
+      vw_resumo_financeiro_cohapm: {
+        Row: {
+          contratos_registrados: number | null
+          cpf_cnpj: string | null
+          email: string | null
+          empreendimento: string | null
+          id: string | null
+          lote: string | null
+          nome: string | null
+          parcelas_atrasadas: number | null
+          parcelas_pagas: number | null
+          parcelas_registradas: number | null
+          percentual_pago: number | null
+          profile_id: string | null
+          quadra: string | null
+          situacao_financeira: string | null
+          telefone: string | null
+          total_contratos: number | null
+          total_parcelas: number | null
+          valor_pago: number | null
+          valor_pendente: number | null
+          valor_total_contratos: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compradores_cohapm_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      criar_chave_vinculacao: {
+        Args: { lote?: string; nome: string; quadra?: string }
+        Returns: string
+      }
       detect_attack_patterns: {
         Args: { threshold?: number; time_window?: unknown }
         Returns: {
@@ -814,6 +1039,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      normalizar_nome: { Args: { nome: string }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "cooperado"
