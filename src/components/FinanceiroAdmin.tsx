@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw, FileDown, Upload, Eye } from 'lucide-react';
+import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw, FileDown, Upload, Eye, CheckSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,6 +15,7 @@ import { gerarRelatorioRenegociacoes } from '@/lib/relatorioRenegociacoes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CooperadoFinanceiro {
   id: string;
@@ -48,6 +49,11 @@ export function FinanceiroAdmin() {
   const [observacoesBaixa, setObservacoesBaixa] = useState('');
   const [comprovanteFile, setComprovanteFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [parcelasSelecionadas, setParcelasSelecionadas] = useState<Set<string>>(new Set());
+  const [showBaixaLoteDialog, setShowBaixaLoteDialog] = useState(false);
+  const [observacoesLote, setObservacoesLote] = useState('');
+  const [comprovanteLoteFile, setComprovanteLoteFile] = useState<File | null>(null);
+  const [previewUrlLote, setPreviewUrlLote] = useState<string | null>(null);
 
   useEffect(() => {
     loadDadosFinanceiros();
@@ -182,6 +188,65 @@ export function FinanceiroAdmin() {
     setShowBaixaDialog(true);
   };
 
+  const toggleSelecionarParcela = (parcelaId: string) => {
+    const novaSelecao = new Set(parcelasSelecionadas);
+    if (novaSelecao.has(parcelaId)) {
+      novaSelecao.delete(parcelaId);
+    } else {
+      novaSelecao.add(parcelaId);
+    }
+    setParcelasSelecionadas(novaSelecao);
+  };
+
+  const selecionarTodasParcelas = () => {
+    const parcelasPendentes = selectedCooperado?.parcelas.filter(p => p.status === 'pendente') || [];
+    if (parcelasSelecionadas.size === parcelasPendentes.length) {
+      setParcelasSelecionadas(new Set());
+    } else {
+      setParcelasSelecionadas(new Set(parcelasPendentes.map(p => p.id)));
+    }
+  };
+
+  const abrirDialogBaixaLote = () => {
+    if (parcelasSelecionadas.size === 0) {
+      toast.error('Selecione pelo menos uma parcela');
+      return;
+    }
+    setObservacoesLote('');
+    setComprovanteLoteFile(null);
+    setPreviewUrlLote(null);
+    setShowBaixaLoteDialog(true);
+  };
+
+  const handleFileLoteChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Tipo de arquivo não permitido. Use JPG, PNG, WEBP ou PDF.');
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('Arquivo muito grande. Tamanho máximo: 5MB');
+      return;
+    }
+
+    setComprovanteLoteFile(file);
+
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrlLote(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrlLote(null);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -277,6 +342,86 @@ export function FinanceiroAdmin() {
     } catch (error: any) {
       console.error('Erro ao dar baixa:', error);
       toast.error('Erro ao dar baixa na parcela');
+    } finally {
+      setProcessandoBaixa(false);
+    }
+  };
+
+  const darBaixaLote = async () => {
+    try {
+      setProcessandoBaixa(true);
+      
+      if (parcelasSelecionadas.size === 0) {
+        toast.error('Nenhuma parcela selecionada');
+        return;
+      }
+
+      let comprovanteUrl: string | null = null;
+
+      // Upload do comprovante se houver (será o mesmo para todas)
+      if (comprovanteLoteFile) {
+        const fileExt = comprovanteLoteFile.name.split('.').pop();
+        const fileName = `${selectedCooperado?.id}/lote_${Date.now()}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('comprovantes')
+          .upload(fileName, comprovanteLoteFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Erro no upload:', uploadError);
+          toast.error('Erro ao fazer upload do comprovante');
+          return;
+        }
+
+        const { data: urlData } = supabase.storage
+          .from('comprovantes')
+          .getPublicUrl(fileName);
+
+        comprovanteUrl = urlData.publicUrl;
+      }
+
+      // Atualizar todas as parcelas selecionadas
+      const parcelasIds = Array.from(parcelasSelecionadas);
+      
+      for (const parcelaId of parcelasIds) {
+        const parcela = selectedCooperado?.parcelas.find(p => p.id === parcelaId);
+        if (!parcela) continue;
+
+        const { error } = await supabase
+          .from('parcelas')
+          .update({
+            status: 'paga',
+            data_pagamento: new Date().toISOString().split('T')[0],
+            valor_pago: parcela.valor_parcela,
+            observacoes: observacoesLote || null,
+            comprovante_url: comprovanteUrl
+          })
+          .eq('id', parcelaId);
+
+        if (error) {
+          console.error('Erro ao atualizar parcela:', parcelaId, error);
+          toast.error(`Erro ao processar parcela ${parcela.numero_parcela}`);
+          return;
+        }
+      }
+
+      toast.success(`${parcelasIds.length} parcela(s) processada(s) com sucesso!`);
+      setShowBaixaLoteDialog(false);
+      setParcelasSelecionadas(new Set());
+      await loadDadosFinanceiros();
+      
+      if (selectedCooperado) {
+        const cooperadoAtualizado = cooperados.find(c => c.id === selectedCooperado.id);
+        if (cooperadoAtualizado) {
+          setSelectedCooperado(cooperadoAtualizado);
+        }
+      }
+    } catch (error: any) {
+      console.error('Erro ao dar baixa em lote:', error);
+      toast.error('Erro ao dar baixa nas parcelas');
     } finally {
       setProcessandoBaixa(false);
     }
@@ -604,7 +749,12 @@ export function FinanceiroAdmin() {
       </Card>
 
       {/* Dialog de Parcelas */}
-      <Dialog open={showParcelasDialog} onOpenChange={setShowParcelasDialog}>
+      <Dialog open={showParcelasDialog} onOpenChange={(open) => {
+        setShowParcelasDialog(open);
+        if (!open) {
+          setParcelasSelecionadas(new Set());
+        }
+      }}>
         <DialogContent className="max-w-4xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -616,10 +766,35 @@ export function FinanceiroAdmin() {
             </DialogDescription>
           </DialogHeader>
 
+          {selectedCooperado?.parcelas.filter(p => p.status === 'pendente').length > 0 && (
+            <div className="flex gap-2 mb-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selecionarTodasParcelas}
+              >
+                {parcelasSelecionadas.size === selectedCooperado?.parcelas.filter(p => p.status === 'pendente').length
+                  ? 'Desmarcar Todas'
+                  : 'Selecionar Todas'}
+              </Button>
+              {parcelasSelecionadas.size > 0 && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={abrirDialogBaixaLote}
+                >
+                  <CheckSquare className="mr-2 h-4 w-4" />
+                  Dar Baixa em Lote ({parcelasSelecionadas.size})
+                </Button>
+              )}
+            </div>
+          )}
+
           <ScrollArea className="h-[60vh]">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-12"></TableHead>
                   <TableHead>Parcela</TableHead>
                   <TableHead>Descrição</TableHead>
                   <TableHead className="text-right">Valor</TableHead>
@@ -631,6 +806,14 @@ export function FinanceiroAdmin() {
               <TableBody>
                 {selectedCooperado?.parcelas.map(parcela => (
                   <TableRow key={parcela.id}>
+                    <TableCell>
+                      {parcela.status === 'pendente' && (
+                        <Checkbox
+                          checked={parcelasSelecionadas.has(parcela.id)}
+                          onCheckedChange={() => toggleSelecionarParcela(parcela.id)}
+                        />
+                      )}
+                    </TableCell>
                     <TableCell>{parcela.numero_parcela}</TableCell>
                     <TableCell>{parcela.descricao}</TableCell>
                     <TableCell className="text-right">
@@ -675,12 +858,17 @@ export function FinanceiroAdmin() {
                           Ver Comprovante
                         </Button>
                       )}
+                      {parcela.observacoes && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Obs: {parcela.observacoes}
+                        </div>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
                 {selectedCooperado?.parcelas.length === 0 && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Nenhuma parcela encontrada.
                     </TableCell>
                   </TableRow>
@@ -698,7 +886,14 @@ export function FinanceiroAdmin() {
       </Dialog>
 
       {/* Dialog de Baixa com Comprovante */}
-      <Dialog open={showBaixaDialog} onOpenChange={setShowBaixaDialog}>
+      <Dialog open={showBaixaDialog} onOpenChange={(open) => {
+        setShowBaixaDialog(open);
+        if (!open) {
+          setObservacoesBaixa('');
+          setComprovanteFile(null);
+          setPreviewUrl(null);
+        }
+      }}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -781,6 +976,92 @@ export function FinanceiroAdmin() {
             </Button>
             <Button
               onClick={darBaixaParcela}
+              disabled={processandoBaixa}
+            >
+              {processandoBaixa ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Confirmar Baixa
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Baixa em Lote */}
+      <Dialog open={showBaixaLoteDialog} onOpenChange={(open) => {
+        setShowBaixaLoteDialog(open);
+        if (!open) {
+          setObservacoesLote('');
+          setComprovanteLoteFile(null);
+          setPreviewUrlLote(null);
+        }
+      }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckSquare className="h-5 w-5 text-primary" />
+              Dar Baixa em Lote
+            </DialogTitle>
+            <DialogDescription>
+              Registrar pagamento de {parcelasSelecionadas.size} parcela(s) selecionada(s)
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="observacoes-lote">Observações (opcional)</Label>
+              <Textarea
+                id="observacoes-lote"
+                placeholder="Ex: Pagamento via transferência bancária"
+                value={observacoesLote}
+                onChange={(e) => setObservacoesLote(e.target.value)}
+                className="mt-1.5"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="comprovante-lote">Comprovante (opcional)</Label>
+              <Input
+                id="comprovante-lote"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                onChange={handleFileLoteChange}
+                className="mt-1.5"
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Formatos aceitos: JPG, PNG, WEBP, PDF (máx. 5MB)
+              </p>
+            </div>
+
+            {previewUrlLote && (
+              <div className="border rounded-lg p-2">
+                <img 
+                  src={previewUrlLote} 
+                  alt="Preview" 
+                  className="max-h-40 mx-auto rounded"
+                />
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBaixaLoteDialog(false)}
+              disabled={processandoBaixa}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={darBaixaLote}
               disabled={processandoBaixa}
             >
               {processandoBaixa ? (
