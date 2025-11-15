@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { ArrowLeft, Upload, FileText, AlertCircle } from "lucide-react";
 import Papa from "papaparse";
 import { z } from "zod";
+import ContratoCohapmHelp from "@/components/ContratoCohapmHelp";
 
 // Schema de validação com zod
 const contratoSchema = z.object({
@@ -218,9 +219,11 @@ export default function ImportacaoContratosCohapm() {
   };
 
   const downloadTemplate = () => {
+    // Template atualizado com estrutura correta baseada no banco de dados
     const template = [
-      'comprador_id,numero_contrato,data_contrato,valor_total,valor_entrada,numero_parcelas,valor_parcela,status,situacao,quadra,lote,area_m2,corretor,imobiliaria',
-      '10,CONT-001,2024-01-15,150000.00,30000.00,120,1000.00,Ativo,Regular,C1,L10,250.00,João Silva,Imobiliária ABC'
+      'comprador_id,numero_contrato,data_contrato,quadra,lote,area_m2,valor_total,valor_entrada,numero_parcelas,valor_parcela,situacao,status,corretor,imobiliaria',
+      '123e4567-e89b-12d3-a456-426614174000,CONT-2024-001,2024-01-15,A,10,250.50,150000.00,30000.00,120,1000.00,Regular,Ativo,João Silva,Imobiliária ABC',
+      '223e4567-e89b-12d3-a456-426614174001,CONT-2024-002,2024-02-20,B,25,300.00,200000.00,40000.00,144,1111.11,Regular,Ativo,Maria Santos,Imobiliária XYZ'
     ].join('\n');
 
     const blob = new Blob([template], { type: 'text/csv;charset=utf-8;' });
@@ -228,6 +231,7 @@ export default function ImportacaoContratosCohapm() {
     link.href = URL.createObjectURL(blob);
     link.download = 'template_contratos_cohapm.csv';
     link.click();
+    toast.success('Template baixado com sucesso!');
   };
 
   return (
@@ -276,6 +280,32 @@ export default function ImportacaoContratosCohapm() {
             <h2 className="text-xl font-semibold mb-4">Upload do Arquivo CSV</h2>
             
             <div className="space-y-4">
+              <Alert>
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  <p className="font-semibold mb-2">Instruções Importantes:</p>
+                  <ul className="text-sm space-y-1 list-disc list-inside">
+                    <li><strong>comprador_id</strong>: Deve ser o ID (UUID) válido de um comprador existente na tabela compradores_cohapm</li>
+                    <li><strong>data_contrato</strong>: Formato YYYY-MM-DD (exemplo: 2024-01-15)</li>
+                    <li><strong>Valores monetários</strong>: Use ponto como separador decimal (exemplo: 150000.00)</li>
+                    <li><strong>area_m2</strong>: Área em metros quadrados com decimais (exemplo: 250.50)</li>
+                    <li><strong>numero_parcelas</strong>: Número inteiro de parcelas</li>
+                    <li>Campos opcionais podem ficar vazios no CSV</li>
+                  </ul>
+                </AlertDescription>
+              </Alert>
+
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  onClick={downloadTemplate}
+                  className="flex-1"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Baixar Template CSV
+                </Button>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Arquivo CSV dos Contratos
@@ -345,31 +375,11 @@ export default function ImportacaoContratosCohapm() {
                   <Upload className="mr-2 h-4 w-4" />
                   {isProcessing ? 'Importando...' : 'Importar Contratos'}
                 </Button>
-
-                <Button
-                  variant="outline"
-                  onClick={downloadTemplate}
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  Baixar Template
-                </Button>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 bg-muted">
-            <h3 className="font-semibold mb-3">ℹ️ Campos do CSV</h3>
-            <div className="text-sm space-y-2 text-muted-foreground">
-              <p>• <strong>comprador_id*</strong>: ID do comprador (obrigatório, máx. 50 caracteres)</p>
-              <p>• <strong>numero_contrato</strong>: Número do contrato (máx. 100 caracteres)</p>
-              <p>• <strong>data_contrato</strong>: Data no formato YYYY-MM-DD</p>
-              <p>• <strong>valor_total, valor_entrada, valor_parcela</strong>: Valores numéricos</p>
-              <p>• <strong>numero_parcelas</strong>: Número inteiro</p>
-              <p>• <strong>status, situacao</strong>: Texto livre (máx. 50 caracteres)</p>
-              <p>• <strong>quadra, lote</strong>: Identificação do imóvel (máx. 20 caracteres)</p>
-              <p className="text-xs italic mt-3">* Campos obrigatórios</p>
-            </div>
-          </Card>
+          <ContratoCohapmHelp />
         </div>
       </div>
     </div>
