@@ -1,15 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { processFinancialFile, DetailedImportResults } from '@/lib/processFinancialImport';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Loader2, CheckCircle2, XCircle, TrendingUp, TrendingDown, Clock, DollarSign } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
+import { Loader2 } from 'lucide-react';
 
 export default function ProcessImport() {
-  const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
-  const [results, setResults] = useState<DetailedImportResults | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {

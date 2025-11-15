@@ -189,13 +189,8 @@ export default function PreviewImportacao() {
 
     // Navigate back to admin with selected data
     if (isFinancialImport) {
-      const selectedData = Array.from(selectedRows).map(idx => previewData[idx]);
-      navigate('/process-import', {
-        state: {
-          importData: selectedData,
-          isFinancialImport: true
-        }
-      });
+      toast.info('Use a nova página de Importação Financeira');
+      navigate('/importacao-financeira');
     } else {
       navigate('/admin', {
         state: {
