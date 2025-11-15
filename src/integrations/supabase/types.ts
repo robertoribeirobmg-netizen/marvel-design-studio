@@ -693,6 +693,36 @@ export type Database = {
         }
         Relationships: []
       }
+      sincronizacoes_cohapm: {
+        Row: {
+          created_at: string
+          data_execucao: string
+          detalhes: Json | null
+          divergencias_encontradas: number
+          id: string
+          status: string
+          total_analisados: number
+        }
+        Insert: {
+          created_at?: string
+          data_execucao?: string
+          detalhes?: Json | null
+          divergencias_encontradas?: number
+          id?: string
+          status?: string
+          total_analisados?: number
+        }
+        Update: {
+          created_at?: string
+          data_execucao?: string
+          detalhes?: Json | null
+          divergencias_encontradas?: number
+          id?: string
+          status?: string
+          total_analisados?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           id: string

@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check, GitCompare } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check, GitCompare, RefreshCw } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -1947,6 +1947,39 @@ export default function Admin() {
                       >
                         <GitCompare className="h-5 w-5 mr-2" />
                         Reconciliar
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Sincronização Automática */}
+                <Card className="border-primary/50 bg-gradient-to-r from-blue-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <RefreshCw className="h-6 w-6 text-primary" />
+                      Sincronização Automática
+                    </CardTitle>
+                    <CardDescription>
+                      Histórico e execução manual de sincronizações COHAPM
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Monitoramento contínuo de divergências
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Acompanhe sincronizações automáticas e execute manualmente
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/historico-sincronizacoes')}
+                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <RefreshCw className="h-5 w-5 mr-2" />
+                        Ver Histórico
                       </Button>
                     </div>
                   </CardContent>
