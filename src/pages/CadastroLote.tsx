@@ -110,24 +110,74 @@ export default function CadastroLote() {
 
       const cooperadosData: CooperadoData[] = [];
 
+      // Log primeira linha para debug
+      if (sheetData.length > 1) {
+        console.log('Primeira linha de dados (exemplo):', sheetData[1]);
+        console.log('Headers detectados:', sheetData[0]);
+      }
+
       // Pular o cabeçalho (linha 0)
       for (let i = 1; i < sheetData.length; i++) {
         const row = sheetData[i];
-        if (!row[0]) continue; // Pular linhas vazias
-
-        const nomeRaw = String(row[0] || '').trim();
+        
+        // Log para debug das primeiras 3 linhas
+        if (i <= 3) {
+          console.log(`Linha ${i}:`, row);
+        }
+        
+        // Tentar detectar automaticamente qual coluna tem o nome
+        let nomeCol = 0;
+        let emailCol = 1;
+        let cpfCol = 2;
+        let telefoneCol = 3;
+        let quadraCol = 4;
+        let loteCol = 5;
+        let faseCol = 6;
+        let dataCompraCol = 7;
+        
+        // Se a primeira coluna parece ser um CPF, ajustar mapeamento
+        const primeiraColuna = String(row[0] || '').trim();
+        if (/^\d{3}\.\d{3}\.\d{3}-\d{2}$/.test(primeiraColuna) || /^\d{11}$/.test(primeiraColuna.replace(/\D/g, ''))) {
+          // Layout alternativo: CPF | Telefone | Nome | Email | Quadra | Lote | Fase | Data
+          cpfCol = 0;
+          telefoneCol = 1;
+          nomeCol = 2;
+          emailCol = 3;
+          quadraCol = 4;
+          loteCol = 5;
+          faseCol = 6;
+          dataCompraCol = 7;
+        }
+        
+        const nomeRaw = String(row[nomeCol] || '').trim();
         if (!nomeRaw) continue;
+        
+        // Verificar se o nome parece válido (tem pelo menos 2 palavras)
+        if (nomeRaw.split(/\s+/).length < 2) {
+          console.warn(`Nome inválido na linha ${i}:`, nomeRaw);
+          continue;
+        }
+
+        const emailRaw = String(row[emailCol] || '').trim().toLowerCase();
+        if (!emailRaw || !emailRaw.includes('@')) {
+          console.warn(`Email inválido na linha ${i}:`, emailRaw);
+          continue;
+        }
 
         const cooperado: CooperadoData = {
           nome_completo: normalizarNome(nomeRaw),
-          email: String(row[1] || '').trim().toLowerCase(),
-          cpf: normalizarCPF(String(row[2] || '').trim()),
-          telefone: normalizarTelefone(String(row[3] || '').trim()),
-          quadra: String(row[4] || '').trim() || undefined,
-          lote: String(row[5] || '').trim() || undefined,
-          fase: String(row[6] || '').trim() || undefined,
-          data_compra: normalizarData(String(row[7] || '').trim()),
+          email: emailRaw,
+          cpf: normalizarCPF(String(row[cpfCol] || '').trim()),
+          telefone: normalizarTelefone(String(row[telefoneCol] || '').trim()),
+          quadra: String(row[quadraCol] || '').trim() || undefined,
+          lote: String(row[loteCol] || '').trim() || undefined,
+          fase: String(row[faseCol] || '').trim() || undefined,
+          data_compra: normalizarData(String(row[dataCompraCol] || '').trim()),
         };
+        
+        if (i <= 3) {
+          console.log(`Cooperado processado (linha ${i}):`, cooperado);
+        }
 
         cooperadosData.push(cooperado);
       }
