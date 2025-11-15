@@ -51,7 +51,7 @@ serve(async (req) => {
       console.log(`📄 Arquivo decodificado (${fileBuffer.length} bytes)`);
     }
 
-    console.log("📄 Arquivo carregado, processando...");
+    console.log("📄 Processando Excel...");
 
     // Processar Excel
     const workbook = XLSX.read(fileBuffer, { type: "array" });
@@ -60,32 +60,44 @@ serve(async (req) => {
 
     console.log(`📊 Total de registros: ${data.length}`);
 
-    // Processar em background (não aguardar a Promise completa)
+    // Retornar resposta imediata ANTES de processar
+    const response = new Response(
+      JSON.stringify({
+        success: true,
+        message: `Processamento iniciado para ${data.length} registros`,
+        info: "O processamento está sendo executado em background.",
+        totalRegistros: data.length,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
+
+    // Processar em background usando EdgeRuntime.waitUntil
     const processInBackground = async () => {
       const stats = {
         total: data.length,
         inseridos: 0,
         atualizados: 0,
         erros: 0,
-        vinculados: 0,
-        detalhes: [] as any[],
       };
 
-      // Processar em lotes de 50 para evitar timeout
-      const BATCH_SIZE = 50;
+      // Processar em lotes de 10 para evitar timeout
+      const BATCH_SIZE = 10;
       
       for (let batchStart = 0; batchStart < data.length; batchStart += BATCH_SIZE) {
         const batch = data.slice(batchStart, batchStart + BATCH_SIZE);
-        console.log(`📦 Processando lote ${Math.floor(batchStart / BATCH_SIZE) + 1}/${Math.ceil(data.length / BATCH_SIZE)} (${batch.length} registros)`);
+        const batchNum = Math.floor(batchStart / BATCH_SIZE) + 1;
+        const totalBatches = Math.ceil(data.length / BATCH_SIZE);
+        
+        console.log(`📦 Lote ${batchNum}/${totalBatches} (${batch.length} registros)`);
 
-        for (let i = 0; i < batch.length; i++) {
-          const row = batch[i];
-          const rowIndex = batchStart + i;
-          
+        for (const row of batch) {
           try {
             // Extrair dados do Excel
             const compradorData: any = {
-              id: row.id?.toString() || `cohapm_${rowIndex + 1}`,
+              id: row.id?.toString() || `cohapm_${Date.now()}_${Math.random()}`,
               nome: row.nome || "Sem Nome",
               cpf_cnpj: row.cpf || null,
               grupo: row.grupo || null,
@@ -95,8 +107,6 @@ serve(async (req) => {
               tipo: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
               tipo_classificado: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
               fonte: "sistema_cohapm",
-              imobiliaria: row.imobiliaria || null,
-              corretor: row.corretor || null,
               data_extracao: new Date().toISOString(),
             };
 
@@ -138,61 +148,24 @@ serve(async (req) => {
               stats.inseridos++;
             }
 
-            // Tentar vincular com profile existente
-            if (compradorData.nome) {
-              const nomeNormalizado = compradorData.nome.toUpperCase().trim();
-              
-              const { data: profile } = await supabase
-                .from("profiles")
-                .select("id, nome_completo")
-                .ilike("nome_completo", `%${nomeNormalizado}%`)
-                .maybeSingle();
-
-              if (profile && !compradorData.profile_id) {
-                await supabase
-                  .from("compradores_cohapm")
-                  .update({ profile_id: profile.id })
-                  .eq("id", compradorData.id);
-                
-                stats.vinculados++;
-              }
-            }
-
           } catch (error: any) {
-            console.error(`Erro no registro ${rowIndex + 1}:`, error.message);
+            console.error(`Erro no registro:`, error.message);
             stats.erros++;
-            stats.detalhes.push({
-              linha: rowIndex + 1,
-              nome: row.nome,
-              erro: error.message,
-            });
           }
         }
 
-        // Pequena pausa entre lotes
-        await new Promise(resolve => setTimeout(resolve, 100));
+        // Pausa entre lotes para não sobrecarregar
+        await new Promise(resolve => setTimeout(resolve, 200));
       }
 
-      console.log("✅ Processamento em background concluído:", stats);
+      console.log("✅ Processamento concluído:", stats);
       return stats;
     };
 
     // Iniciar processamento em background (não aguardar)
     processInBackground().catch(err => console.error("Erro no background:", err));
 
-    // Retornar resposta imediata
-    return new Response(
-      JSON.stringify({
-        success: true,
-        message: `Processamento iniciado para ${data.length} registros`,
-        info: "O processamento está sendo executado em background. Os dados serão atualizados nos próximos minutos.",
-        totalRegistros: data.length,
-      }),
-      {
-        status: 200,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      }
-    );
+    return response;
 
   } catch (error: any) {
     console.error("❌ Erro no processamento:", error);
