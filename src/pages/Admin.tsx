@@ -1754,6 +1754,39 @@ export default function Admin() {
                   </CardContent>
                 </Card>
 
+                {/* Cadastro em Lote */}
+                <Card className="border-primary/50 bg-gradient-to-r from-blue-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-6 w-6 text-primary" />
+                      Cadastro em Lote
+                    </CardTitle>
+                    <CardDescription>
+                      Importe múltiplos cooperados diretamente de um arquivo Excel
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Cadastre vários cooperados de uma vez
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Upload de Excel com nome, email, CPF, telefone, quadra, lote e mais
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/cadastro-lote')}
+                        className="bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <Users className="h-5 w-5 mr-2" />
+                        Cadastrar em Lote
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Botão para importação automática direta */}
                 <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-transparent">
                   <CardHeader>
