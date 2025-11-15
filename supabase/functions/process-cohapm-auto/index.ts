@@ -24,7 +24,6 @@ serve(async (req) => {
     let fileBuffer: Uint8Array;
 
     if (contentType.includes("multipart/form-data")) {
-      // Se o arquivo foi enviado via form-data
       const formData = await req.formData();
       const file = formData.get("file") as File;
       
@@ -35,14 +34,12 @@ serve(async (req) => {
       fileBuffer = new Uint8Array(await file.arrayBuffer());
       console.log(`📄 Arquivo recebido: ${file.name} (${file.size} bytes)`);
     } else {
-      // Se o arquivo foi enviado como JSON base64
       const body = await req.json();
       
       if (!body.fileData) {
         throw new Error("Dados do arquivo não encontrados no body da requisição");
       }
       
-      // Decodificar base64
       const base64Data = body.fileData.split(",")[1] || body.fileData;
       const binaryString = atob(base64Data);
       fileBuffer = new Uint8Array(binaryString.length);
@@ -63,147 +60,151 @@ serve(async (req) => {
 
     console.log(`📊 Total de registros: ${data.length}`);
 
-    // Estatísticas
-    const stats = {
-      total: data.length,
-      inseridos: 0,
-      atualizados: 0,
-      erros: 0,
-      vinculados: 0,
-      detalhes: [] as any[],
-    };
+    // Processar em background (não aguardar a Promise completa)
+    const processInBackground = async () => {
+      const stats = {
+        total: data.length,
+        inseridos: 0,
+        atualizados: 0,
+        erros: 0,
+        vinculados: 0,
+        detalhes: [] as any[],
+      };
 
-    // Processar cada comprador
-    for (let i = 0; i < data.length; i++) {
-      const row = data[i];
+      // Processar em lotes de 50 para evitar timeout
+      const BATCH_SIZE = 50;
       
-      try {
-        // Extrair dados do Excel
-        const compradorData: any = {
-          id: row.id?.toString() || `cohapm_${i + 1}`,
-          nome: row.nome || "Sem Nome",
-          cpf_cnpj: row.cpf || null,
-          grupo: row.grupo || null,
-          telefone: row.telefone || null,
-          email: row.email || null,
-          empreendimento: row.empreendimento || "Residencial La Felicità",
-          tipo: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
-          tipo_classificado: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
-          fonte: "sistema_cohapm",
-          imobiliaria: row.imobiliaria || null,
-          corretor: row.corretor || null,
-          data_extracao: new Date().toISOString(),
-        };
+      for (let batchStart = 0; batchStart < data.length; batchStart += BATCH_SIZE) {
+        const batch = data.slice(batchStart, batchStart + BATCH_SIZE);
+        console.log(`📦 Processando lote ${Math.floor(batchStart / BATCH_SIZE) + 1}/${Math.ceil(data.length / BATCH_SIZE)} (${batch.length} registros)`);
 
-        // Dados financeiros
-        if (row.financeiro_valor_total || row.financeiro_valor_pago) {
-          compradorData.valor_total_contratos = parseFloat(row.financeiro_valor_total) || 0;
-          compradorData.valor_pago = parseFloat(row.financeiro_valor_pago) || 0;
-          compradorData.valor_pendente = parseFloat(row.financeiro_valor_pendente) || 0;
-          compradorData.total_contratos = parseInt(row.total_contratos) || 0;
-          compradorData.total_parcelas = parseInt(row.total_parcelas) || 0;
-          compradorData.parcelas_atrasadas = parseInt(row.financeiro_parcelas_atrasadas) || 0;
-          compradorData.situacao_financeira = row.financeiro_situacao || null;
+        for (let i = 0; i < batch.length; i++) {
+          const row = batch[i];
+          const rowIndex = batchStart + i;
           
-          // Calcular parcelas pagas
-          compradorData.parcelas_pagas = compradorData.total_parcelas - compradorData.parcelas_atrasadas;
-        }
+          try {
+            // Extrair dados do Excel
+            const compradorData: any = {
+              id: row.id?.toString() || `cohapm_${rowIndex + 1}`,
+              nome: row.nome || "Sem Nome",
+              cpf_cnpj: row.cpf || null,
+              grupo: row.grupo || null,
+              telefone: row.telefone || null,
+              email: row.email || null,
+              empreendimento: row.empreendimento || "Residencial La Felicità",
+              tipo: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
+              tipo_classificado: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
+              fonte: "sistema_cohapm",
+              imobiliaria: row.imobiliaria || null,
+              corretor: row.corretor || null,
+              data_extracao: new Date().toISOString(),
+            };
 
-        // Verificar se já existe
-        const { data: existente } = await supabase
-          .from("compradores_cohapm")
-          .select("id")
-          .eq("id", compradorData.id)
-          .maybeSingle();
+            // Dados financeiros
+            if (row.financeiro_valor_total || row.financeiro_valor_pago) {
+              compradorData.valor_total_contratos = parseFloat(row.financeiro_valor_total) || 0;
+              compradorData.valor_pago = parseFloat(row.financeiro_valor_pago) || 0;
+              compradorData.valor_pendente = parseFloat(row.financeiro_valor_pendente) || 0;
+              compradorData.total_contratos = parseInt(row.total_contratos) || 0;
+              compradorData.total_parcelas = parseInt(row.total_parcelas) || 0;
+              compradorData.parcelas_atrasadas = parseInt(row.financeiro_parcelas_atrasadas) || 0;
+              compradorData.situacao_financeira = row.financeiro_situacao || null;
+              compradorData.parcelas_pagas = compradorData.total_parcelas - compradorData.parcelas_atrasadas;
+            }
 
-        if (existente) {
-          // Atualizar
-          const { error: updateError } = await supabase
-            .from("compradores_cohapm")
-            .update(compradorData)
-            .eq("id", compradorData.id);
-
-          if (updateError) throw updateError;
-          stats.atualizados++;
-        } else {
-          // Inserir
-          const { error: insertError } = await supabase
-            .from("compradores_cohapm")
-            .insert(compradorData);
-
-          if (insertError) throw insertError;
-          stats.inseridos++;
-        }
-
-        // Tentar vincular com profile existente
-        if (compradorData.cpf_cnpj) {
-          const cpfLimpo = compradorData.cpf_cnpj.replace(/\D/g, "");
-          if (cpfLimpo) {
-            const { data: profile } = await supabase
-              .from("profiles")
-              .select("id, quadra, lote")
-              .eq("cpf", cpfLimpo)
+            // Verificar se já existe
+            const { data: existente } = await supabase
+              .from("compradores_cohapm")
+              .select("id")
+              .eq("id", compradorData.id)
               .maybeSingle();
 
-            if (profile) {
-              await supabase
+            if (existente) {
+              // Atualizar
+              const { error: updateError } = await supabase
                 .from("compradores_cohapm")
-                .update({ 
-                  profile_id: profile.id,
-                  quadra: profile.quadra || compradorData.quadra,
-                  lote: profile.lote || compradorData.lote,
-                })
+                .update(compradorData)
                 .eq("id", compradorData.id);
-              
-              stats.vinculados++;
-              console.log(`✅ Vinculado: ${compradorData.nome}`);
+
+              if (updateError) throw updateError;
+              stats.atualizados++;
+            } else {
+              // Inserir
+              const { error: insertError } = await supabase
+                .from("compradores_cohapm")
+                .insert(compradorData);
+
+              if (insertError) throw insertError;
+              stats.inseridos++;
             }
+
+            // Tentar vincular com profile existente
+            if (compradorData.nome) {
+              const nomeNormalizado = compradorData.nome.toUpperCase().trim();
+              
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("id, nome_completo")
+                .ilike("nome_completo", `%${nomeNormalizado}%`)
+                .maybeSingle();
+
+              if (profile && !compradorData.profile_id) {
+                await supabase
+                  .from("compradores_cohapm")
+                  .update({ profile_id: profile.id })
+                  .eq("id", compradorData.id);
+                
+                stats.vinculados++;
+              }
+            }
+
+          } catch (error: any) {
+            console.error(`Erro no registro ${rowIndex + 1}:`, error.message);
+            stats.erros++;
+            stats.detalhes.push({
+              linha: rowIndex + 1,
+              nome: row.nome,
+              erro: error.message,
+            });
           }
         }
 
-        // Log de progresso
-        if ((i + 1) % 50 === 0) {
-          console.log(`📈 Processados: ${i + 1}/${data.length}`);
-        }
-
-      } catch (error: any) {
-        console.error(`❌ Erro ao processar ${row.nome}:`, error.message);
-        stats.erros++;
-        stats.detalhes.push({
-          nome: row.nome,
-          erro: error.message,
-        });
+        // Pequena pausa entre lotes
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
-    }
 
-    console.log("✅ Processamento concluído!");
-    console.log(`📊 Inseridos: ${stats.inseridos}`);
-    console.log(`📊 Atualizados: ${stats.atualizados}`);
-    console.log(`🔗 Vinculados: ${stats.vinculados}`);
-    console.log(`❌ Erros: ${stats.erros}`);
+      console.log("✅ Processamento em background concluído:", stats);
+      return stats;
+    };
 
+    // Iniciar processamento em background (não aguardar)
+    processInBackground().catch(err => console.error("Erro no background:", err));
+
+    // Retornar resposta imediata
     return new Response(
       JSON.stringify({
         success: true,
-        stats,
-        message: `Processamento concluído: ${stats.inseridos} inseridos, ${stats.atualizados} atualizados, ${stats.vinculados} vinculados, ${stats.erros} erros`,
+        message: `Processamento iniciado para ${data.length} registros`,
+        info: "O processamento está sendo executado em background. Os dados serão atualizados nos próximos minutos.",
+        totalRegistros: data.length,
       }),
       {
         status: 200,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
+
   } catch (error: any) {
     console.error("❌ Erro no processamento:", error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         success: false,
         error: error.message,
         stack: error.stack,
       }),
       {
         status: 500,
-        headers: { "Content-Type": "application/json", ...corsHeaders },
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
       }
     );
   }
