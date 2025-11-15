@@ -1,5 +1,36 @@
 import { supabase } from '@/integrations/supabase/client';
 
+// Função de retry com backoff exponencial
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  operationName: string,
+  maxRetries: number = 3,
+  initialDelay: number = 1000
+): Promise<T> {
+  let lastError: any;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error: any) {
+      lastError = error;
+      console.warn(
+        `Tentativa ${attempt}/${maxRetries} falhou para ${operationName}:`,
+        error.message
+      );
+      
+      if (attempt < maxRetries) {
+        // Backoff exponencial: 1s, 2s, 4s
+        const delay = initialDelay * Math.pow(2, attempt - 1);
+        console.log(`Aguardando ${delay}ms antes da próxima tentativa...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
 export interface FinancialImportData {
   cliente: string;
   quadraLote: string;
@@ -43,36 +74,42 @@ export async function importFinancialData(data: FinancialImportData[]) {
       let profileId: string;
 
       if (!profile) {
-        // Criar cooperado automaticamente
+        // Criar cooperado automaticamente com retry
         try {
           const tempEmail = `${quadra}.${lote}@temp.cooperativa.com`;
           const tempPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
           
-          const { data: sessionData } = await supabase.auth.getSession();
-          
-          const { data: newUserData, error: createUserError } = await supabase.functions.invoke('create-user', {
-            body: {
-              email: tempEmail,
-              password: tempPassword,
-              nome_completo: cliente.cliente,
-              quadra,
-              lote,
-            },
-            headers: {
-              Authorization: `Bearer ${sessionData.session?.access_token}`,
-            },
-          });
+          const newUserData = await retryOperation(
+            async () => {
+              const { data: sessionData } = await supabase.auth.getSession();
+              
+              const { data, error } = await supabase.functions.invoke('create-user', {
+                body: {
+                  email: tempEmail,
+                  password: tempPassword,
+                  nome_completo: cliente.cliente,
+                  quadra,
+                  lote,
+                },
+                headers: {
+                  Authorization: `Bearer ${sessionData.session?.access_token}`,
+                },
+              });
 
-          if (createUserError || !newUserData?.userId) {
-            results.errors.push(
-              `Erro ao criar cooperado ${cliente.cliente}: ${createUserError?.message || 'Erro desconhecido'}`
-            );
-            continue;
-          }
+              if (error || !data?.userId) {
+                throw new Error(error?.message || 'Erro desconhecido ao criar usuário');
+              }
+
+              return data;
+            },
+            `criar cooperado ${cliente.cliente}`
+          );
 
           profileId = newUserData.userId;
         } catch (error: any) {
-          results.errors.push(`Erro ao criar cooperado ${cliente.cliente}: ${error.message}`);
+          results.errors.push(
+            `Erro ao criar cooperado ${cliente.cliente} após 3 tentativas: ${error.message}`
+          );
           continue;
         }
       } else {
@@ -113,26 +150,36 @@ export async function importFinancialData(data: FinancialImportData[]) {
         // Usar investimento existente
         investimentoId = existingInv.id;
       } else {
-        // Criar novo investimento
-        const { data: newInv, error: invError } = await supabase
-          .from('investimentos')
-          .insert({
-            user_id: profileId,
-            valor_total: valorTotal,
-            numero_parcelas: numeroParcelas,
-            valor_parcela: valorParcela,
-            data_inicio: primeiraData,
-            observacoes: `Importado automaticamente - ${cliente.quadraLote}`,
-          })
-          .select()
-          .single();
+        // Criar novo investimento com retry
+        try {
+          const newInv = await retryOperation(
+            async () => {
+              const { data, error } = await supabase
+                .from('investimentos')
+                .insert({
+                  user_id: profileId,
+                  valor_total: valorTotal,
+                  numero_parcelas: numeroParcelas,
+                  valor_parcela: valorParcela,
+                  data_inicio: primeiraData,
+                  observacoes: `Importado automaticamente - ${cliente.quadraLote}`,
+                })
+                .select()
+                .single();
 
-        if (invError) {
-          results.errors.push(`Erro ao criar investimento para ${cliente.cliente}: ${invError.message}`);
+              if (error) throw error;
+              return data;
+            },
+            `criar investimento para ${cliente.cliente}`
+          );
+
+          investimentoId = newInv.id;
+        } catch (error: any) {
+          results.errors.push(
+            `Erro ao criar investimento para ${cliente.cliente} após 3 tentativas: ${error.message}`
+          );
           continue;
         }
-
-        investimentoId = newInv.id;
       }
 
       // Inserir parcelas
@@ -154,12 +201,22 @@ export async function importFinancialData(data: FinancialImportData[]) {
         }));
 
       if (parcelasToInsert.length > 0) {
-        const { error: parcelasError } = await supabase
-          .from('parcelas')
-          .insert(parcelasToInsert);
+        // Inserir parcelas com retry
+        try {
+          await retryOperation(
+            async () => {
+              const { error } = await supabase
+                .from('parcelas')
+                .insert(parcelasToInsert);
 
-        if (parcelasError) {
-          results.errors.push(`Erro ao inserir parcelas para ${cliente.cliente}: ${parcelasError.message}`);
+              if (error) throw error;
+            },
+            `inserir parcelas para ${cliente.cliente}`
+          );
+        } catch (error: any) {
+          results.errors.push(
+            `Erro ao inserir parcelas para ${cliente.cliente} após 3 tentativas: ${error.message}`
+          );
           continue;
         }
       }
