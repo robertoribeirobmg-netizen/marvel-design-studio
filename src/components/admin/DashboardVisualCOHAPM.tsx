@@ -52,59 +52,6 @@ export function DashboardVisualCOHAPM() {
 
   useEffect(() => {
     loadDashboardData();
-
-    // Notificar que realtime está ativo
-    toast.success('Dashboard em tempo real ativado', {
-      description: 'Os dados serão atualizados automaticamente'
-    });
-
-    // Configurar Supabase Realtime para atualizações automáticas
-    const channel = supabase
-      .channel('dashboard-cohapm-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'compradores_cohapm'
-        },
-        () => {
-          console.log('Compradores COHAPM atualizado - recarregando dashboard');
-          toast.info('Dados atualizados em tempo real');
-          loadDashboardData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'parcelas_cohapm'
-        },
-        () => {
-          console.log('Parcelas COHAPM atualizadas - recarregando dashboard');
-          toast.info('Dados atualizados em tempo real');
-          loadDashboardData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'contratos_cohapm'
-        },
-        () => {
-          console.log('Contratos COHAPM atualizados - recarregando dashboard');
-          toast.info('Dados atualizados em tempo real');
-          loadDashboardData();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const loadDashboardData = async () => {
