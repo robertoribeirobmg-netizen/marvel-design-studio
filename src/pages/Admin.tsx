@@ -26,6 +26,7 @@ import { AdminGaleria } from '@/components/AdminGaleria';
 import { ValidationErrorsAnalytics } from '@/components/ValidationErrorsAnalytics';
 import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { ImportacaoCOHAPM } from '@/components/admin/ImportacaoCOHAPM';
+import { DashboardVisualCOHAPM } from '@/components/admin/DashboardVisualCOHAPM';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -1147,7 +1148,7 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-7">
+            <TabsList className="grid w-full grid-cols-8">
               <TabsTrigger value="dashboard" className="flex items-center gap-2">
                 <BarChart3 className="h-4 w-4" />
                 Dashboard
@@ -1163,6 +1164,10 @@ export default function Admin() {
               <TabsTrigger value="cohapm" className="flex items-center gap-2">
                 <FileSpreadsheet className="h-4 w-4" />
                 COHAPM
+              </TabsTrigger>
+              <TabsTrigger value="graficos" className="flex items-center gap-2">
+                <LineChart className="h-4 w-4" />
+                Gráficos
               </TabsTrigger>
               <TabsTrigger value="obras" className="flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
@@ -1288,6 +1293,12 @@ export default function Admin() {
             <TabsContent value="cohapm">
               <div className="space-y-6">
                 <ImportacaoCOHAPM />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="graficos">
+              <div className="space-y-6">
+                <DashboardVisualCOHAPM />
               </div>
             </TabsContent>
 
