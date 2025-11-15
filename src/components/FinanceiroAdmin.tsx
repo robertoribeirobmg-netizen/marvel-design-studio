@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw, FileDown, Upload, Eye, CheckSquare } from 'lucide-react';
+import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw, FileDown, Upload, Eye, CheckSquare, Filter, SlidersHorizontal, ArrowUpDown } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -16,6 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface CooperadoFinanceiro {
   id: string;
@@ -54,6 +58,15 @@ export function FinanceiroAdmin() {
   const [observacoesLote, setObservacoesLote] = useState('');
   const [comprovanteLoteFile, setComprovanteLoteFile] = useState<File | null>(null);
   const [previewUrlLote, setPreviewUrlLote] = useState<string | null>(null);
+  
+  // Filtros de parcelas
+  const [filtroStatus, setFiltroStatus] = useState<'todas' | 'pendente' | 'paga' | 'vencida'>('todas');
+  const [dataVencimentoInicio, setDataVencimentoInicio] = useState<Date | undefined>(undefined);
+  const [dataVencimentoFim, setDataVencimentoFim] = useState<Date | undefined>(undefined);
+  const [valorMinimo, setValorMinimo] = useState<string>('');
+  const [valorMaximo, setValorMaximo] = useState<string>('');
+  const [ordenacao, setOrdenacao] = useState<'parcela' | 'vencimento' | 'valor'>('parcela');
+  const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<'asc' | 'desc'>('asc');
 
   useEffect(() => {
     loadDadosFinanceiros();
@@ -180,6 +193,75 @@ export function FinanceiroAdmin() {
     };
   }, [cooperados]);
 
+  const limparFiltros = () => {
+    setFiltroStatus('todas');
+    setDataVencimentoInicio(undefined);
+    setDataVencimentoFim(undefined);
+    setValorMinimo('');
+    setValorMaximo('');
+    setOrdenacao('parcela');
+    setDirecaoOrdenacao('asc');
+  };
+
+  const parcelasFiltradas = useMemo(() => {
+    if (!selectedCooperado) return [];
+    
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    
+    let parcelas = selectedCooperado.parcelas.filter(parcela => {
+      // Filtro de status
+      if (filtroStatus !== 'todas') {
+        if (filtroStatus === 'vencida') {
+          const dataVenc = new Date(parcela.data_vencimento);
+          dataVenc.setHours(0, 0, 0, 0);
+          if (parcela.status !== 'pendente' || dataVenc >= hoje) return false;
+        } else {
+          if (parcela.status !== filtroStatus) return false;
+        }
+      }
+      
+      // Filtro de data de vencimento
+      if (dataVencimentoInicio) {
+        const dataVenc = new Date(parcela.data_vencimento);
+        const dataInicio = new Date(dataVencimentoInicio);
+        dataInicio.setHours(0, 0, 0, 0);
+        if (dataVenc < dataInicio) return false;
+      }
+      
+      if (dataVencimentoFim) {
+        const dataVenc = new Date(parcela.data_vencimento);
+        const dataFim = new Date(dataVencimentoFim);
+        dataFim.setHours(23, 59, 59, 999);
+        if (dataVenc > dataFim) return false;
+      }
+      
+      // Filtro de valor
+      const valor = Number(parcela.valor_parcela);
+      if (valorMinimo && valor < Number(valorMinimo)) return false;
+      if (valorMaximo && valor > Number(valorMaximo)) return false;
+      
+      return true;
+    });
+    
+    // Ordenação
+    parcelas.sort((a, b) => {
+      let comparacao = 0;
+      
+      if (ordenacao === 'parcela') {
+        comparacao = a.numero_parcela - b.numero_parcela;
+      } else if (ordenacao === 'vencimento') {
+        comparacao = new Date(a.data_vencimento).getTime() - new Date(b.data_vencimento).getTime();
+      } else if (ordenacao === 'valor') {
+        comparacao = Number(a.valor_parcela) - Number(b.valor_parcela);
+      }
+      
+      return direcaoOrdenacao === 'asc' ? comparacao : -comparacao;
+    });
+    
+    return parcelas;
+  }, [selectedCooperado, filtroStatus, dataVencimentoInicio, dataVencimentoFim, valorMinimo, valorMaximo, ordenacao, direcaoOrdenacao]);
+
   const abrirDialogBaixa = (parcela: any) => {
     setParcelaParaBaixa(parcela);
     setObservacoesBaixa('');
@@ -199,8 +281,8 @@ export function FinanceiroAdmin() {
   };
 
   const selecionarTodasParcelas = () => {
-    const parcelasPendentes = selectedCooperado?.parcelas.filter(p => p.status === 'pendente') || [];
-    if (parcelasSelecionadas.size === parcelasPendentes.length) {
+    const parcelasPendentes = parcelasFiltradas.filter(p => p.status === 'pendente');
+    if (parcelasSelecionadas.size === parcelasPendentes.length && parcelasPendentes.length > 0) {
       setParcelasSelecionadas(new Set());
     } else {
       setParcelasSelecionadas(new Set(parcelasPendentes.map(p => p.id)));
@@ -753,9 +835,10 @@ export function FinanceiroAdmin() {
         setShowParcelasDialog(open);
         if (!open) {
           setParcelasSelecionadas(new Set());
+          limparFiltros();
         }
       }}>
-        <DialogContent className="max-w-4xl max-h-[90vh]">
+        <DialogContent className="max-w-5xl max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5 text-primary" />
@@ -766,14 +849,160 @@ export function FinanceiroAdmin() {
             </DialogDescription>
           </DialogHeader>
 
-          {selectedCooperado?.parcelas.filter(p => p.status === 'pendente').length > 0 && (
-            <div className="flex gap-2 mb-2">
+          {/* Filtros */}
+          <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <SlidersHorizontal className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Filtros e Ordenação</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={limparFiltros}
+              >
+                Limpar Filtros
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* Filtro de Status */}
+              <div className="space-y-2">
+                <Label className="text-xs">Status</Label>
+                <Select value={filtroStatus} onValueChange={(value: any) => setFiltroStatus(value)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todas">Todas</SelectItem>
+                    <SelectItem value="pendente">Pendentes</SelectItem>
+                    <SelectItem value="paga">Pagas</SelectItem>
+                    <SelectItem value="vencida">Vencidas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Filtro de Data Início */}
+              <div className="space-y-2">
+                <Label className="text-xs">Vencimento De</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dataVencimentoInicio && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dataVencimentoInicio ? format(dataVencimentoInicio, "dd/MM/yyyy") : "Selecionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dataVencimentoInicio}
+                      onSelect={setDataVencimentoInicio}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Filtro de Data Fim */}
+              <div className="space-y-2">
+                <Label className="text-xs">Vencimento Até</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !dataVencimentoFim && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {dataVencimentoFim ? format(dataVencimentoFim, "dd/MM/yyyy") : "Selecionar"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={dataVencimentoFim}
+                      onSelect={setDataVencimentoFim}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              {/* Filtro de Valor Mínimo */}
+              <div className="space-y-2">
+                <Label className="text-xs">Valor Mínimo</Label>
+                <Input
+                  type="number"
+                  placeholder="R$ 0,00"
+                  value={valorMinimo}
+                  onChange={(e) => setValorMinimo(e.target.value)}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              {/* Filtro de Valor Máximo */}
+              <div className="space-y-2">
+                <Label className="text-xs">Valor Máximo</Label>
+                <Input
+                  type="number"
+                  placeholder="R$ 0,00"
+                  value={valorMaximo}
+                  onChange={(e) => setValorMaximo(e.target.value)}
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+
+              {/* Ordenação */}
+              <div className="space-y-2">
+                <Label className="text-xs">Ordenar por</Label>
+                <div className="flex gap-2">
+                  <Select value={ordenacao} onValueChange={(value: any) => setOrdenacao(value)}>
+                    <SelectTrigger className="flex-1">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="parcela">Nº Parcela</SelectItem>
+                      <SelectItem value="vencimento">Vencimento</SelectItem>
+                      <SelectItem value="valor">Valor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setDirecaoOrdenacao(direcaoOrdenacao === 'asc' ? 'desc' : 'asc')}
+                    title={direcaoOrdenacao === 'asc' ? 'Crescente' : 'Decrescente'}
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            <div className="text-xs text-muted-foreground">
+              Exibindo {parcelasFiltradas.length} de {selectedCooperado?.parcelas.length || 0} parcelas
+            </div>
+          </div>
+
+          {parcelasFiltradas.filter(p => p.status === 'pendente').length > 0 && (
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={selecionarTodasParcelas}
               >
-                {parcelasSelecionadas.size === selectedCooperado?.parcelas.filter(p => p.status === 'pendente').length
+                {parcelasSelecionadas.size === parcelasFiltradas.filter(p => p.status === 'pendente').length
                   ? 'Desmarcar Todas'
                   : 'Selecionar Todas'}
               </Button>
@@ -804,7 +1033,7 @@ export function FinanceiroAdmin() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {selectedCooperado?.parcelas.map(parcela => (
+                {parcelasFiltradas.map(parcela => (
                   <TableRow key={parcela.id}>
                     <TableCell>
                       {parcela.status === 'pendente' && (
@@ -866,7 +1095,7 @@ export function FinanceiroAdmin() {
                     </TableCell>
                   </TableRow>
                 ))}
-                {selectedCooperado?.parcelas.length === 0 && (
+                {parcelasFiltradas.length === 0 && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
                       Nenhuma parcela encontrada.
