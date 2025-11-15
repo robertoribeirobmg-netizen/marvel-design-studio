@@ -1853,6 +1853,72 @@ export default function Admin() {
                   </CardContent>
                 </Card>
 
+                {/* Importação de Contratos COHAPM */}
+                <Card className="border-primary/50 bg-gradient-to-r from-blue-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-6 w-6 text-primary" />
+                      Contratos COHAPM
+                    </CardTitle>
+                    <CardDescription>
+                      Importe contratos de compra vinculados aos compradores
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Dados contratuais e imóveis
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Upload CSV com número do contrato, valores, quadra e lote
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/importacao-contratos-cohapm')}
+                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <FileText className="h-5 w-5 mr-2" />
+                        Importar Contratos
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Importação de Parcelas COHAPM */}
+                <Card className="border-primary/50 bg-gradient-to-r from-purple-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="h-6 w-6 text-primary" />
+                      Parcelas COHAPM
+                    </CardTitle>
+                    <CardDescription>
+                      Importe parcelas de pagamento vinculadas aos contratos
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Controle financeiro completo
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Upload CSV com vencimentos, valores pagos e status
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/importacao-parcelas-cohapm')}
+                        className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <DollarSign className="h-5 w-5 mr-2" />
+                        Importar Parcelas
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Botão para importação automática direta */}
                 <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-transparent">
                   <CardHeader>
