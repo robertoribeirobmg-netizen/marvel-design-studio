@@ -15,6 +15,7 @@ export default function ImportacaoFinanceira() {
     success: boolean;
     investimentosCriados?: number;
     parcelasCriadas?: number;
+    parcelasAtualizadas?: number;
     totalClientes?: number;
     erros?: string[];
     error?: string;
@@ -92,9 +93,12 @@ export default function ImportacaoFinanceira() {
       setResultado(responseData);
 
       if (responseData.success) {
-        toast.success(
-          `Importação concluída! ${responseData.investimentosCriados} investimentos e ${responseData.parcelasCriadas} parcelas criadas.`
-        );
+        const mensagens = [];
+        if (responseData.investimentosCriados) mensagens.push(`${responseData.investimentosCriados} investimentos criados`);
+        if (responseData.parcelasCriadas) mensagens.push(`${responseData.parcelasCriadas} parcelas criadas`);
+        if (responseData.parcelasAtualizadas) mensagens.push(`${responseData.parcelasAtualizadas} parcelas atualizadas`);
+        
+        toast.success(`Importação concluída! ${mensagens.join(', ')}.`);
       } else {
         toast.error('Erro na importação: ' + responseData.error);
       }
@@ -178,8 +182,15 @@ export default function ImportacaoFinanceira() {
                   <div className="space-y-2">
                     <p className="font-semibold">Importação concluída com sucesso!</p>
                     <ul className="text-sm space-y-1">
-                      <li>✓ {resultado.investimentosCriados} investimentos criados</li>
-                      <li>✓ {resultado.parcelasCriadas} parcelas criadas</li>
+                      {resultado.investimentosCriados > 0 && (
+                        <li>✓ {resultado.investimentosCriados} investimentos criados</li>
+                      )}
+                      {resultado.parcelasCriadas > 0 && (
+                        <li>✓ {resultado.parcelasCriadas} parcelas criadas</li>
+                      )}
+                      {resultado.parcelasAtualizadas > 0 && (
+                        <li>✓ {resultado.parcelasAtualizadas} parcelas atualizadas</li>
+                      )}
                       <li>✓ {resultado.totalClientes} clientes processados</li>
                     </ul>
                     {resultado.erros && resultado.erros.length > 0 && (
