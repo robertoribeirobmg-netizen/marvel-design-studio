@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ArrowLeft, Upload, FileText, AlertCircle } from "lucide-react";
 import Papa from "papaparse";
+import * as XLSX from "xlsx";
 import { z } from "zod";
 import ContratoCohapmHelp from "@/components/ContratoCohapmHelp";
 
@@ -63,12 +64,15 @@ export default function ImportacaoContratosCohapm() {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
-    if (selectedFile && selectedFile.name.endsWith('.csv')) {
-      setFile(selectedFile);
-      setValidationErrors([]);
-      previewAndValidateFile(selectedFile);
-    } else {
-      toast.error("Por favor selecione um arquivo CSV válido");
+    if (selectedFile) {
+      const fileName = selectedFile.name.toLowerCase();
+      if (fileName.endsWith('.csv') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+        setFile(selectedFile);
+        setValidationErrors([]);
+        previewAndValidateFile(selectedFile);
+      } else {
+        toast.error("Por favor selecione um arquivo CSV ou Excel válido (.csv, .xlsx, .xls)");
+      }
     }
   };
 
@@ -85,53 +89,109 @@ export default function ImportacaoContratosCohapm() {
     return isNaN(parsed) ? null : parsed;
   };
 
-  const previewAndValidateFile = (file: File) => {
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: (results) => {
-        const data = results.data as ContratoCSV[];
-        const errors: ValidationError[] = [];
-        let validCount = 0;
-
-        data.forEach((row, index) => {
-          try {
-            contratoSchema.parse(row);
-            validCount++;
-          } catch (error) {
-            if (error instanceof z.ZodError) {
-              error.errors.forEach(err => {
-                errors.push({
-                  row: index + 2, // +2 porque linha 1 é header e array começa em 0
-                  field: err.path.join('.'),
-                  message: err.message,
-                  value: String(row[err.path[0] as keyof ContratoCSV] || '')
-                });
-              });
-            }
+  const processExcelFile = (file: File): Promise<ContratoCSV[]> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 }) as any[][];
+          
+          if (jsonData.length < 2) {
+            reject(new Error("Arquivo Excel vazio ou sem dados"));
+            return;
           }
-        });
 
-        setPreview(data.slice(0, 5));
-        setValidationErrors(errors.slice(0, 20)); // Mostrar apenas os primeiros 20 erros
-        setStats({
-          total: data.length,
-          valid: validCount,
-          invalid: data.length - validCount,
-          imported: 0,
-          errors: 0
-        });
-      },
-      error: (error) => {
-        console.error("Erro ao fazer preview do CSV:", error);
-        toast.error("Erro ao ler arquivo CSV");
-      }
+          const headers = jsonData[0].map(h => String(h).trim());
+          const rows = jsonData.slice(1);
+          
+          const processedData = rows.map(row => {
+            const obj: any = {};
+            headers.forEach((header, index) => {
+              obj[header] = row[index] !== undefined && row[index] !== null ? String(row[index]).trim() : '';
+            });
+            return obj as ContratoCSV;
+          });
+
+          resolve(processedData);
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.onerror = () => reject(new Error("Erro ao ler arquivo Excel"));
+      reader.readAsBinaryString(file);
     });
+  };
+
+  const previewAndValidateFile = async (file: File) => {
+    const fileName = file.name.toLowerCase();
+    
+    try {
+      let data: ContratoCSV[];
+
+      if (fileName.endsWith('.csv')) {
+        // Processar CSV com papaparse
+        await new Promise<void>((resolve, reject) => {
+          Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              data = results.data as ContratoCSV[];
+              resolve();
+            },
+            error: (error) => {
+              console.error("Erro ao fazer preview do CSV:", error);
+              reject(error);
+            }
+          });
+        });
+      } else {
+        // Processar Excel com xlsx
+        data = await processExcelFile(file);
+      }
+
+      const errors: ValidationError[] = [];
+      let validCount = 0;
+
+      data.forEach((row, index) => {
+        try {
+          contratoSchema.parse(row);
+          validCount++;
+        } catch (error) {
+          if (error instanceof z.ZodError) {
+            error.errors.forEach(err => {
+              errors.push({
+                row: index + 2, // +2 porque linha 1 é header e array começa em 0
+                field: err.path.join('.'),
+                message: err.message,
+                value: String(row[err.path[0] as keyof ContratoCSV] || '')
+              });
+            });
+          }
+        }
+      });
+
+      setPreview(data.slice(0, 5));
+      setValidationErrors(errors.slice(0, 20)); // Mostrar apenas os primeiros 20 erros
+      setStats({
+        total: data.length,
+        valid: validCount,
+        invalid: data.length - validCount,
+        imported: 0,
+        errors: 0
+      });
+    } catch (error) {
+      console.error("Erro ao fazer preview do arquivo:", error);
+      toast.error("Erro ao ler arquivo. Verifique o formato.");
+    }
   };
 
   const handleImport = async () => {
     if (!file) {
-      toast.error("Selecione um arquivo CSV");
+      toast.error("Selecione um arquivo");
       return;
     }
 
@@ -144,78 +204,90 @@ export default function ImportacaoContratosCohapm() {
     let imported = 0;
     let errors = 0;
 
-    Papa.parse(file, {
-      header: true,
-      skipEmptyLines: true,
-      complete: async (results) => {
-        const data = results.data as ContratoCSV[];
+    try {
+      const fileName = file.name.toLowerCase();
+      let data: ContratoCSV[];
 
-        // Verificar se os compradores existem
-        const compradorIds = [...new Set(data.map(c => c.comprador_id))];
-        const { data: existingCompradores } = await supabase
-          .from('compradores_cohapm')
-          .select('id')
-          .in('id', compradorIds);
-
-        const existingIds = new Set(existingCompradores?.map(c => c.id) || []);
-        const validData = data.filter(c => existingIds.has(c.comprador_id));
-
-        if (validData.length < data.length) {
-          const missing = data.length - validData.length;
-          toast.warning(`${missing} contratos ignorados (compradores não encontrados)`);
-        }
-
-        // Processar em lotes de 50
-        const batchSize = 50;
-        for (let i = 0; i < validData.length; i += batchSize) {
-          const batch = validData.slice(i, i + batchSize);
-          
-          const { error } = await supabase
-            .from('contratos_cohapm')
-            .insert(
-              batch.map(contrato => ({
-                comprador_id: contrato.comprador_id,
-                numero_contrato: contrato.numero_contrato || null,
-                data_contrato: contrato.data_contrato || null,
-                valor_total: parseDecimal(contrato.valor_total),
-                valor_entrada: parseDecimal(contrato.valor_entrada),
-                numero_parcelas: parseInt(contrato.numero_parcelas),
-                valor_parcela: parseDecimal(contrato.valor_parcela),
-                status: contrato.status || null,
-                situacao: contrato.situacao || null,
-                quadra: contrato.quadra || null,
-                lote: contrato.lote || null,
-                area_m2: parseDecimal(contrato.area_m2),
-                corretor: contrato.corretor || null,
-                imobiliaria: contrato.imobiliaria || null,
-              }))
-            );
-
-          if (error) {
-            console.error('Erro ao importar lote:', error);
-            errors += batch.length;
-          } else {
-            imported += batch.length;
-          }
-
-          setStats(prev => ({ ...prev, imported, errors }));
-        }
-
-        setIsProcessing(false);
-        
-        if (errors === 0) {
-          toast.success(`${imported} contratos importados com sucesso!`);
-          setTimeout(() => navigate('/compradores-cohapm'), 2000);
-        } else {
-          toast.warning(`${imported} importados, ${errors} erros`);
-        }
-      },
-      error: (error) => {
-        console.error("Erro ao processar CSV:", error);
-        toast.error("Erro ao processar arquivo CSV");
-        setIsProcessing(false);
+      if (fileName.endsWith('.csv')) {
+        await new Promise<void>((resolve, reject) => {
+          Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: (results) => {
+              data = results.data as ContratoCSV[];
+              resolve();
+            },
+            error: reject
+          });
+        });
+      } else {
+        data = await processExcelFile(file);
       }
-    });
+
+      // Verificar se os compradores existem
+      const compradorIds = [...new Set(data.map(c => c.comprador_id))];
+      const { data: existingCompradores } = await supabase
+        .from('compradores_cohapm')
+        .select('id')
+        .in('id', compradorIds);
+
+      const existingIds = new Set(existingCompradores?.map(c => c.id) || []);
+      const validData = data.filter(c => existingIds.has(c.comprador_id));
+
+      if (validData.length < data.length) {
+        const missing = data.length - validData.length;
+        toast.warning(`${missing} contratos ignorados (compradores não encontrados)`);
+      }
+
+      // Processar em lotes de 50
+      const batchSize = 50;
+      for (let i = 0; i < validData.length; i += batchSize) {
+        const batch = validData.slice(i, i + batchSize);
+        
+        const { error } = await supabase
+          .from('contratos_cohapm')
+          .insert(
+            batch.map(contrato => ({
+              comprador_id: contrato.comprador_id,
+              numero_contrato: contrato.numero_contrato || null,
+              data_contrato: contrato.data_contrato || null,
+              valor_total: parseDecimal(contrato.valor_total),
+              valor_entrada: parseDecimal(contrato.valor_entrada),
+              numero_parcelas: parseInt(contrato.numero_parcelas),
+              valor_parcela: parseDecimal(contrato.valor_parcela),
+              status: contrato.status || null,
+              situacao: contrato.situacao || null,
+              quadra: contrato.quadra || null,
+              lote: contrato.lote || null,
+              area_m2: parseDecimal(contrato.area_m2),
+              corretor: contrato.corretor || null,
+              imobiliaria: contrato.imobiliaria || null,
+            }))
+          );
+
+        if (error) {
+          console.error('Erro ao importar lote:', error);
+          errors += batch.length;
+        } else {
+          imported += batch.length;
+        }
+
+        setStats(prev => ({ ...prev, imported, errors }));
+      }
+
+      setIsProcessing(false);
+      
+      if (errors === 0) {
+        toast.success(`${imported} contratos importados com sucesso!`);
+        setTimeout(() => navigate('/compradores-cohapm'), 2000);
+      } else {
+        toast.warning(`${imported} importados, ${errors} erros`);
+      }
+    } catch (error) {
+      console.error("Erro ao processar arquivo:", error);
+      toast.error("Erro ao processar arquivo");
+      setIsProcessing(false);
+    }
   };
 
   const downloadTemplate = () => {
@@ -308,14 +380,17 @@ export default function ImportacaoContratosCohapm() {
 
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Arquivo CSV dos Contratos
+                  Arquivo CSV ou Excel dos Contratos
                 </label>
                 <Input
                   type="file"
-                  accept=".csv"
+                  accept=".csv,.xlsx,.xls"
                   onChange={handleFileChange}
                   disabled={isProcessing}
                 />
+                <p className="text-xs text-muted-foreground mt-1">
+                  Formatos aceitos: CSV (.csv), Excel (.xlsx, .xls)
+                </p>
               </div>
 
               {validationErrors.length > 0 && (
