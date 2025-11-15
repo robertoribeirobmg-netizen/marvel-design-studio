@@ -121,6 +121,21 @@ serve(async (req) => {
       // Criar parcelas
       for (let i = 0; i < parcelas.length; i++) {
         const p = parcelas[i];
+        const numeroParcela = i + 1;
+
+        // Verificar se a parcela já existe
+        const { data: existingParcela } = await supabaseClient
+          .from('parcelas')
+          .select('id')
+          .eq('investimento_id', investimentoId)
+          .eq('numero_parcela', numeroParcela)
+          .maybeSingle();
+
+        if (existingParcela) {
+          console.log(`Parcela ${numeroParcela} já existe para ${nomeCliente}, pulando...`);
+          continue;
+        }
+
         const dataVencimento = parseExcelDate(p.vencimento);
         const dataPagamento = p.dataRecebimento ? parseExcelDate(p.dataRecebimento) : null;
         const status = p.situacao === 'PAGO' ? 'paga' : 'pendente';
@@ -129,7 +144,7 @@ serve(async (req) => {
           .from('parcelas')
           .insert({
             investimento_id: investimentoId,
-            numero_parcela: i + 1,
+            numero_parcela: numeroParcela,
             valor_parcela: p.valor,
             data_vencimento: dataVencimento,
             data_pagamento: dataPagamento,
@@ -143,8 +158,8 @@ serve(async (req) => {
           });
 
         if (parcelaError) {
-          console.error(`Erro ao criar parcela ${i + 1} para ${nomeCliente}:`, parcelaError);
-          erros.push(`Erro parcela ${i + 1} de ${nomeCliente}: ${parcelaError.message}`);
+          console.error(`Erro ao criar parcela ${numeroParcela} para ${nomeCliente}:`, parcelaError);
+          erros.push(`Erro parcela ${numeroParcela} de ${nomeCliente}: ${parcelaError.message}`);
         } else {
           parcelasCriadas++;
         }
