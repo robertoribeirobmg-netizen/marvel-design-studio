@@ -14,6 +14,7 @@ import AreaCooperado from "./pages/AreaCooperado";
 import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
 import PreviewImportacao from "./pages/PreviewImportacao";
+import PreviewImportacaoFinanceira from "./pages/PreviewImportacaoFinanceira";
 import ProcessImport from "./pages/ProcessImport";
 import AdminDashboard from "./pages/AdminDashboard";
 import ClienteDashboard from "./pages/ClienteDashboard";
@@ -64,6 +65,14 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <PreviewImportacao />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/preview-importacao-financeira"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <PreviewImportacaoFinanceira />
                     </ProtectedRoute>
                   }
                 />

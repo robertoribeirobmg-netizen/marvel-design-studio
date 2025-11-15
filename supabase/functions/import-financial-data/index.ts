@@ -31,13 +31,13 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const { parcelasPorCliente } = await req.json();
+    const { parcelasPorCliente, dryRun = false } = await req.json();
 
     if (!parcelasPorCliente || Object.keys(parcelasPorCliente).length === 0) {
       throw new Error('Nenhum dado fornecido');
     }
 
-    console.log(`Processando ${Object.keys(parcelasPorCliente).length} clientes`);
+    console.log(`${dryRun ? 'Analisando' : 'Processando'} ${Object.keys(parcelasPorCliente).length} clientes`);
 
     // Buscar todos os perfis
     const { data: profiles, error: profilesError } = await supabaseClient
@@ -50,6 +50,8 @@ serve(async (req) => {
     let parcelasCriadas = 0;
     let parcelasAtualizadas = 0;
     const erros: string[] = [];
+    const conflitos: any[] = [];
+    const novasParcelas: any[] = [];
 
     // Processar cada cliente
     for (const [nomeCliente, parcelas] of Object.entries(parcelasPorCliente) as [string, ParcelaData[]][]) {
@@ -152,37 +154,74 @@ serve(async (req) => {
           .maybeSingle();
 
         if (existingParcela) {
-          // Atualizar parcela existente
-          const { error: updateError } = await supabaseClient
-            .from('parcelas')
-            .update(parcelaData)
-            .eq('id', existingParcela.id);
-
-          if (updateError) {
-            console.error(`Erro ao atualizar parcela ${numeroParcela} para ${nomeCliente}:`, updateError);
-            erros.push(`Erro ao atualizar parcela ${numeroParcela} de ${nomeCliente}: ${updateError.message}`);
+          // Detectar mudanças
+          const mudancas = [];
+          if (existingParcela.valor_parcela !== p.valor) mudancas.push('valor');
+          if (existingParcela.status !== status) mudancas.push('status');
+          if (existingParcela.data_vencimento !== dataVencimento) mudancas.push('vencimento');
+          if (existingParcela.data_pagamento !== dataPagamento) mudancas.push('pagamento');
+          
+          if (dryRun) {
+            // Modo análise: apenas registrar conflito
+            conflitos.push({
+              cliente: nomeCliente,
+              numeroParcela,
+              valorAnterior: existingParcela.valor_parcela,
+              valorNovo: p.valor,
+              statusAnterior: existingParcela.status,
+              statusNovo: status,
+              dataVencimentoAnterior: existingParcela.data_vencimento,
+              dataVencimentoNovo: dataVencimento,
+              dataPagamentoAnterior: existingParcela.data_pagamento,
+              dataPagamentoNovo: dataPagamento,
+              mudancas
+            });
           } else {
-            parcelasAtualizadas++;
-            console.log(`Parcela ${numeroParcela} atualizada para ${nomeCliente}`);
+            // Modo importação: atualizar
+            const { error: updateError } = await supabaseClient
+              .from('parcelas')
+              .update(parcelaData)
+              .eq('id', existingParcela.id);
+
+            if (updateError) {
+              console.error(`Erro ao atualizar parcela ${numeroParcela} para ${nomeCliente}:`, updateError);
+              erros.push(`Erro ao atualizar parcela ${numeroParcela} de ${nomeCliente}: ${updateError.message}`);
+            } else {
+              parcelasAtualizadas++;
+              console.log(`Parcela ${numeroParcela} atualizada para ${nomeCliente}`);
+            }
           }
         } else {
-          // Criar nova parcela
-          const { error: insertError } = await supabaseClient
-            .from('parcelas')
-            .insert(parcelaData);
-
-          if (insertError) {
-            console.error(`Erro ao criar parcela ${numeroParcela} para ${nomeCliente}:`, insertError);
-            erros.push(`Erro parcela ${numeroParcela} de ${nomeCliente}: ${insertError.message}`);
+          if (dryRun) {
+            // Modo análise: apenas registrar nova parcela
+            novasParcelas.push({
+              cliente: nomeCliente,
+              numeroParcela,
+              valor: p.valor,
+              status,
+              dataVencimento,
+              dataPagamento,
+              descricao: p.descricao
+            });
           } else {
-            parcelasCriadas++;
-            console.log(`Parcela ${numeroParcela} criada para ${nomeCliente}`);
+            // Modo importação: criar
+            const { error: insertError } = await supabaseClient
+              .from('parcelas')
+              .insert(parcelaData);
+
+            if (insertError) {
+              console.error(`Erro ao criar parcela ${numeroParcela} para ${nomeCliente}:`, insertError);
+              erros.push(`Erro parcela ${numeroParcela} de ${nomeCliente}: ${insertError.message}`);
+            } else {
+              parcelasCriadas++;
+              console.log(`Parcela ${numeroParcela} criada para ${nomeCliente}`);
+            }
           }
         }
       }
     }
 
-    console.log(`Importação concluída: ${investimentosCriados} investimentos, ${parcelasCriadas} parcelas criadas, ${parcelasAtualizadas} parcelas atualizadas`);
+    console.log(`${dryRun ? 'Análise' : 'Importação'} concluída: ${investimentosCriados} investimentos, ${parcelasCriadas} parcelas criadas, ${parcelasAtualizadas} parcelas atualizadas`);
 
     return new Response(
       JSON.stringify({
@@ -191,6 +230,8 @@ serve(async (req) => {
         parcelasCriadas,
         parcelasAtualizadas,
         totalClientes: Object.keys(parcelasPorCliente).length,
+        conflitos: dryRun ? conflitos : undefined,
+        novasParcelas: dryRun ? novasParcelas : undefined,
         erros: erros.length > 0 ? erros : undefined
       }),
       {
