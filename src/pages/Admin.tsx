@@ -27,7 +27,6 @@ import { ValidationErrorsAnalytics } from '@/components/ValidationErrorsAnalytic
 import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { ImportacaoCOHAPM } from '@/components/admin/ImportacaoCOHAPM';
 import { DashboardVisualCOHAPM } from '@/components/admin/DashboardVisualCOHAPM';
-import { RealtimeMonitor } from '@/components/admin/RealtimeMonitor';
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -1288,7 +1287,6 @@ export default function Admin() {
             <TabsContent value="financeiro">
               <div className="space-y-6">
                 <FinanceiroAdminDashboard />
-                <RealtimeMonitor />
               </div>
             </TabsContent>
 
@@ -1301,7 +1299,6 @@ export default function Admin() {
             <TabsContent value="graficos">
               <div className="space-y-6">
                 <DashboardVisualCOHAPM />
-                <RealtimeMonitor />
               </div>
             </TabsContent>
 
