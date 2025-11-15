@@ -51,22 +51,15 @@ serve(async (req) => {
       console.log(`📄 Arquivo decodificado (${fileBuffer.length} bytes)`);
     }
 
-    console.log("📄 Processando Excel...");
+    console.log("📄 Arquivo recebido, iniciando processamento em background...");
 
-    // Processar Excel
-    const workbook = XLSX.read(fileBuffer, { type: "array" });
-    const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data: any[] = XLSX.utils.sheet_to_json(worksheet);
-
-    console.log(`📊 Total de registros: ${data.length}`);
-
-    // Retornar resposta imediata ANTES de processar
+    // Retornar resposta IMEDIATA antes de qualquer processamento
     const response = new Response(
       JSON.stringify({
         success: true,
-        message: `Processamento iniciado para ${data.length} registros`,
-        info: "O processamento está sendo executado em background.",
-        totalRegistros: data.length,
+        message: "Processamento iniciado em background",
+        info: "O arquivo será processado nos próximos minutos. Os dados serão importados automaticamente.",
+        totalBytes: fileBuffer.length,
       }),
       {
         status: 200,
@@ -74,92 +67,106 @@ serve(async (req) => {
       }
     );
 
-    // Processar em background usando EdgeRuntime.waitUntil
+    // Processar TUDO em background (incluindo parsing do Excel)
     const processInBackground = async () => {
-      const stats = {
-        total: data.length,
-        inseridos: 0,
-        atualizados: 0,
-        erros: 0,
-      };
-
-      // Processar em lotes de 10 para evitar timeout
-      const BATCH_SIZE = 10;
-      
-      for (let batchStart = 0; batchStart < data.length; batchStart += BATCH_SIZE) {
-        const batch = data.slice(batchStart, batchStart + BATCH_SIZE);
-        const batchNum = Math.floor(batchStart / BATCH_SIZE) + 1;
-        const totalBatches = Math.ceil(data.length / BATCH_SIZE);
+      try {
+        console.log("🔄 Iniciando parsing do Excel em background...");
         
-        console.log(`📦 Lote ${batchNum}/${totalBatches} (${batch.length} registros)`);
+        // Parse Excel no background
+        const workbook = XLSX.read(fileBuffer, { type: "array" });
+        const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+        const data: any[] = XLSX.utils.sheet_to_json(worksheet);
+        
+        console.log(`📊 Total de registros encontrados: ${data.length}`);
 
-        for (const row of batch) {
-          try {
-            // Extrair dados do Excel
-            const compradorData: any = {
-              id: row.id?.toString() || `cohapm_${Date.now()}_${Math.random()}`,
-              nome: row.nome || "Sem Nome",
-              cpf_cnpj: row.cpf || null,
-              grupo: row.grupo || null,
-              telefone: row.telefone || null,
-              email: row.email || null,
-              empreendimento: row.empreendimento || "Residencial La Felicità",
-              tipo: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
-              tipo_classificado: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
-              fonte: "sistema_cohapm",
-              data_extracao: new Date().toISOString(),
-            };
+        const stats = {
+          total: data.length,
+          inseridos: 0,
+          atualizados: 0,
+          erros: 0,
+        };
 
-            // Dados financeiros
-            if (row.financeiro_valor_total || row.financeiro_valor_pago) {
-              compradorData.valor_total_contratos = parseFloat(row.financeiro_valor_total) || 0;
-              compradorData.valor_pago = parseFloat(row.financeiro_valor_pago) || 0;
-              compradorData.valor_pendente = parseFloat(row.financeiro_valor_pendente) || 0;
-              compradorData.total_contratos = parseInt(row.total_contratos) || 0;
-              compradorData.total_parcelas = parseInt(row.total_parcelas) || 0;
-              compradorData.parcelas_atrasadas = parseInt(row.financeiro_parcelas_atrasadas) || 0;
-              compradorData.situacao_financeira = row.financeiro_situacao || null;
-              compradorData.parcelas_pagas = compradorData.total_parcelas - compradorData.parcelas_atrasadas;
-            }
+        // Processar em lotes PEQUENOS de 5 registros
+        const BATCH_SIZE = 5;
+        
+        for (let batchStart = 0; batchStart < data.length; batchStart += BATCH_SIZE) {
+          const batch = data.slice(batchStart, batchStart + BATCH_SIZE);
+          const batchNum = Math.floor(batchStart / BATCH_SIZE) + 1;
+          const totalBatches = Math.ceil(data.length / BATCH_SIZE);
+          
+          console.log(`📦 Lote ${batchNum}/${totalBatches} (${batch.length} registros)`);
 
-            // Verificar se já existe
-            const { data: existente } = await supabase
-              .from("compradores_cohapm")
-              .select("id")
-              .eq("id", compradorData.id)
-              .maybeSingle();
+          for (const row of batch) {
+            try {
+              // Extrair dados do Excel
+              const compradorData: any = {
+                id: row.id?.toString() || `cohapm_${Date.now()}_${Math.random()}`,
+                nome: row.nome || "Sem Nome",
+                cpf_cnpj: row.cpf || null,
+                grupo: row.grupo || null,
+                telefone: row.telefone || null,
+                email: row.email || null,
+                empreendimento: row.empreendimento || "Residencial La Felicità",
+                tipo: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
+                tipo_classificado: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
+                fonte: "sistema_cohapm",
+                data_extracao: new Date().toISOString(),
+              };
 
-            if (existente) {
-              // Atualizar
-              const { error: updateError } = await supabase
+              // Dados financeiros
+              if (row.financeiro_valor_total || row.financeiro_valor_pago) {
+                compradorData.valor_total_contratos = parseFloat(row.financeiro_valor_total) || 0;
+                compradorData.valor_pago = parseFloat(row.financeiro_valor_pago) || 0;
+                compradorData.valor_pendente = parseFloat(row.financeiro_valor_pendente) || 0;
+                compradorData.total_contratos = parseInt(row.total_contratos) || 0;
+                compradorData.total_parcelas = parseInt(row.total_parcelas) || 0;
+                compradorData.parcelas_atrasadas = parseInt(row.financeiro_parcelas_atrasadas) || 0;
+                compradorData.situacao_financeira = row.financeiro_situacao || null;
+                compradorData.parcelas_pagas = compradorData.total_parcelas - compradorData.parcelas_atrasadas;
+              }
+
+              // Verificar se já existe
+              const { data: existente } = await supabase
                 .from("compradores_cohapm")
-                .update(compradorData)
-                .eq("id", compradorData.id);
+                .select("id")
+                .eq("id", compradorData.id)
+                .maybeSingle();
 
-              if (updateError) throw updateError;
-              stats.atualizados++;
-            } else {
-              // Inserir
-              const { error: insertError } = await supabase
-                .from("compradores_cohapm")
-                .insert(compradorData);
+              if (existente) {
+                // Atualizar
+                const { error: updateError } = await supabase
+                  .from("compradores_cohapm")
+                  .update(compradorData)
+                  .eq("id", compradorData.id);
 
-              if (insertError) throw insertError;
-              stats.inseridos++;
+                if (updateError) throw updateError;
+                stats.atualizados++;
+              } else {
+                // Inserir
+                const { error: insertError } = await supabase
+                  .from("compradores_cohapm")
+                  .insert(compradorData);
+
+                if (insertError) throw insertError;
+                stats.inseridos++;
+              }
+
+            } catch (error: any) {
+              console.error(`Erro no registro:`, error.message);
+              stats.erros++;
             }
-
-          } catch (error: any) {
-            console.error(`Erro no registro:`, error.message);
-            stats.erros++;
           }
+
+          // Pausa MAIOR entre lotes (500ms)
+          await new Promise(resolve => setTimeout(resolve, 500));
         }
 
-        // Pausa entre lotes para não sobrecarregar
-        await new Promise(resolve => setTimeout(resolve, 200));
+        console.log("✅ Processamento concluído:", stats);
+        return stats;
+      } catch (error: any) {
+        console.error("❌ Erro no processamento em background:", error);
+        throw error;
       }
-
-      console.log("✅ Processamento concluído:", stats);
-      return stats;
     };
 
     // Iniciar processamento em background (não aguardar)
