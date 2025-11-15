@@ -2018,6 +2018,55 @@ export default function Admin() {
                   </CardContent>
                 </Card>
 
+                {/* NOVO SISTEMA FINANCEIRO */}
+                <div className="col-span-2 mt-8">
+                  <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                    <DollarSign className="h-6 w-6" />
+                    Sistema Financeiro Completo
+                  </h2>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <Card className="border-green-500/50 bg-gradient-to-r from-green-500/5 to-transparent hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate('/financeiro-dashboard')}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5" />
+                          Dashboard Financeiro
+                        </CardTitle>
+                        <CardDescription>Visão executiva com KPIs e gráficos</CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                    <Card className="border-blue-500/50 bg-gradient-to-r from-blue-500/5 to-transparent hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate('/financeiro-contratos')}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <FileText className="h-5 w-5" />
+                          Gestão de Contratos
+                        </CardTitle>
+                        <CardDescription>Visualize e gerencie todos os contratos</CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                    <Card className="border-amber-500/50 bg-gradient-to-r from-amber-500/5 to-transparent hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate('/financeiro-parcelas')}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <DollarSign className="h-5 w-5" />
+                          Gestão de Parcelas
+                        </CardTitle>
+                        <CardDescription>Baixa individual e em lote de parcelas</CardDescription>
+                      </CardHeader>
+                    </Card>
+
+                    <Card className="border-purple-500/50 bg-gradient-to-r from-purple-500/5 to-transparent hover:shadow-lg transition-all cursor-pointer" onClick={() => navigate('/financeiro-relatorios')}>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <FileSpreadsheet className="h-5 w-5" />
+                          Relatórios Financeiros
+                        </CardTitle>
+                        <CardDescription>Extrato, fluxo de caixa e aging list</CardDescription>
+                      </CardHeader>
+                    </Card>
+                  </div>
+                </div>
+
                 {/* Botão para importação automática direta */}
                 <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-transparent">
                   <CardHeader>
