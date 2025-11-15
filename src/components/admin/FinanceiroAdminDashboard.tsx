@@ -38,59 +38,6 @@ export function FinanceiroAdminDashboard() {
 
   useEffect(() => {
     loadData();
-
-    // Notificar que realtime está ativo
-    toast.success('Atualização em tempo real ativada', {
-      description: 'Os dados financeiros serão atualizados automaticamente'
-    });
-
-    // Configurar Supabase Realtime para atualizações automáticas
-    const channel = supabase
-      .channel('financeiro-cohapm-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'compradores_cohapm'
-        },
-        () => {
-          console.log('Compradores COHAPM atualizado - recarregando financeiro');
-          toast.info('Dados atualizados em tempo real');
-          loadData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'parcelas_cohapm'
-        },
-        () => {
-          console.log('Parcelas COHAPM atualizadas - recarregando financeiro');
-          toast.info('Dados atualizados em tempo real');
-          loadData();
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'contratos_cohapm'
-        },
-        () => {
-          console.log('Contratos COHAPM atualizados - recarregando financeiro');
-          toast.info('Dados atualizados em tempo real');
-          loadData();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
   }, []);
 
   const loadData = async () => {

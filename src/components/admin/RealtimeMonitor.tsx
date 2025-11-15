@@ -47,80 +47,12 @@ export function RealtimeMonitor() {
   const [connectionStartTime, setConnectionStartTime] = useState<Date>(new Date());
 
   useEffect(() => {
-    // Configurar canais Realtime com monitoramento
-    const channel = supabase
-      .channel('monitor-cohapm-changes', {
-        config: {
-          broadcast: { self: false },
-          presence: { key: 'admin-monitor' }
-        }
-      })
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'compradores_cohapm'
-        },
-        (payload) => {
-          const recordId = (payload.new as any)?.id;
-          handleUpdate('compradores_cohapm', payload.eventType as any, recordId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'parcelas_cohapm'
-        },
-        (payload) => {
-          const recordId = (payload.new as any)?.id;
-          handleUpdate('parcelas_cohapm', payload.eventType as any, recordId);
-        }
-      )
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'contratos_cohapm'
-        },
-        (payload) => {
-          const recordId = (payload.new as any)?.id;
-          handleUpdate('contratos_cohapm', payload.eventType as any, recordId);
-        }
-      )
-      .subscribe((status) => {
-        console.log('Realtime connection status:', status);
-        setConnectionStatus(status as ConnectionStatus);
-        
-        if (status === 'SUBSCRIBED') {
-          toast.success('Realtime conectado', {
-            description: 'Monitoramento ativo'
-          });
-          setConnectionStartTime(new Date());
-        } else if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
-          toast.error('Erro na conexão Realtime', {
-            description: 'Tentando reconectar...'
-          });
-          setStats(prev => ({ ...prev, reconnections: prev.reconnections + 1 }));
-        }
-      });
-
-    // Atualizar duração da conexão a cada segundo
-    const durationInterval = setInterval(() => {
-      if (connectionStatus === 'SUBSCRIBED') {
-        const duration = Math.floor((Date.now() - connectionStartTime.getTime()) / 1000);
-        setStats(prev => ({ ...prev, connectionDuration: duration }));
-      }
-    }, 1000);
-
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(durationInterval);
-    };
-  }, [connectionStatus]);
+    // Realtime desabilitado
+    setConnectionStatus('CLOSED');
+    toast.info('Realtime desabilitado', {
+      description: 'Atualização automática de dados desativada'
+    });
+  }, []);
 
   const handleUpdate = (table: string, operation: 'INSERT' | 'UPDATE' | 'DELETE', recordId?: string) => {
     const updateEvent: UpdateEvent = {
