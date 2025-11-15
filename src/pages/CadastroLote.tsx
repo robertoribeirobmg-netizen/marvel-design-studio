@@ -190,18 +190,23 @@ export default function CadastroLote() {
       try {
         const autoPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
 
-        const { error } = await supabase.functions.invoke('create-user', {
-          body: {
-            email: cooperado.email,
-            password: autoPassword,
-            nome_completo: cooperado.nome_completo,
-            cpf: cooperado.cpf,
-            telefone: cooperado.telefone,
-            quadra: cooperado.quadra,
-            lote: cooperado.lote,
-            fase: cooperado.fase,
-            data_compra: cooperado.data_compra,
-          },
+        // Preparar dados com validações
+        const dadosParaEnviar = {
+          email: cooperado.email && cooperado.email.includes('@') ? cooperado.email : undefined,
+          password: autoPassword,
+          nome_completo: cooperado.nome_completo,
+          cpf: cooperado.cpf || null,
+          telefone: cooperado.telefone || null,
+          quadra: cooperado.quadra || null,
+          lote: cooperado.lote || null,
+          fase: cooperado.fase || null,
+          data_compra: cooperado.data_compra || null,
+        };
+
+        console.log('Enviando dados:', JSON.stringify(dadosParaEnviar, null, 2));
+
+        const { data, error } = await supabase.functions.invoke('create-user', {
+          body: dadosParaEnviar,
         });
 
         if (error) throw error;
