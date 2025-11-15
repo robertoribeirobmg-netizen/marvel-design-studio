@@ -17,6 +17,7 @@ import PreviewImportacao from "./pages/PreviewImportacao";
 import ProcessImport from "./pages/ProcessImport";
 import AdminDashboard from "./pages/AdminDashboard";
 import ClienteDashboard from "./pages/ClienteDashboard";
+import ImportacaoFinanceira from "./pages/ImportacaoFinanceira";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -87,6 +88,14 @@ const App = () => (
                   element={
                     <ProtectedRoute>
                       <ClienteDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/importacao-financeira"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ImportacaoFinanceira />
                     </ProtectedRoute>
                   }
                 />
