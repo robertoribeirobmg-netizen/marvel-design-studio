@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, User, Shield, LogOut, Settings } from "lucide-react";
+import { Home, LayoutDashboard, User, Shield, LogOut, Settings, Upload } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -113,6 +113,19 @@ export function AppSidebar() {
                       >
                         <Settings className="h-4 w-4" />
                         {!collapsed && <span>Configurações</span>}
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+
+                  <SidebarMenuItem>
+                    <SidebarMenuButton asChild>
+                      <NavLink
+                        to="/importacao-financeira"
+                        className="hover:bg-muted/50"
+                        activeClassName="bg-muted text-primary font-medium"
+                      >
+                        <Upload className="h-4 w-4" />
+                        {!collapsed && <span>Importar Dados</span>}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
