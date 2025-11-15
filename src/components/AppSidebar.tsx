@@ -116,19 +116,6 @@ export function AppSidebar() {
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-
-                  <SidebarMenuItem>
-                    <SidebarMenuButton asChild>
-                      <NavLink
-                        to="/importacao-financeira"
-                        className="hover:bg-muted/50"
-                        activeClassName="bg-muted text-primary font-medium"
-                      >
-                        <Upload className="h-4 w-4" />
-                        {!collapsed && <span>Importar Dados</span>}
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
                 </>
               )}
             </SidebarMenu>
