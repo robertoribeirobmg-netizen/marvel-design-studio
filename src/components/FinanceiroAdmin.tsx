@@ -67,6 +67,7 @@ export function FinanceiroAdmin() {
   const [valorMaximo, setValorMaximo] = useState<string>('');
   const [ordenacao, setOrdenacao] = useState<'parcela' | 'vencimento' | 'valor'>('parcela');
   const [direcaoOrdenacao, setDirecaoOrdenacao] = useState<'asc' | 'desc'>('asc');
+  const [termoBusca, setTermoBusca] = useState('');
 
   useEffect(() => {
     loadDadosFinanceiros();
@@ -194,6 +195,7 @@ export function FinanceiroAdmin() {
   }, [cooperados]);
 
   const limparFiltros = () => {
+    setTermoBusca('');
     setFiltroStatus('todas');
     setDataVencimentoInicio(undefined);
     setDataVencimentoFim(undefined);
@@ -210,6 +212,14 @@ export function FinanceiroAdmin() {
     hoje.setHours(0, 0, 0, 0);
     
     let parcelas = selectedCooperado.parcelas.filter(parcela => {
+      // Filtro de busca
+      if (termoBusca) {
+        const termo = termoBusca.toLowerCase();
+        const numeroMatch = parcela.numero_parcela.toString().includes(termo);
+        const descricaoMatch = parcela.descricao?.toLowerCase().includes(termo);
+        if (!numeroMatch && !descricaoMatch) return false;
+      }
+      
       // Filtro de status
       if (filtroStatus !== 'todas') {
         if (filtroStatus === 'vencida') {
@@ -260,7 +270,7 @@ export function FinanceiroAdmin() {
     });
     
     return parcelas;
-  }, [selectedCooperado, filtroStatus, dataVencimentoInicio, dataVencimentoFim, valorMinimo, valorMaximo, ordenacao, direcaoOrdenacao]);
+  }, [selectedCooperado, termoBusca, filtroStatus, dataVencimentoInicio, dataVencimentoFim, valorMinimo, valorMaximo, ordenacao, direcaoOrdenacao]);
 
   const abrirDialogBaixa = (parcela: any) => {
     setParcelaParaBaixa(parcela);
@@ -863,6 +873,20 @@ export function FinanceiroAdmin() {
               >
                 Limpar Filtros
               </Button>
+            </div>
+
+            {/* Campo de Busca */}
+            <div className="space-y-2">
+              <Label className="text-xs">Buscar</Label>
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por número ou descrição..."
+                  value={termoBusca}
+                  onChange={(e) => setTermoBusca(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
