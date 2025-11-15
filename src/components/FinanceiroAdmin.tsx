@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw, FileDown } from 'lucide-react';
+import { DollarSign, AlertCircle, Search, FileText, Check, X, Users, TrendingUp, Receipt, RefreshCw, FileDown, Upload, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -13,6 +13,8 @@ import { format } from 'date-fns';
 import { RenegociacaoDividas } from './RenegociacaoDividas';
 import { gerarRelatorioRenegociacoes } from '@/lib/relatorioRenegociacoes';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 interface CooperadoFinanceiro {
   id: string;
@@ -41,6 +43,11 @@ export function FinanceiroAdmin() {
   const [processandoBaixa, setProcessandoBaixa] = useState(false);
   const [gerandoRelatorio, setGerandoRelatorio] = useState(false);
   const [filtroRelatorio, setFiltroRelatorio] = useState<'todas' | 'ativas' | 'finalizadas'>('todas');
+  const [showBaixaDialog, setShowBaixaDialog] = useState(false);
+  const [parcelaParaBaixa, setParcelaParaBaixa] = useState<any>(null);
+  const [observacoesBaixa, setObservacoesBaixa] = useState('');
+  const [comprovanteFile, setComprovanteFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
 
   useEffect(() => {
     loadDadosFinanceiros();
@@ -167,28 +174,98 @@ export function FinanceiroAdmin() {
     };
   }, [cooperados]);
 
-  const darBaixaParcela = async (parcelaId: string) => {
+  const abrirDialogBaixa = (parcela: any) => {
+    setParcelaParaBaixa(parcela);
+    setObservacoesBaixa('');
+    setComprovanteFile(null);
+    setPreviewUrl(null);
+    setShowBaixaDialog(true);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamanho (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Arquivo muito grande. Tamanho máximo: 5MB');
+      return;
+    }
+
+    // Validar tipo
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast.error('Tipo de arquivo não permitido. Use: JPG, PNG, WEBP ou PDF');
+      return;
+    }
+
+    setComprovanteFile(file);
+
+    // Criar preview se for imagem
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setPreviewUrl(null);
+    }
+  };
+
+  const darBaixaParcela = async () => {
     try {
       setProcessandoBaixa(true);
       
-      const parcela = selectedCooperado?.parcelas.find(p => p.id === parcelaId);
-      if (!parcela) {
+      if (!parcelaParaBaixa) {
         toast.error('Parcela não encontrada');
         return;
       }
 
+      let comprovanteUrl: string | null = null;
+
+      // Upload do comprovante se houver
+      if (comprovanteFile) {
+        const fileExt = comprovanteFile.name.split('.').pop();
+        const fileName = `${selectedCooperado?.id}/${parcelaParaBaixa.id}_${Date.now()}.${fileExt}`;
+
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('comprovantes')
+          .upload(fileName, comprovanteFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Erro no upload:', uploadError);
+          toast.error('Erro ao fazer upload do comprovante');
+          return;
+        }
+
+        // Obter URL pública
+        const { data: urlData } = supabase.storage
+          .from('comprovantes')
+          .getPublicUrl(fileName);
+
+        comprovanteUrl = urlData.publicUrl;
+      }
+
+      // Atualizar parcela
       const { error } = await supabase
         .from('parcelas')
         .update({
           status: 'paga',
           data_pagamento: new Date().toISOString().split('T')[0],
-          valor_pago: parcela.valor_parcela,
+          valor_pago: parcelaParaBaixa.valor_parcela,
+          observacoes: observacoesBaixa || null,
+          comprovante_url: comprovanteUrl
         })
-        .eq('id', parcelaId);
+        .eq('id', parcelaParaBaixa.id);
 
       if (error) throw error;
 
-      toast.success('Baixa registrada com sucesso');
+      toast.success('Baixa registrada com sucesso!');
+      setShowBaixaDialog(false);
       await loadDadosFinanceiros();
       
       if (selectedCooperado) {
@@ -203,6 +280,10 @@ export function FinanceiroAdmin() {
     } finally {
       setProcessandoBaixa(false);
     }
+  };
+
+  const visualizarComprovante = (url: string) => {
+    window.open(url, '_blank');
   };
 
   const reverterBaixaParcela = async (parcelaId: string) => {
@@ -578,40 +659,20 @@ export function FinanceiroAdmin() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => darBaixaParcela(parcela.id)}
-                          disabled={processandoBaixa}
+                          onClick={() => abrirDialogBaixa(parcela)}
                         >
-                          {processandoBaixa ? (
-                            <>
-                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                              Dando Baixa...
-                            </>
-                          ) : (
-                            <>
-                              <Check className="mr-2 h-4 w-4" />
-                              Dar Baixa
-                            </>
-                          )}
+                          <Check className="mr-2 h-4 w-4" />
+                          Dar Baixa
                         </Button>
                       )}
-                      {parcela.status === 'paga' && (
+                      {parcela.status === 'paga' && parcela.comprovante_url && (
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => reverterBaixaParcela(parcela.id)}
-                          disabled={processandoBaixa}
+                          onClick={() => visualizarComprovante(parcela.comprovante_url)}
                         >
-                          {processandoBaixa ? (
-                            <>
-                              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                              Revertendo...
-                            </>
-                          ) : (
-                            <>
-                              <X className="mr-2 h-4 w-4" />
-                              Reverter Baixa
-                            </>
-                          )}
+                          <Eye className="mr-2 h-4 w-4" />
+                          Ver Comprovante
                         </Button>
                       )}
                     </TableCell>
@@ -631,6 +692,108 @@ export function FinanceiroAdmin() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowParcelasDialog(false)}>
               Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Baixa com Comprovante */}
+      <Dialog open={showBaixaDialog} onOpenChange={setShowBaixaDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Check className="h-5 w-5 text-primary" />
+              Dar Baixa na Parcela
+            </DialogTitle>
+            <DialogDescription>
+              Registre o pagamento da parcela {parcelaParaBaixa?.numero_parcela} de{' '}
+              {selectedCooperado?.nome_completo}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+              <div>
+                <Label className="text-xs text-muted-foreground">Valor da Parcela</Label>
+                <p className="font-semibold">
+                  R$ {Number(parcelaParaBaixa?.valor_parcela || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
+                </p>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Vencimento</Label>
+                <p className="font-semibold">
+                  {parcelaParaBaixa?.data_vencimento && format(new Date(parcelaParaBaixa.data_vencimento), 'dd/MM/yyyy')}
+                </p>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="observacoes">Observações</Label>
+              <Textarea
+                id="observacoes"
+                placeholder="Adicione observações sobre o pagamento (forma de pagamento, número do cheque, etc.)"
+                value={observacoesBaixa}
+                onChange={(e) => setObservacoesBaixa(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="comprovante">Comprovante de Pagamento</Label>
+              <div className="space-y-2">
+                <Input
+                  id="comprovante"
+                  type="file"
+                  accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf"
+                  onChange={handleFileChange}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Formatos aceitos: JPG, PNG, WEBP, PDF (máx. 5MB)
+                </p>
+              </div>
+
+              {previewUrl && (
+                <div className="mt-2">
+                  <img
+                    src={previewUrl}
+                    alt="Preview do comprovante"
+                    className="max-h-40 rounded-lg border"
+                  />
+                </div>
+              )}
+
+              {comprovanteFile && comprovanteFile.type === 'application/pdf' && (
+                <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                  <FileText className="h-5 w-5" />
+                  <span className="text-sm">{comprovanteFile.name}</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setShowBaixaDialog(false)}
+              disabled={processandoBaixa}
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={darBaixaParcela}
+              disabled={processandoBaixa}
+            >
+              {processandoBaixa ? (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Check className="mr-2 h-4 w-4" />
+                  Confirmar Baixa
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
