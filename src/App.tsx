@@ -26,6 +26,7 @@ import ImportacaoContratosCohapm from "./pages/ImportacaoContratosCohapm";
 import ImportacaoParcelasCohapm from "./pages/ImportacaoParcelasCohapm";
 import ReconciliacaoCohapm from "./pages/ReconciliacaoCohapm";
 import HistoricoSincronizacoes from "./pages/HistoricoSincronizacoes";
+import DashboardAnaliticoCohapm from "./pages/DashboardAnaliticoCohapm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -168,6 +169,14 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <HistoricoSincronizacoes />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/dashboard-analitico-cohapm"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <DashboardAnaliticoCohapm />
                     </ProtectedRoute>
                   }
                 />

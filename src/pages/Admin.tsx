@@ -12,7 +12,7 @@ import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check, GitCompare, RefreshCw } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check, GitCompare, RefreshCw, LineChart } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -1980,6 +1980,39 @@ export default function Admin() {
                       >
                         <RefreshCw className="h-5 w-5 mr-2" />
                         Ver Histórico
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Dashboard Analítico */}
+                <Card className="border-primary/50 bg-gradient-to-r from-purple-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <LineChart className="h-6 w-6 text-primary" />
+                      Dashboard Analítico
+                    </CardTitle>
+                    <CardDescription>
+                      Análise detalhada e gráficos de evolução COHAPM
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Visualização de tendências e padrões
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Gráficos de evolução, tipos comuns e taxa de resolução
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/dashboard-analitico-cohapm')}
+                        className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <LineChart className="h-5 w-5 mr-2" />
+                        Ver Dashboard
                       </Button>
                     </div>
                   </CardContent>
