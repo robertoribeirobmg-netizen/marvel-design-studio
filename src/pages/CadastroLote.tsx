@@ -187,8 +187,11 @@ export default function CadastroLote() {
         .from('profiles')
         .select('nome_completo, email, quadra, lote');
 
-      if (error) throw error;
-
+      if (!error && profiles) {
+        console.log(`✅ ${cooperadosData.length} cooperados processados do Excel`);
+        console.log('Primeiros 3 cooperados:', cooperadosData.slice(0, 3));
+      }
+      
       // Marcar duplicatas
       cooperadosData.forEach(coop => {
         const duplicateByName = profiles?.find(p => 
@@ -215,7 +218,12 @@ export default function CadastroLote() {
 
       setCooperados(cooperadosData);
       setShowPreview(true);
-      toast.success(`${cooperadosData.length} cooperados encontrados no arquivo`);
+      
+      if (cooperadosData.length === 0) {
+        toast.error('Nenhum cooperado válido encontrado no arquivo. Verifique o formato do Excel.');
+      } else {
+        toast.success(`${cooperadosData.length} cooperados encontrados no arquivo`);
+      }
     } catch (error: any) {
       console.error('Erro ao processar arquivo:', error);
       toast.error('Erro ao processar o arquivo: ' + error.message);
@@ -238,11 +246,20 @@ export default function CadastroLote() {
 
     for (const cooperado of cooperadosParaImportar) {
       try {
+        // Validações ANTES de enviar
+        if (!cooperado.nome_completo || cooperado.nome_completo.trim().length < 3) {
+          throw new Error('Nome completo inválido ou muito curto');
+        }
+        
+        if (!cooperado.email || !cooperado.email.includes('@')) {
+          throw new Error('Email inválido ou não fornecido');
+        }
+
         const autoPassword = Math.random().toString(36).slice(-8) + 'Aa1!';
 
         // Preparar dados com validações
         const dadosParaEnviar = {
-          email: cooperado.email && cooperado.email.includes('@') ? cooperado.email : undefined,
+          email: cooperado.email,
           password: autoPassword,
           nome_completo: cooperado.nome_completo,
           cpf: cooperado.cpf || null,
@@ -253,7 +270,7 @@ export default function CadastroLote() {
           data_compra: cooperado.data_compra || null,
         };
 
-        console.log('Enviando dados:', JSON.stringify(dadosParaEnviar, null, 2));
+        console.log('✅ Dados validados para envio:', JSON.stringify(dadosParaEnviar, null, 2));
 
         const { data, error } = await supabase.functions.invoke('create-user', {
           body: dadosParaEnviar,
@@ -262,9 +279,9 @@ export default function CadastroLote() {
         if (error) throw error;
         successCount++;
       } catch (error: any) {
-        console.error(`Erro ao criar cooperado ${cooperado.nome_completo}:`, error);
+        console.error(`❌ Erro ao criar cooperado ${cooperado.nome_completo || 'sem nome'}:`, error);
         errors.push({
-          nome: cooperado.nome_completo,
+          nome: cooperado.nome_completo || 'Sem nome',
           error: error.message || 'Erro desconhecido'
         });
       }
@@ -279,6 +296,21 @@ export default function CadastroLote() {
     if (errors.length > 0) {
       toast.error(`${errors.length} erros durante o cadastro`);
     }
+  };
+
+  const handleDownloadTemplate = () => {
+    // Criar template Excel com exemplo
+    const templateData = [
+      ['Nome Completo', 'Email', 'CPF', 'Telefone', 'Quadra', 'Lote', 'Fase', 'Data Compra'],
+      ['João da Silva Santos', 'joao.silva@email.com', '123.456.789-00', '(71) 98765-4321', 'A', '10', 'Fase 1', '2024-01-15'],
+      ['Maria Oliveira Costa', 'maria.oliveira@email.com', '987.654.321-00', '(71) 99876-5432', 'B', '25', 'Fase 2', '2024-02-20'],
+    ];
+    
+    const ws = XLSX.utils.aoa_to_sheet(templateData);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Cooperados');
+    XLSX.writeFile(wb, 'template_cooperados.xlsx');
+    toast.success('Template baixado com sucesso!');
   };
 
   const cooperadosValidos = cooperados.filter(c => !c.isDuplicate).length;
@@ -322,6 +354,17 @@ export default function CadastroLote() {
                 As colunas Nome e Email são obrigatórias.
               </AlertDescription>
             </Alert>
+
+            <div className="flex justify-center">
+              <Button
+                variant="outline"
+                onClick={handleDownloadTemplate}
+                className="flex items-center gap-2"
+              >
+                <FileSpreadsheet className="h-4 w-4" />
+                Baixar Template Excel
+              </Button>
+            </div>
 
             <div className="flex items-center gap-4">
               <Input
