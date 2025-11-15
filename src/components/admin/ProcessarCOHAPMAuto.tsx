@@ -36,62 +36,162 @@ export function ProcessarCOHAPMAuto() {
 
       // Parse Excel no CLIENTE (evita timeout no Edge Function)
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
-      const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-      const data: any[] = XLSX.utils.sheet_to_json(worksheet);
+      
+      // Processar todas as abas
+      const allData: any = {
+        compradores: [],
+        contratos: [],
+        parcelas: []
+      };
 
-      console.log(`📊 Total de registros: ${data.length}`);
-      toast.info(`${data.length} registros encontrados`);
+      // Aba de compradores
+      if (workbook.SheetNames.includes('Compradores') || workbook.SheetNames[0]) {
+        const sheetName = workbook.SheetNames.includes('Compradores') ? 'Compradores' : workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        allData.compradores = XLSX.utils.sheet_to_json(worksheet);
+      }
+
+      // Aba de contratos
+      if (workbook.SheetNames.includes('Contratos')) {
+        const worksheet = workbook.Sheets['Contratos'];
+        allData.contratos = XLSX.utils.sheet_to_json(worksheet);
+      }
+
+      // Aba de parcelas
+      if (workbook.SheetNames.includes('Parcelas')) {
+        const worksheet = workbook.Sheets['Parcelas'];
+        allData.parcelas = XLSX.utils.sheet_to_json(worksheet);
+      }
+
+      const totalRegistros = allData.compradores.length + allData.contratos.length + allData.parcelas.length;
+      console.log(`📊 Compradores: ${allData.compradores.length}, Contratos: ${allData.contratos.length}, Parcelas: ${allData.parcelas.length}`);
+      toast.info(`${totalRegistros} registros encontrados (${allData.compradores.length} compradores, ${allData.contratos.length} contratos, ${allData.parcelas.length} parcelas)`);
       setProgress(25);
 
       // Processar em lotes de 10 registros
       const BATCH_SIZE = 10;
-      const totalBatches = Math.ceil(data.length / BATCH_SIZE);
       
       const globalStats = {
-        total: data.length,
-        inseridos: 0,
-        atualizados: 0,
-        erros: 0,
+        total: totalRegistros,
+        compradores: { inseridos: 0, atualizados: 0, erros: 0 },
+        contratos: { inseridos: 0, atualizados: 0, erros: 0 },
+        parcelas: { inseridos: 0, atualizados: 0, erros: 0 },
       };
 
-      for (let i = 0; i < totalBatches; i++) {
-        const batch = data.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+      // Processar COMPRADORES
+      if (allData.compradores.length > 0) {
+        toast.info('Processando compradores...');
+        const totalBatches = Math.ceil(allData.compradores.length / BATCH_SIZE);
         
-        try {
-          const { data: result, error: batchError } = await supabase.functions.invoke(
-            'batch-insert-cohapm',
-            {
-              body: { batch }
+        for (let i = 0; i < totalBatches; i++) {
+          const batch = allData.compradores.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+          
+          try {
+            const { data: result, error: batchError } = await supabase.functions.invoke(
+              'batch-insert-cohapm',
+              {
+                body: { tipo: 'compradores', batch }
+              }
+            );
+
+            if (batchError) throw batchError;
+
+            if (result?.stats) {
+              globalStats.compradores.inseridos += result.stats.inseridos;
+              globalStats.compradores.atualizados += result.stats.atualizados;
+              globalStats.compradores.erros += result.stats.erros;
             }
-          );
 
-          if (batchError) throw batchError;
-
-          if (result?.stats) {
-            globalStats.inseridos += result.stats.inseridos;
-            globalStats.atualizados += result.stats.atualizados;
-            globalStats.erros += result.stats.erros;
+            const progressPercent = 25 + ((i + 1) / totalBatches) * 25;
+            setProgress(progressPercent);
+          } catch (err: any) {
+            console.error(`Erro no lote ${i + 1}:`, err);
+            globalStats.compradores.erros += batch.length;
           }
 
-          // Atualizar progresso
-          const progressPercent = 25 + ((i + 1) / totalBatches) * 70;
-          setProgress(progressPercent);
-
-          console.log(`✅ Lote ${i + 1}/${totalBatches} processado`);
-        } catch (err: any) {
-          console.error(`Erro no lote ${i + 1}:`, err);
-          globalStats.erros += batch.length;
+          await new Promise(resolve => setTimeout(resolve, 200));
         }
+      }
 
-        // Pequena pausa entre lotes
-        await new Promise(resolve => setTimeout(resolve, 200));
+      // Processar CONTRATOS
+      if (allData.contratos.length > 0) {
+        toast.info('Processando contratos...');
+        const totalBatches = Math.ceil(allData.contratos.length / BATCH_SIZE);
+        
+        for (let i = 0; i < totalBatches; i++) {
+          const batch = allData.contratos.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+          
+          try {
+            const { data: result, error: batchError } = await supabase.functions.invoke(
+              'batch-insert-cohapm',
+              {
+                body: { tipo: 'contratos', batch }
+              }
+            );
+
+            if (batchError) throw batchError;
+
+            if (result?.stats) {
+              globalStats.contratos.inseridos += result.stats.inseridos;
+              globalStats.contratos.atualizados += result.stats.atualizados;
+              globalStats.contratos.erros += result.stats.erros;
+            }
+
+            const progressPercent = 50 + ((i + 1) / totalBatches) * 20;
+            setProgress(progressPercent);
+          } catch (err: any) {
+            console.error(`Erro no lote ${i + 1}:`, err);
+            globalStats.contratos.erros += batch.length;
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
+      }
+
+      // Processar PARCELAS
+      if (allData.parcelas.length > 0) {
+        toast.info('Processando parcelas...');
+        const totalBatches = Math.ceil(allData.parcelas.length / BATCH_SIZE);
+        
+        for (let i = 0; i < totalBatches; i++) {
+          const batch = allData.parcelas.slice(i * BATCH_SIZE, (i + 1) * BATCH_SIZE);
+          
+          try {
+            const { data: result, error: batchError } = await supabase.functions.invoke(
+              'batch-insert-cohapm',
+              {
+                body: { tipo: 'parcelas', batch }
+              }
+            );
+
+            if (batchError) throw batchError;
+
+            if (result?.stats) {
+              globalStats.parcelas.inseridos += result.stats.inseridos;
+              globalStats.parcelas.atualizados += result.stats.atualizados;
+              globalStats.parcelas.erros += result.stats.erros;
+            }
+
+            const progressPercent = 70 + ((i + 1) / totalBatches) * 25;
+            setProgress(progressPercent);
+          } catch (err: any) {
+            console.error(`Erro no lote ${i + 1}:`, err);
+            globalStats.parcelas.erros += batch.length;
+          }
+
+          await new Promise(resolve => setTimeout(resolve, 200));
+        }
       }
 
       setProgress(100);
       setStats(globalStats);
       
-      toast.success('Processamento concluído!', {
-        description: `${globalStats.inseridos} inseridos, ${globalStats.atualizados} atualizados, ${globalStats.erros} erros`
+      const totalInseridos = globalStats.compradores.inseridos + globalStats.contratos.inseridos + globalStats.parcelas.inseridos;
+      const totalAtualizados = globalStats.compradores.atualizados + globalStats.contratos.atualizados + globalStats.parcelas.atualizados;
+      const totalErros = globalStats.compradores.erros + globalStats.contratos.erros + globalStats.parcelas.erros;
+      
+      toast.success('Processamento completo concluído!', {
+        description: `Total: ${totalInseridos} inseridos, ${totalAtualizados} atualizados, ${totalErros} erros`
       });
 
     } catch (err: any) {
@@ -169,23 +269,66 @@ export function ProcessarCOHAPMAuto() {
               Processamento Concluído
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Total</p>
-                <p className="text-2xl font-bold">{stats.total}</p>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <h4 className="font-semibold">Compradores</h4>
+                <div className="pl-4 space-y-1 text-sm">
+                  <div className="flex justify-between text-success">
+                    <span>Inseridos:</span>
+                    <span className="font-bold">{stats.compradores.inseridos}</span>
+                  </div>
+                  <div className="flex justify-between text-primary">
+                    <span>Atualizados:</span>
+                    <span className="font-bold">{stats.compradores.atualizados}</span>
+                  </div>
+                  {stats.compradores.erros > 0 && (
+                    <div className="flex justify-between text-destructive">
+                      <span>Erros:</span>
+                      <span className="font-bold">{stats.compradores.erros}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Inseridos</p>
-                <p className="text-2xl font-bold text-success">{stats.inseridos}</p>
+
+              <div className="space-y-2">
+                <h4 className="font-semibold">Contratos</h4>
+                <div className="pl-4 space-y-1 text-sm">
+                  <div className="flex justify-between text-success">
+                    <span>Inseridos:</span>
+                    <span className="font-bold">{stats.contratos.inseridos}</span>
+                  </div>
+                  <div className="flex justify-between text-primary">
+                    <span>Atualizados:</span>
+                    <span className="font-bold">{stats.contratos.atualizados}</span>
+                  </div>
+                  {stats.contratos.erros > 0 && (
+                    <div className="flex justify-between text-destructive">
+                      <span>Erros:</span>
+                      <span className="font-bold">{stats.contratos.erros}</span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Atualizados</p>
-                <p className="text-2xl font-bold text-primary">{stats.atualizados}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm text-muted-foreground">Erros</p>
-                <p className="text-2xl font-bold text-destructive">{stats.erros}</p>
+
+              <div className="space-y-2">
+                <h4 className="font-semibold">Parcelas</h4>
+                <div className="pl-4 space-y-1 text-sm">
+                  <div className="flex justify-between text-success">
+                    <span>Inseridos:</span>
+                    <span className="font-bold">{stats.parcelas.inseridos}</span>
+                  </div>
+                  <div className="flex justify-between text-primary">
+                    <span>Atualizados:</span>
+                    <span className="font-bold">{stats.parcelas.atualizados}</span>
+                  </div>
+                  {stats.parcelas.erros > 0 && (
+                    <div className="flex justify-between text-destructive">
+                      <span>Erros:</span>
+                      <span className="font-bold">{stats.parcelas.erros}</span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>

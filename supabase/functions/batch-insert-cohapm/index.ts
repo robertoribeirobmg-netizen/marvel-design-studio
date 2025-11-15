@@ -16,13 +16,13 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    const { batch } = await req.json();
+    const { tipo, batch } = await req.json();
 
-    if (!batch || !Array.isArray(batch)) {
-      throw new Error("Batch de dados inválido");
+    if (!tipo || !batch || !Array.isArray(batch)) {
+      throw new Error("Dados inválidos");
     }
 
-    console.log(`📦 Processando lote de ${batch.length} registros`);
+    console.log(`📦 Processando lote de ${batch.length} registros (${tipo})`);
 
     const stats = {
       inseridos: 0,
@@ -30,65 +30,197 @@ serve(async (req) => {
       erros: 0,
     };
 
-    // Processar cada registro do batch
-    for (const row of batch) {
-      try {
-        const compradorData: any = {
-          id: row.id?.toString() || `cohapm_${Date.now()}_${Math.random()}`,
-          nome: row.nome || "Sem Nome",
-          cpf_cnpj: row.cpf || null,
-          grupo: row.grupo || null,
-          telefone: row.telefone || null,
-          email: row.email || null,
-          empreendimento: row.empreendimento || "Residencial La Felicità",
-          tipo: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
-          tipo_classificado: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
-          fonte: "sistema_cohapm",
-          data_extracao: new Date().toISOString(),
-        };
+    // Processar baseado no tipo
+    if (tipo === 'compradores') {
+      for (const row of batch) {
+        try {
+          const compradorData: any = {
+            id: row.id?.toString() || `cohapm_${Date.now()}_${Math.random()}`,
+            nome: row.nome || "Sem Nome",
+            cpf_cnpj: row.cpf || null,
+            grupo: row.grupo || null,
+            telefone: row.telefone || null,
+            email: row.email || null,
+            empreendimento: row.empreendimento || "Residencial La Felicità",
+            tipo: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
+            tipo_classificado: row.tipo_classificado || row.tipo_de_cadastro_ || "Comprador",
+            fonte: "sistema_cohapm",
+            data_extracao: new Date().toISOString(),
+            quadra: row.quadra || null,
+            lote: row.lote || null,
+          };
 
-        // Dados financeiros
-        if (row.financeiro_valor_total || row.financeiro_valor_pago) {
-          compradorData.valor_total_contratos = parseFloat(row.financeiro_valor_total) || 0;
-          compradorData.valor_pago = parseFloat(row.financeiro_valor_pago) || 0;
-          compradorData.valor_pendente = parseFloat(row.financeiro_valor_pendente) || 0;
-          compradorData.total_contratos = parseInt(row.total_contratos) || 0;
-          compradorData.total_parcelas = parseInt(row.total_parcelas) || 0;
-          compradorData.parcelas_atrasadas = parseInt(row.financeiro_parcelas_atrasadas) || 0;
-          compradorData.situacao_financeira = row.financeiro_situacao || null;
-          compradorData.parcelas_pagas = compradorData.total_parcelas - compradorData.parcelas_atrasadas;
-        }
+          if (row.financeiro_valor_total || row.financeiro_valor_pago) {
+            compradorData.valor_total_contratos = parseFloat(row.financeiro_valor_total) || 0;
+            compradorData.valor_pago = parseFloat(row.financeiro_valor_pago) || 0;
+            compradorData.valor_pendente = parseFloat(row.financeiro_valor_pendente) || 0;
+            compradorData.total_contratos = parseInt(row.total_contratos) || 0;
+            compradorData.total_parcelas = parseInt(row.total_parcelas) || 0;
+            compradorData.parcelas_atrasadas = parseInt(row.financeiro_parcelas_atrasadas) || 0;
+            compradorData.situacao_financeira = row.financeiro_situacao || null;
+            compradorData.parcelas_pagas = compradorData.total_parcelas - compradorData.parcelas_atrasadas;
+          }
 
-        // Verificar se já existe
-        const { data: existente } = await supabase
-          .from("compradores_cohapm")
-          .select("id")
-          .eq("id", compradorData.id)
-          .maybeSingle();
-
-        if (existente) {
-          const { error: updateError } = await supabase
+          const { data: existente } = await supabase
             .from("compradores_cohapm")
-            .update(compradorData)
-            .eq("id", compradorData.id);
+            .select("id")
+            .eq("id", compradorData.id)
+            .maybeSingle();
 
-          if (updateError) throw updateError;
-          stats.atualizados++;
-        } else {
-          const { error: insertError } = await supabase
-            .from("compradores_cohapm")
-            .insert(compradorData);
+          if (existente) {
+            const { error: updateError } = await supabase
+              .from("compradores_cohapm")
+              .update(compradorData)
+              .eq("id", compradorData.id);
 
-          if (insertError) throw insertError;
-          stats.inseridos++;
+            if (updateError) throw updateError;
+            stats.atualizados++;
+          } else {
+            const { error: insertError } = await supabase
+              .from("compradores_cohapm")
+              .insert(compradorData);
+
+            if (insertError) throw insertError;
+            stats.inseridos++;
+          }
+        } catch (error: any) {
+          console.error(`Erro no comprador:`, error.message);
+          stats.erros++;
         }
-      } catch (error: any) {
-        console.error(`Erro no registro:`, error.message);
-        stats.erros++;
+      }
+    } else if (tipo === 'contratos') {
+      for (const row of batch) {
+        try {
+          const contratoData: any = {
+            comprador_id: row.comprador_id?.toString() || null,
+            numero_contrato: row.numero_contrato || null,
+            numero_ficha: row.numero_ficha || null,
+            data_contrato: row.data_contrato ? new Date(row.data_contrato).toISOString().split('T')[0] : null,
+            quadra: row.quadra || null,
+            lote: row.lote || null,
+            area_m2: parseFloat(row.area_m2) || null,
+            metragem: parseFloat(row.metragem) || null,
+            valor_total: parseFloat(row.valor_total) || null,
+            valor_entrada: parseFloat(row.valor_entrada) || null,
+            valor_financiado: parseFloat(row.valor_financiado) || null,
+            numero_parcelas: parseInt(row.numero_parcelas) || null,
+            valor_parcela: parseFloat(row.valor_parcela) || null,
+            situacao: row.situacao || null,
+            status: row.status || null,
+            imobiliaria: row.imobiliaria || null,
+            corretor: row.corretor || null,
+            observacoes_contrato: row.observacoes || null,
+          };
+
+          if (contratoData.comprador_id && contratoData.numero_contrato) {
+            const { data: existente } = await supabase
+              .from("contratos_cohapm")
+              .select("id")
+              .eq("comprador_id", contratoData.comprador_id)
+              .eq("numero_contrato", contratoData.numero_contrato)
+              .maybeSingle();
+
+            if (existente) {
+              const { error: updateError } = await supabase
+                .from("contratos_cohapm")
+                .update(contratoData)
+                .eq("id", existente.id);
+
+              if (updateError) throw updateError;
+              stats.atualizados++;
+            } else {
+              const { error: insertError } = await supabase
+                .from("contratos_cohapm")
+                .insert(contratoData);
+
+              if (insertError) throw insertError;
+              stats.inseridos++;
+            }
+          } else {
+            const { error: insertError } = await supabase
+              .from("contratos_cohapm")
+              .insert(contratoData);
+
+            if (insertError) throw insertError;
+            stats.inseridos++;
+          }
+        } catch (error: any) {
+          console.error(`Erro no contrato:`, error.message);
+          stats.erros++;
+        }
+      }
+    } else if (tipo === 'parcelas') {
+      for (const row of batch) {
+        try {
+          const parcelaData: any = {
+            comprador_id: row.comprador_id?.toString() || null,
+            contrato_id: row.contrato_id ? parseInt(row.contrato_id) : null,
+            numero_parcela: parseInt(row.numero_parcela) || null,
+            valor_parcela: parseFloat(row.valor_parcela) || null,
+            valor_original: parseFloat(row.valor_original) || null,
+            data_vencimento: row.data_vencimento ? new Date(row.data_vencimento).toISOString().split('T')[0] : null,
+            data_pagamento: row.data_pagamento ? new Date(row.data_pagamento).toISOString().split('T')[0] : null,
+            data_recebimento: row.data_recebimento ? new Date(row.data_recebimento).toISOString().split('T')[0] : null,
+            data_lancamento: row.data_lancamento ? new Date(row.data_lancamento).toISOString().split('T')[0] : null,
+            valor_pago: parseFloat(row.valor_pago) || null,
+            valor_juros: parseFloat(row.valor_juros) || 0,
+            valor_multa: parseFloat(row.valor_multa) || 0,
+            valor_desconto: parseFloat(row.valor_desconto) || 0,
+            valor_total_calculado: parseFloat(row.valor_total_calculado) || null,
+            status: row.status || null,
+            dias_atraso: parseInt(row.dias_atraso) || 0,
+            forma_pagamento: row.forma_pagamento || null,
+            banco: row.banco || null,
+            agencia: row.agencia || null,
+            conta: row.conta || null,
+            periodo_inicio: row.periodo_inicio ? new Date(row.periodo_inicio).toISOString().split('T')[0] : null,
+            periodo_fim: row.periodo_fim ? new Date(row.periodo_fim).toISOString().split('T')[0] : null,
+            numero_lancamento: row.numero_lancamento || null,
+            numero_baixa: row.numero_baixa || null,
+            codigo_remessa: row.codigo_remessa || null,
+            observacoes_parcela: row.observacoes || null,
+          };
+
+          if (parcelaData.comprador_id && parcelaData.numero_parcela) {
+            const { data: existente } = await supabase
+              .from("parcelas_cohapm")
+              .select("id")
+              .eq("comprador_id", parcelaData.comprador_id)
+              .eq("numero_parcela", parcelaData.numero_parcela)
+              .maybeSingle();
+
+            if (existente) {
+              const { error: updateError } = await supabase
+                .from("parcelas_cohapm")
+                .update(parcelaData)
+                .eq("id", existente.id);
+
+              if (updateError) throw updateError;
+              stats.atualizados++;
+            } else {
+              const { error: insertError } = await supabase
+                .from("parcelas_cohapm")
+                .insert(parcelaData);
+
+              if (insertError) throw insertError;
+              stats.inseridos++;
+            }
+          } else {
+            const { error: insertError } = await supabase
+              .from("parcelas_cohapm")
+              .insert(parcelaData);
+
+            if (insertError) throw insertError;
+            stats.inseridos++;
+          }
+        } catch (error: any) {
+          console.error(`Erro na parcela:`, error.message);
+          stats.erros++;
+        }
       }
     }
 
-    console.log(`✅ Lote processado:`, stats);
+    console.log(`✅ Lote processado (${tipo}):`, stats);
 
     return new Response(
       JSON.stringify({
