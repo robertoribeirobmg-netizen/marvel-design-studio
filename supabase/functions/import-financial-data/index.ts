@@ -48,6 +48,7 @@ serve(async (req) => {
 
     let investimentosCriados = 0;
     let parcelasCriadas = 0;
+    let parcelasAtualizadas = 0;
     const erros: string[] = [];
 
     // Processar cada cliente
@@ -118,61 +119,77 @@ serve(async (req) => {
         console.log(`Investimento criado para ${nomeCliente}`);
       }
 
-      // Criar parcelas
+      // Criar ou atualizar parcelas
       for (let i = 0; i < parcelas.length; i++) {
         const p = parcelas[i];
         const numeroParcela = i + 1;
-
-        // Verificar se a parcela já existe
-        const { data: existingParcela } = await supabaseClient
-          .from('parcelas')
-          .select('id')
-          .eq('investimento_id', investimentoId)
-          .eq('numero_parcela', numeroParcela)
-          .maybeSingle();
-
-        if (existingParcela) {
-          console.log(`Parcela ${numeroParcela} já existe para ${nomeCliente}, pulando...`);
-          continue;
-        }
 
         const dataVencimento = parseExcelDate(p.vencimento);
         const dataPagamento = p.dataRecebimento ? parseExcelDate(p.dataRecebimento) : null;
         const status = p.situacao === 'PAGO' ? 'paga' : 'pendente';
 
-        const { error: parcelaError } = await supabaseClient
-          .from('parcelas')
-          .insert({
-            investimento_id: investimentoId,
-            numero_parcela: numeroParcela,
-            valor_parcela: p.valor,
-            data_vencimento: dataVencimento,
-            data_pagamento: dataPagamento,
-            valor_pago: p.valorPago > 0 ? p.valorPago : null,
-            status: status,
-            descricao: p.descricao,
-            desconto: p.desconto > 0 ? p.desconto : null,
-            juros: p.juros > 0 ? p.juros : null,
-            honorarios: p.honorarios > 0 ? p.honorarios : null,
-            observacoes: dataPagamento ? `Pago em ${dataPagamento}` : null
-          });
+        const parcelaData = {
+          investimento_id: investimentoId,
+          numero_parcela: numeroParcela,
+          valor_parcela: p.valor,
+          data_vencimento: dataVencimento,
+          data_pagamento: dataPagamento,
+          valor_pago: p.valorPago > 0 ? p.valorPago : null,
+          status: status,
+          descricao: p.descricao,
+          desconto: p.desconto > 0 ? p.desconto : null,
+          juros: p.juros > 0 ? p.juros : null,
+          honorarios: p.honorarios > 0 ? p.honorarios : null,
+          observacoes: dataPagamento ? `Atualizado em ${new Date().toLocaleDateString('pt-BR')}` : null
+        };
 
-        if (parcelaError) {
-          console.error(`Erro ao criar parcela ${numeroParcela} para ${nomeCliente}:`, parcelaError);
-          erros.push(`Erro parcela ${numeroParcela} de ${nomeCliente}: ${parcelaError.message}`);
+        // Verificar se a parcela já existe
+        const { data: existingParcela } = await supabaseClient
+          .from('parcelas')
+          .select('*')
+          .eq('investimento_id', investimentoId)
+          .eq('numero_parcela', numeroParcela)
+          .maybeSingle();
+
+        if (existingParcela) {
+          // Atualizar parcela existente
+          const { error: updateError } = await supabaseClient
+            .from('parcelas')
+            .update(parcelaData)
+            .eq('id', existingParcela.id);
+
+          if (updateError) {
+            console.error(`Erro ao atualizar parcela ${numeroParcela} para ${nomeCliente}:`, updateError);
+            erros.push(`Erro ao atualizar parcela ${numeroParcela} de ${nomeCliente}: ${updateError.message}`);
+          } else {
+            parcelasAtualizadas++;
+            console.log(`Parcela ${numeroParcela} atualizada para ${nomeCliente}`);
+          }
         } else {
-          parcelasCriadas++;
+          // Criar nova parcela
+          const { error: insertError } = await supabaseClient
+            .from('parcelas')
+            .insert(parcelaData);
+
+          if (insertError) {
+            console.error(`Erro ao criar parcela ${numeroParcela} para ${nomeCliente}:`, insertError);
+            erros.push(`Erro parcela ${numeroParcela} de ${nomeCliente}: ${insertError.message}`);
+          } else {
+            parcelasCriadas++;
+            console.log(`Parcela ${numeroParcela} criada para ${nomeCliente}`);
+          }
         }
       }
     }
 
-    console.log(`Importação concluída: ${investimentosCriados} investimentos, ${parcelasCriadas} parcelas`);
+    console.log(`Importação concluída: ${investimentosCriados} investimentos, ${parcelasCriadas} parcelas criadas, ${parcelasAtualizadas} parcelas atualizadas`);
 
     return new Response(
       JSON.stringify({
         success: true,
         investimentosCriados,
         parcelasCriadas,
+        parcelasAtualizadas,
         totalClientes: Object.keys(parcelasPorCliente).length,
         erros: erros.length > 0 ? erros : undefined
       }),
