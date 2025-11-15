@@ -24,6 +24,7 @@ import ImportacaoCohapm from "./pages/ImportacaoCohapm";
 import CompradoresCohapm from "./pages/CompradoresCohapm";
 import ImportacaoContratosCohapm from "./pages/ImportacaoContratosCohapm";
 import ImportacaoParcelasCohapm from "./pages/ImportacaoParcelasCohapm";
+import ReconciliacaoCohapm from "./pages/ReconciliacaoCohapm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -150,6 +151,14 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <ImportacaoParcelasCohapm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/reconciliacao-cohapm"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ReconciliacaoCohapm />
                     </ProtectedRoute>
                   }
                 />
