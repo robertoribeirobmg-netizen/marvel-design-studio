@@ -19,21 +19,39 @@ serve(async (req) => {
 
     console.log("🚀 Iniciando processamento automático COHAPM");
 
-    // Buscar arquivo do repositório público
-    const fileUrl = `${supabaseUrl.replace('.supabase.co', '')}/compradores_cohapm_dados_completos.xlsx`;
-    
-    // Ler arquivo direto do public
-    const publicPath = "/var/task/public/compradores_cohapm_dados_completos.xlsx";
-    
+    // Receber o arquivo do body da requisição
+    const contentType = req.headers.get("content-type") || "";
     let fileBuffer: Uint8Array;
-    try {
-      // Tentar ler do sistema de arquivos primeiro
-      fileBuffer = await Deno.readFile(publicPath);
-    } catch {
-      // Se falhar, fazer download do URL público
-      const response = await fetch(`${req.url.split('/functions/')[0]}/compradores_cohapm_dados_completos.xlsx`);
-      if (!response.ok) throw new Error("Arquivo não encontrado");
-      fileBuffer = new Uint8Array(await response.arrayBuffer());
+
+    if (contentType.includes("multipart/form-data")) {
+      // Se o arquivo foi enviado via form-data
+      const formData = await req.formData();
+      const file = formData.get("file") as File;
+      
+      if (!file) {
+        throw new Error("Nenhum arquivo foi enviado");
+      }
+      
+      fileBuffer = new Uint8Array(await file.arrayBuffer());
+      console.log(`📄 Arquivo recebido: ${file.name} (${file.size} bytes)`);
+    } else {
+      // Se o arquivo foi enviado como JSON base64
+      const body = await req.json();
+      
+      if (!body.fileData) {
+        throw new Error("Dados do arquivo não encontrados no body da requisição");
+      }
+      
+      // Decodificar base64
+      const base64Data = body.fileData.split(",")[1] || body.fileData;
+      const binaryString = atob(base64Data);
+      fileBuffer = new Uint8Array(binaryString.length);
+      
+      for (let i = 0; i < binaryString.length; i++) {
+        fileBuffer[i] = binaryString.charCodeAt(i);
+      }
+      
+      console.log(`📄 Arquivo decodificado (${fileBuffer.length} bytes)`);
     }
 
     console.log("📄 Arquivo carregado, processando...");
