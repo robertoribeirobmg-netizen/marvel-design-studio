@@ -16,93 +16,60 @@ export function ProcessarCOHAPMAuto() {
 
   const handleDownloadTemplate = () => {
     try {
-      // Criar workbook com 3 abas
+      // Criar workbook com UMA ÚNICA ABA
       const wb = XLSX.utils.book_new();
 
-      // Aba 1: Compradores
-      const compradoresData = [
+      // Dados combinados em uma única linha
+      const dadosCombinados = [
         {
-          'id': 'Exemplo: COMP001',
-          'nome': 'João da Silva Santos',
-          'cpf_cnpj': '123.456.789-00',
-          'telefone': '(71) 99999-9999',
-          'email': 'joao@email.com',
-          'quadra': 'A',
-          'lote': '01',
-          'grupo': 'Grupo 1',
-          'empreendimento': 'Residencial La Felicità',
-          'tipo_classificado': 'Comprador',
-          'financeiro_valor_total': '150000',
-          'financeiro_valor_pago': '50000',
-          'financeiro_valor_pendente': '100000',
-          'total_contratos': '1',
-          'total_parcelas': '60',
-          'financeiro_parcelas_atrasadas': '0',
-          'financeiro_situacao': 'Em dia'
-        }
-      ];
-      const wsCompradores = XLSX.utils.json_to_sheet(compradoresData);
-      XLSX.utils.book_append_sheet(wb, wsCompradores, 'Compradores');
-
-      // Aba 2: Contratos
-      const contratosData = [
-        {
+          // Dados do Comprador
           'comprador_id': 'COMP001',
-          'numero_contrato': 'CT-2024-001',
-          'numero_ficha': 'F-001',
-          'data_contrato': '2024-01-15',
-          'quadra': 'A',
-          'lote': '01',
-          'area_m2': '450',
-          'metragem': '450',
-          'valor_total': '150000',
-          'valor_entrada': '30000',
-          'valor_financiado': '120000',
-          'numero_parcelas': '60',
-          'valor_parcela': '2000',
-          'situacao': 'Ativo',
-          'status': 'Em dia',
-          'imobiliaria': 'Imobiliária XYZ',
-          'corretor': 'Maria Souza',
-          'observacoes': ''
+          'comprador_nome': 'João da Silva Santos',
+          'comprador_cpf_cnpj': '123.456.789-00',
+          'comprador_telefone': '(71) 99999-9999',
+          'comprador_email': 'joao@email.com',
+          'comprador_quadra': 'A',
+          'comprador_lote': '01',
+          'comprador_grupo': 'Grupo 1',
+          'comprador_empreendimento': 'Residencial La Felicità',
+          'comprador_tipo_classificado': 'Comprador',
+          
+          // Dados do Contrato
+          'contrato_numero': 'CT-2024-001',
+          'contrato_numero_ficha': 'F-001',
+          'contrato_data': '2024-01-15',
+          'contrato_area_m2': '450',
+          'contrato_valor_total': '150000',
+          'contrato_valor_entrada': '30000',
+          'contrato_valor_financiado': '120000',
+          'contrato_numero_parcelas': '60',
+          'contrato_valor_parcela': '2000',
+          'contrato_situacao': 'Ativo',
+          'contrato_status': 'Em dia',
+          'contrato_imobiliaria': 'Imobiliária XYZ',
+          'contrato_corretor': 'Maria Souza',
+          
+          // Dados da Parcela
+          'parcela_numero': '1',
+          'parcela_valor': '2000',
+          'parcela_valor_original': '2000',
+          'parcela_data_vencimento': '2024-02-15',
+          'parcela_data_pagamento': '2024-02-10',
+          'parcela_valor_pago': '2000',
+          'parcela_valor_juros': '0',
+          'parcela_valor_multa': '0',
+          'parcela_valor_desconto': '0',
+          'parcela_status': 'Pago',
+          'parcela_dias_atraso': '0',
+          'parcela_forma_pagamento': 'PIX',
+          'parcela_banco': 'Banco do Brasil',
+          'parcela_agencia': '1234-5',
+          'parcela_conta': '12345-6'
         }
       ];
-      const wsContratos = XLSX.utils.json_to_sheet(contratosData);
-      XLSX.utils.book_append_sheet(wb, wsContratos, 'Contratos');
-
-      // Aba 3: Parcelas
-      const parcelasData = [
-        {
-          'comprador_id': 'COMP001',
-          'contrato_id': '1',
-          'numero_parcela': '1',
-          'valor_parcela': '2000',
-          'valor_original': '2000',
-          'data_vencimento': '2024-02-15',
-          'data_pagamento': '2024-02-10',
-          'data_recebimento': '2024-02-10',
-          'data_lancamento': '2024-01-15',
-          'valor_pago': '2000',
-          'valor_juros': '0',
-          'valor_multa': '0',
-          'valor_desconto': '0',
-          'valor_total_calculado': '2000',
-          'status': 'Pago',
-          'dias_atraso': '0',
-          'forma_pagamento': 'PIX',
-          'banco': 'Banco do Brasil',
-          'agencia': '1234-5',
-          'conta': '12345-6',
-          'periodo_inicio': '2024-02-01',
-          'periodo_fim': '2024-02-28',
-          'numero_lancamento': 'LC-001',
-          'numero_baixa': 'BX-001',
-          'codigo_remessa': 'RM-001',
-          'observacoes': ''
-        }
-      ];
-      const wsParcelas = XLSX.utils.json_to_sheet(parcelasData);
-      XLSX.utils.book_append_sheet(wb, wsParcelas, 'Parcelas');
+      
+      const ws = XLSX.utils.json_to_sheet(dadosCombinados);
+      XLSX.utils.book_append_sheet(wb, ws, 'Dados COHAPM');
 
       // Fazer download
       XLSX.writeFile(wb, 'template_importacao_cohapm.xlsx');
@@ -136,31 +103,50 @@ export function ProcessarCOHAPMAuto() {
       // Parse Excel no CLIENTE (evita timeout no Edge Function)
       const workbook = XLSX.read(arrayBuffer, { type: 'array' });
       
-      // Processar todas as abas
+      // Processar ÚNICA ABA com dados combinados
       const allData: any = {
         compradores: [],
         contratos: [],
         parcelas: []
       };
 
-      // Aba de compradores
-      if (workbook.SheetNames.includes('Compradores') || workbook.SheetNames[0]) {
-        const sheetName = workbook.SheetNames.includes('Compradores') ? 'Compradores' : workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        allData.compradores = XLSX.utils.sheet_to_json(worksheet);
-      }
+      // Ler a primeira aba (única aba com todos os dados)
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rawData = XLSX.utils.sheet_to_json(worksheet);
 
-      // Aba de contratos
-      if (workbook.SheetNames.includes('Contratos')) {
-        const worksheet = workbook.Sheets['Contratos'];
-        allData.contratos = XLSX.utils.sheet_to_json(worksheet);
-      }
+      // Separar os dados por tipo baseado nos prefixos das colunas
+      rawData.forEach((row: any) => {
+        // Extrair dados do comprador
+        const comprador: any = { id: row.comprador_id || row.id };
+        Object.keys(row).forEach(key => {
+          if (key.startsWith('comprador_')) {
+            const newKey = key.replace('comprador_', '');
+            comprador[newKey] = row[key];
+          }
+        });
+        if (Object.keys(comprador).length > 1) allData.compradores.push(comprador);
 
-      // Aba de parcelas
-      if (workbook.SheetNames.includes('Parcelas')) {
-        const worksheet = workbook.Sheets['Parcelas'];
-        allData.parcelas = XLSX.utils.sheet_to_json(worksheet);
-      }
+        // Extrair dados do contrato
+        const contrato: any = { comprador_id: row.comprador_id || row.id };
+        Object.keys(row).forEach(key => {
+          if (key.startsWith('contrato_')) {
+            const newKey = key.replace('contrato_', '');
+            contrato[newKey] = row[key];
+          }
+        });
+        if (Object.keys(contrato).length > 1) allData.contratos.push(contrato);
+
+        // Extrair dados da parcela
+        const parcela: any = { comprador_id: row.comprador_id || row.id };
+        Object.keys(row).forEach(key => {
+          if (key.startsWith('parcela_')) {
+            const newKey = key.replace('parcela_', '');
+            parcela[newKey] = row[key];
+          }
+        });
+        if (Object.keys(parcela).length > 1) allData.parcelas.push(parcela);
+      });
 
       const totalRegistros = allData.compradores.length + allData.contratos.length + allData.parcelas.length;
       console.log(`📊 Compradores: ${allData.compradores.length}, Contratos: ${allData.contratos.length}, Parcelas: ${allData.parcelas.length}`);
@@ -319,7 +305,7 @@ export function ProcessarCOHAPMAuto() {
             Processar Dados COHAPM
           </CardTitle>
           <CardDescription>
-            Baixe o template, preencha com seus dados e faça a importação automática
+            Baixe o template em planilha única, preencha com seus dados e faça a importação automática
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
