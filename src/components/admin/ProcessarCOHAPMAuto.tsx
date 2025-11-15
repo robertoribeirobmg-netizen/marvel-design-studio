@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, CheckCircle2, XCircle, Info, Loader2 } from 'lucide-react';
+import { Play, CheckCircle2, XCircle, Info, Loader2, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
 
@@ -13,6 +13,105 @@ export function ProcessarCOHAPMAuto() {
   const [progress, setProgress] = useState(0);
   const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const handleDownloadTemplate = () => {
+    try {
+      // Criar workbook com 3 abas
+      const wb = XLSX.utils.book_new();
+
+      // Aba 1: Compradores
+      const compradoresData = [
+        {
+          'id': 'Exemplo: COMP001',
+          'nome': 'João da Silva Santos',
+          'cpf_cnpj': '123.456.789-00',
+          'telefone': '(71) 99999-9999',
+          'email': 'joao@email.com',
+          'quadra': 'A',
+          'lote': '01',
+          'grupo': 'Grupo 1',
+          'empreendimento': 'Residencial La Felicità',
+          'tipo_classificado': 'Comprador',
+          'financeiro_valor_total': '150000',
+          'financeiro_valor_pago': '50000',
+          'financeiro_valor_pendente': '100000',
+          'total_contratos': '1',
+          'total_parcelas': '60',
+          'financeiro_parcelas_atrasadas': '0',
+          'financeiro_situacao': 'Em dia'
+        }
+      ];
+      const wsCompradores = XLSX.utils.json_to_sheet(compradoresData);
+      XLSX.utils.book_append_sheet(wb, wsCompradores, 'Compradores');
+
+      // Aba 2: Contratos
+      const contratosData = [
+        {
+          'comprador_id': 'COMP001',
+          'numero_contrato': 'CT-2024-001',
+          'numero_ficha': 'F-001',
+          'data_contrato': '2024-01-15',
+          'quadra': 'A',
+          'lote': '01',
+          'area_m2': '450',
+          'metragem': '450',
+          'valor_total': '150000',
+          'valor_entrada': '30000',
+          'valor_financiado': '120000',
+          'numero_parcelas': '60',
+          'valor_parcela': '2000',
+          'situacao': 'Ativo',
+          'status': 'Em dia',
+          'imobiliaria': 'Imobiliária XYZ',
+          'corretor': 'Maria Souza',
+          'observacoes': ''
+        }
+      ];
+      const wsContratos = XLSX.utils.json_to_sheet(contratosData);
+      XLSX.utils.book_append_sheet(wb, wsContratos, 'Contratos');
+
+      // Aba 3: Parcelas
+      const parcelasData = [
+        {
+          'comprador_id': 'COMP001',
+          'contrato_id': '1',
+          'numero_parcela': '1',
+          'valor_parcela': '2000',
+          'valor_original': '2000',
+          'data_vencimento': '2024-02-15',
+          'data_pagamento': '2024-02-10',
+          'data_recebimento': '2024-02-10',
+          'data_lancamento': '2024-01-15',
+          'valor_pago': '2000',
+          'valor_juros': '0',
+          'valor_multa': '0',
+          'valor_desconto': '0',
+          'valor_total_calculado': '2000',
+          'status': 'Pago',
+          'dias_atraso': '0',
+          'forma_pagamento': 'PIX',
+          'banco': 'Banco do Brasil',
+          'agencia': '1234-5',
+          'conta': '12345-6',
+          'periodo_inicio': '2024-02-01',
+          'periodo_fim': '2024-02-28',
+          'numero_lancamento': 'LC-001',
+          'numero_baixa': 'BX-001',
+          'codigo_remessa': 'RM-001',
+          'observacoes': ''
+        }
+      ];
+      const wsParcelas = XLSX.utils.json_to_sheet(parcelasData);
+      XLSX.utils.book_append_sheet(wb, wsParcelas, 'Parcelas');
+
+      // Fazer download
+      XLSX.writeFile(wb, 'template_importacao_cohapm.xlsx');
+      toast.success('Template baixado com sucesso!');
+    } catch (err) {
+      console.error('Erro ao gerar template:', err);
+      toast.error('Erro ao gerar template');
+    }
+  };
 
   const handleProcessar = async () => {
     setIsProcessing(true);
@@ -219,7 +318,9 @@ export function ProcessarCOHAPMAuto() {
             <Play className="h-5 w-5 text-primary" />
             Processar Dados COHAPM
           </CardTitle>
-          <CardDescription>Importação automática de 726 compradores</CardDescription>
+          <CardDescription>
+            Baixe o template, preencha com seus dados e faça a importação automática
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {isProcessing && (
@@ -240,24 +341,36 @@ export function ProcessarCOHAPMAuto() {
             </Alert>
           )}
 
-          <Button 
-            onClick={handleProcessar} 
-            disabled={isProcessing} 
-            className="w-full" 
-            size="lg"
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Processando...
-              </>
-            ) : (
-              <>
-                <Play className="h-4 w-4 mr-2" />
-                Iniciar Importação
-              </>
-            )}
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={handleDownloadTemplate}
+              variant="outline"
+              className="w-full" 
+              size="lg"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Baixar Template Excel
+            </Button>
+
+            <Button 
+              onClick={handleProcessar} 
+              disabled={isProcessing} 
+              className="w-full" 
+              size="lg"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Processando...
+                </>
+              ) : (
+                <>
+                  <Play className="h-4 w-4 mr-2" />
+                  Iniciar Importação
+                </>
+              )}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
