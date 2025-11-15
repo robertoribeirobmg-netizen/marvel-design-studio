@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { ArrowLeft, Search, Users, FileText, Trash2, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Search, Users, FileText, Trash2, Link as LinkIcon, Eye } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,6 +18,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface CompradorCohapm {
   id: string;
@@ -29,6 +36,27 @@ interface CompradorCohapm {
   empreendimento: string;
   profile_id: string | null;
   created_at: string;
+  contratos_count?: number;
+  parcelas_count?: number;
+}
+
+interface Contrato {
+  id: number;
+  numero_contrato: string;
+  data_contrato: string;
+  valor_total: number;
+  status: string;
+  quadra: string;
+  lote: string;
+}
+
+interface Parcela {
+  id: number;
+  numero_parcela: number;
+  data_vencimento: string;
+  valor_parcela: number;
+  status: string;
+  data_pagamento: string | null;
 }
 
 export default function CompradoresCohapm() {
@@ -38,6 +66,10 @@ export default function CompradoresCohapm() {
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [selectedComprador, setSelectedComprador] = useState<string | null>(null);
+  const [contratos, setContratos] = useState<Contrato[]>([]);
+  const [parcelas, setParcelas] = useState<Parcela[]>([]);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   useEffect(() => {
     fetchCompradores();
@@ -58,7 +90,9 @@ export default function CompradoresCohapm() {
 
   const fetchCompradores = async () => {
     setIsLoading(true);
-    const { data, error } = await supabase
+    
+    // Buscar compradores
+    const { data: compradoresData, error } = await supabase
       .from('compradores_cohapm')
       .select('*')
       .order('nome');
@@ -66,11 +100,83 @@ export default function CompradoresCohapm() {
     if (error) {
       console.error('Erro ao carregar compradores:', error);
       toast.error('Erro ao carregar compradores');
-    } else {
-      setCompradores(data || []);
-      setFilteredCompradores(data || []);
+      setIsLoading(false);
+      return;
     }
+
+    // Buscar contagem de contratos e parcelas
+    const compradorIds = compradoresData?.map(c => c.id) || [];
+    
+    const { data: contratosCount } = await supabase
+      .from('contratos_cohapm')
+      .select('comprador_id')
+      .in('comprador_id', compradorIds);
+
+    const { data: parcelasCount } = await supabase
+      .from('parcelas_cohapm')
+      .select('comprador_id')
+      .in('comprador_id', compradorIds);
+
+    // Mapear contagens
+    const contratosMap = new Map<string, number>();
+    const parcelasMap = new Map<string, number>();
+
+    contratosCount?.forEach(c => {
+      contratosMap.set(c.comprador_id, (contratosMap.get(c.comprador_id) || 0) + 1);
+    });
+
+    parcelasCount?.forEach(p => {
+      parcelasMap.set(p.comprador_id, (parcelasMap.get(p.comprador_id) || 0) + 1);
+    });
+
+    const enrichedData = compradoresData?.map(c => ({
+      ...c,
+      contratos_count: contratosMap.get(c.id) || 0,
+      parcelas_count: parcelasMap.get(c.id) || 0,
+    })) || [];
+
+    setCompradores(enrichedData);
+    setFilteredCompradores(enrichedData);
     setIsLoading(false);
+  };
+
+  const fetchCompradorDetails = async (compradorId: string) => {
+    setIsLoadingDetails(true);
+    
+    // Buscar contratos
+    const { data: contratosData, error: contratosError } = await supabase
+      .from('contratos_cohapm')
+      .select('*')
+      .eq('comprador_id', compradorId)
+      .order('data_contrato', { ascending: false });
+
+    if (contratosError) {
+      console.error('Erro ao carregar contratos:', contratosError);
+      toast.error('Erro ao carregar contratos');
+    } else {
+      setContratos(contratosData || []);
+    }
+
+    // Buscar parcelas
+    const { data: parcelasData, error: parcelasError } = await supabase
+      .from('parcelas_cohapm')
+      .select('*')
+      .eq('comprador_id', compradorId)
+      .order('data_vencimento', { ascending: false });
+
+    if (parcelasError) {
+      console.error('Erro ao carregar parcelas:', parcelasError);
+      toast.error('Erro ao carregar parcelas');
+    } else {
+      setParcelas(parcelasData || []);
+    }
+
+    setIsLoadingDetails(false);
+  };
+
+  const handleViewDetails = (compradorId: string) => {
+    setSelectedComprador(compradorId);
+    fetchCompradorDetails(compradorId);
   };
 
   const handleDelete = async (id: string) => {
@@ -90,14 +196,16 @@ export default function CompradoresCohapm() {
   };
 
   const exportToCSV = () => {
-    const headers = ['ID', 'Nome', 'CPF/CNPJ', 'Telefone', 'Grupo', 'Empreendimento'];
+    const headers = ['ID', 'Nome', 'CPF/CNPJ', 'Telefone', 'Grupo', 'Empreendimento', 'Contratos', 'Parcelas'];
     const rows = filteredCompradores.map(c => [
       c.id,
       c.nome,
       c.cpf_cnpj,
       c.telefone,
       c.grupo || '',
-      c.empreendimento
+      c.empreendimento,
+      c.contratos_count || 0,
+      c.parcelas_count || 0
     ]);
 
     const csvContent = [
@@ -111,6 +219,9 @@ export default function CompradoresCohapm() {
     link.download = `compradores_cohapm_${new Date().toISOString().split('T')[0]}.csv`;
     link.click();
   };
+
+  const totalContratos = compradores.reduce((sum, c) => sum + (c.contratos_count || 0), 0);
+  const totalParcelas = compradores.reduce((sum, c) => sum + (c.parcelas_count || 0), 0);
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -140,11 +251,23 @@ export default function CompradoresCohapm() {
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card className="p-6">
               <Users className="h-8 w-8 text-primary mb-3" />
               <h3 className="text-2xl font-bold">{compradores.length}</h3>
               <p className="text-sm text-muted-foreground">Total de Compradores</p>
+            </Card>
+
+            <Card className="p-6">
+              <FileText className="h-8 w-8 text-blue-500 mb-3" />
+              <h3 className="text-2xl font-bold">{totalContratos}</h3>
+              <p className="text-sm text-muted-foreground">Contratos Importados</p>
+            </Card>
+
+            <Card className="p-6">
+              <FileText className="h-8 w-8 text-purple-500 mb-3" />
+              <h3 className="text-2xl font-bold">{totalParcelas}</h3>
+              <p className="text-sm text-muted-foreground">Parcelas Importadas</p>
             </Card>
 
             <Card className="p-6">
@@ -153,12 +276,6 @@ export default function CompradoresCohapm() {
                 {compradores.filter(c => c.profile_id).length}
               </h3>
               <p className="text-sm text-muted-foreground">Vinculados ao Sistema</p>
-            </Card>
-
-            <Card className="p-6">
-              <Search className="h-8 w-8 text-primary mb-3" />
-              <h3 className="text-2xl font-bold">{filteredCompradores.length}</h3>
-              <p className="text-sm text-muted-foreground">Resultados da Busca</p>
             </Card>
           </div>
 
@@ -192,7 +309,8 @@ export default function CompradoresCohapm() {
                       <TableHead>Nome</TableHead>
                       <TableHead>CPF/CNPJ</TableHead>
                       <TableHead>Telefone</TableHead>
-                      <TableHead>Grupo</TableHead>
+                      <TableHead>Contratos</TableHead>
+                      <TableHead>Parcelas</TableHead>
                       <TableHead>Status</TableHead>
                       <TableHead>Ações</TableHead>
                     </TableRow>
@@ -205,11 +323,10 @@ export default function CompradoresCohapm() {
                         <TableCell>{comprador.cpf_cnpj}</TableCell>
                         <TableCell>{comprador.telefone}</TableCell>
                         <TableCell>
-                          {comprador.grupo ? (
-                            <Badge variant="outline">{comprador.grupo}</Badge>
-                          ) : (
-                            <span className="text-muted-foreground text-sm">-</span>
-                          )}
+                          <Badge variant="outline">{comprador.contratos_count || 0}</Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{comprador.parcelas_count || 0}</Badge>
                         </TableCell>
                         <TableCell>
                           {comprador.profile_id ? (
@@ -219,13 +336,22 @@ export default function CompradoresCohapm() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setDeleteId(comprador.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-destructive" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleViewDetails(comprador.id)}
+                            >
+                              <Eye className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => setDeleteId(comprador.id)}
+                            >
+                              <Trash2 className="h-4 w-4 text-destructive" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -256,6 +382,82 @@ export default function CompradoresCohapm() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!selectedComprador} onOpenChange={() => setSelectedComprador(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalhes do Comprador</DialogTitle>
+            <DialogDescription>
+              {selectedComprador && compradores.find(c => c.id === selectedComprador)?.nome}
+            </DialogDescription>
+          </DialogHeader>
+
+          {isLoadingDetails ? (
+            <div className="text-center py-8">Carregando...</div>
+          ) : (
+            <div className="space-y-6">
+              {contratos.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-3">Contratos ({contratos.length})</h3>
+                  <div className="space-y-2">
+                    {contratos.map(contrato => (
+                      <Card key={contrato.id} className="p-4">
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div><strong>Nº Contrato:</strong> {contrato.numero_contrato || 'N/A'}</div>
+                          <div><strong>Data:</strong> {contrato.data_contrato || 'N/A'}</div>
+                          <div><strong>Valor Total:</strong> R$ {contrato.valor_total?.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) || '0,00'}</div>
+                          <div><strong>Status:</strong> <Badge>{contrato.status || 'N/A'}</Badge></div>
+                          <div><strong>Quadra/Lote:</strong> {contrato.quadra || 'N/A'} / {contrato.lote || 'N/A'}</div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {parcelas.length > 0 && (
+                <div>
+                  <h3 className="font-semibold mb-3">Parcelas ({parcelas.length})</h3>
+                  <div className="rounded-md border max-h-96 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Nº</TableHead>
+                          <TableHead>Vencimento</TableHead>
+                          <TableHead>Valor</TableHead>
+                          <TableHead>Status</TableHead>
+                          <TableHead>Pagamento</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {parcelas.map(parcela => (
+                          <TableRow key={parcela.id}>
+                            <TableCell>{parcela.numero_parcela}</TableCell>
+                            <TableCell>{parcela.data_vencimento}</TableCell>
+                            <TableCell>R$ {parcela.valor_parcela?.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</TableCell>
+                            <TableCell>
+                              <Badge variant={parcela.status === 'Pago' ? 'default' : 'outline'}>
+                                {parcela.status || 'Pendente'}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>{parcela.data_pagamento || '-'}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
+              {contratos.length === 0 && parcelas.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum contrato ou parcela encontrado para este comprador
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

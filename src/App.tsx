@@ -22,6 +22,8 @@ import ImportacaoFinanceira from "./pages/ImportacaoFinanceira";
 import CadastroLote from "./pages/CadastroLote";
 import ImportacaoCohapm from "./pages/ImportacaoCohapm";
 import CompradoresCohapm from "./pages/CompradoresCohapm";
+import ImportacaoContratosCohapm from "./pages/ImportacaoContratosCohapm";
+import ImportacaoParcelasCohapm from "./pages/ImportacaoParcelasCohapm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -132,6 +134,22 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <CompradoresCohapm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/importacao-contratos-cohapm"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ImportacaoContratosCohapm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/importacao-parcelas-cohapm"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ImportacaoParcelasCohapm />
                     </ProtectedRoute>
                   }
                 />
