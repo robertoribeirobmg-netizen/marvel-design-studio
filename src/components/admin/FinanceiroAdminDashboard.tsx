@@ -34,14 +34,69 @@ export function FinanceiroAdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [filtroSituacao, setFiltroSituacao] = useState<string>('todos');
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
 
   useEffect(() => {
     loadData();
+
+    // Notificar que realtime está ativo
+    toast.success('Atualização em tempo real ativada', {
+      description: 'Os dados financeiros serão atualizados automaticamente'
+    });
+
+    // Configurar Supabase Realtime para atualizações automáticas
+    const channel = supabase
+      .channel('financeiro-cohapm-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'compradores_cohapm'
+        },
+        () => {
+          console.log('Compradores COHAPM atualizado - recarregando financeiro');
+          toast.info('Dados atualizados em tempo real');
+          loadData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'parcelas_cohapm'
+        },
+        () => {
+          console.log('Parcelas COHAPM atualizadas - recarregando financeiro');
+          toast.info('Dados atualizados em tempo real');
+          loadData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contratos_cohapm'
+        },
+        () => {
+          console.log('Contratos COHAPM atualizados - recarregando financeiro');
+          toast.info('Dados atualizados em tempo real');
+          loadData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadData = async () => {
     try {
       setIsLoading(true);
+      setLastUpdate(new Date());
 
       // Buscar compradores COHAPM com dados consolidados
       const { data, error } = await supabase
@@ -106,6 +161,14 @@ export function FinanceiroAdminDashboard() {
     }).format(value || 0);
   };
 
+  const formatLastUpdate = () => {
+    return lastUpdate.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -120,11 +183,19 @@ export function FinanceiroAdminDashboard() {
   return (
     <div className="space-y-6">
       {/* Cabeçalho */}
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Gestão Financeira COHAPM</h2>
-        <p className="text-muted-foreground">
-          Visualize e gerencie dados financeiros dos {stats.totalCompradores} compradores
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Gestão Financeira COHAPM</h2>
+          <p className="text-muted-foreground">
+            Visualize e gerencie dados financeiros dos {stats.totalCompradores} compradores
+          </p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg border border-primary/20">
+          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-sm font-medium">
+            Atualização em tempo real • {formatLastUpdate()}
+          </span>
+        </div>
       </div>
 
       {/* Estatísticas Gerais */}
