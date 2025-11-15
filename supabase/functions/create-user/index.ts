@@ -231,6 +231,8 @@ serve(async (req) => {
 
     const requestData = await req.json()
     
+    console.log('Dados recebidos:', JSON.stringify(requestData, null, 2))
+    
     // Pre-process data: convert empty strings to null for optional fields
     const preprocessedData = {
       ...requestData,
@@ -241,6 +243,8 @@ serve(async (req) => {
       fase: requestData.fase && requestData.fase.trim() !== '' ? requestData.fase : null,
       data_compra: requestData.data_compra && requestData.data_compra.trim() !== '' ? requestData.data_compra : null,
     }
+    
+    console.log('Dados preprocessados:', JSON.stringify(preprocessedData, null, 2))
     
     // Validate input data with Zod
     const validationResult = createUserSchema.safeParse(preprocessedData)
