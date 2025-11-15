@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, DollarSign, Users, FileText, TrendingUp, Link as LinkIcon, Unlink } from 'lucide-react';
+import { Search, DollarSign, Users, FileText, TrendingUp, Link as LinkIcon, Unlink, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Cooperado {
@@ -40,6 +40,7 @@ export function FinanceiroAdminDashboard() {
   const [selectedCooperado, setSelectedCooperado] = useState<string | null>(null);
   const [compradores, setCompradores] = useState<any[]>([]);
   const [showVincularDialog, setShowVincularDialog] = useState(false);
+  const [isDeletingTemp, setIsDeletingTemp] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -186,6 +187,37 @@ export function FinanceiroAdminDashboard() {
     }
   };
 
+  const handleDeleteTempUsers = async () => {
+    if (!confirm('Tem certeza que deseja excluir TODOS os usuários com email @temp.cooperativa.com? Esta ação NÃO pode ser desfeita!')) {
+      return;
+    }
+
+    try {
+      setIsDeletingTemp(true);
+      toast.info('Iniciando exclusão de usuários temporários...');
+
+      const { data, error } = await supabase.functions.invoke('delete-temp-users', {
+        body: {}
+      });
+
+      if (error) throw error;
+
+      toast.success(`${data.deletados} usuários excluídos com sucesso!`);
+      
+      if (data.erros && data.erros.length > 0) {
+        console.error('Erros durante exclusão:', data.erros);
+        toast.warning(`${data.erros.length} usuários não puderam ser excluídos`);
+      }
+
+      loadData();
+    } catch (error) {
+      console.error('Erro ao excluir usuários temporários:', error);
+      toast.error('Erro ao excluir usuários temporários');
+    } finally {
+      setIsDeletingTemp(false);
+    }
+  };
+
   const cooperadosFiltrados = cooperados.filter(c =>
     c.nome_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -210,9 +242,20 @@ export function FinanceiroAdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold">Gestão Financeira</h2>
-        <p className="text-muted-foreground">Gerencie cooperados, compradores e transações financeiras</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold">Gestão Financeira</h2>
+          <p className="text-muted-foreground">Gerencie cooperados, compradores e transações financeiras</p>
+        </div>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={handleDeleteTempUsers}
+          disabled={isDeletingTemp}
+        >
+          <Trash2 className="h-4 w-4 mr-2" />
+          {isDeletingTemp ? 'Excluindo...' : 'Limpar Usuários Temporários'}
+        </Button>
       </div>
 
       {/* Estatísticas */}
