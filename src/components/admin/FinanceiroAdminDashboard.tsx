@@ -1,46 +1,39 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, DollarSign, Users, FileText, TrendingUp, Link as LinkIcon, Unlink, Trash2 } from 'lucide-react';
+import { Search, DollarSign, Users, AlertCircle, TrendingUp, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-interface Cooperado {
+interface CompradorCOHAPM {
   id: string;
-  nome_completo: string;
-  email: string;
-  cpf: string;
+  nome: string;
+  cpf_cnpj: string;
   telefone: string;
+  email: string;
   quadra: string;
   lote: string;
-  comprador_vinculado?: {
-    id: string;
-    nome: string;
-    cpf_cnpj: string;
-    contratos_count: number;
-    valor_total_contratos: number;
-  };
-  investimentos: {
-    total: number;
-    valor_total: number;
-  };
-  parcelas_pendentes: number;
+  empreendimento: string;
+  profile_id: string | null;
+  valor_total_contratos: number;
+  valor_pago: number;
   valor_pendente: number;
+  total_contratos: number;
+  total_parcelas: number;
+  parcelas_pagas: number;
+  parcelas_atrasadas: number;
+  situacao_financeira: string;
+  percentual_pago: number;
 }
 
 export function FinanceiroAdminDashboard() {
-  const [cooperados, setCooperados] = useState<Cooperado[]>([]);
+  const [compradores, setCompradores] = useState<CompradorCOHAPM[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCooperado, setSelectedCooperado] = useState<string | null>(null);
-  const [compradores, setCompradores] = useState<any[]>([]);
-  const [showVincularDialog, setShowVincularDialog] = useState(false);
-  const [isDeletingTemp, setIsDeletingTemp] = useState(false);
+  const [filtroSituacao, setFiltroSituacao] = useState<string>('todos');
 
   useEffect(() => {
     loadData();
@@ -50,428 +43,266 @@ export function FinanceiroAdminDashboard() {
     try {
       setIsLoading(true);
 
-      // Buscar perfis (cooperados)
-      const { data: profiles, error: profilesError } = await supabase
-        .from('profiles')
+      // Buscar compradores COHAPM com dados consolidados
+      const { data, error } = await supabase
+        .from('vw_resumo_financeiro_cohapm')
         .select('*')
-        .order('nome_completo');
+        .order('nome');
 
-      if (profilesError) throw profilesError;
+      if (error) throw error;
 
-      // Buscar compradores vinculados
-      const { data: compradoresData, error: compradoresError } = await supabase
-        .from('compradores_cohapm')
-        .select('*');
-
-      if (compradoresError) throw compradoresError;
-
-      // Buscar investimentos
-      const { data: investimentos, error: investimentosError } = await supabase
-        .from('investimentos')
-        .select('*');
-
-      if (investimentosError) throw investimentosError;
-
-      // Buscar parcelas pendentes
-      const { data: parcelas, error: parcelasError } = await supabase
-        .from('parcelas')
-        .select('*')
-        .in('status', ['pendente', 'vencida']);
-
-      if (parcelasError) throw parcelasError;
-
-      // Buscar contratos COHAPM
-      const { data: contratos, error: contratosError } = await supabase
-        .from('contratos_cohapm')
-        .select('*');
-
-      if (contratosError) throw contratosError;
-
-      // Montar dados dos cooperados
-      const cooperadosData: Cooperado[] = profiles.map(profile => {
-        const comprador = compradoresData.find(c => c.profile_id === profile.id);
-        const investimentosCooperado = investimentos.filter(i => i.user_id === profile.id);
-        const parcelasCooperado = parcelas.filter(p => 
-          investimentosCooperado.some(inv => inv.id === p.investimento_id)
-        );
-
-        let compradorVinculado;
-        if (comprador) {
-          const contratosComprador = contratos.filter(c => c.comprador_id === comprador.id);
-          compradorVinculado = {
-            id: comprador.id,
-            nome: comprador.nome,
-            cpf_cnpj: comprador.cpf_cnpj,
-            contratos_count: contratosComprador.length,
-            valor_total_contratos: contratosComprador.reduce((sum, c) => sum + (c.valor_total || 0), 0)
-          };
-        }
-
-        return {
-          id: profile.id,
-          nome_completo: profile.nome_completo,
-          email: profile.email,
-          cpf: profile.cpf,
-          telefone: profile.telefone,
-          quadra: profile.quadra,
-          lote: profile.lote,
-          comprador_vinculado: compradorVinculado,
-          investimentos: {
-            total: investimentosCooperado.length,
-            valor_total: investimentosCooperado.reduce((sum, i) => sum + (i.valor_total || 0), 0)
-          },
-          parcelas_pendentes: parcelasCooperado.length,
-          valor_pendente: parcelasCooperado.reduce((sum, p) => sum + (p.valor_parcela || 0), 0)
-        };
-      });
-
-      setCooperados(cooperadosData);
-    } catch (error) {
+      setCompradores(data || []);
+    } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
-      toast.error('Erro ao carregar dados');
+      toast.error('Erro ao carregar dados financeiros');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const loadCompradoresDisponiveis = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('compradores_cohapm')
-        .select('*')
-        .is('profile_id', null)
-        .order('nome');
+  // Filtrar compradores
+  const compradoresFiltrados = compradores.filter(c => {
+    const matchSearch = 
+      c.nome?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.cpf_cnpj?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.quadra?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.lote?.toLowerCase().includes(searchTerm.toLowerCase());
 
-      if (error) throw error;
-      setCompradores(data || []);
-    } catch (error) {
-      console.error('Erro ao carregar compradores:', error);
-      toast.error('Erro ao carregar compradores disponíveis');
-    }
-  };
+    const matchSituacao = 
+      filtroSituacao === 'todos' ||
+      (filtroSituacao === 'inadimplente' && c.parcelas_atrasadas > 0) ||
+      (filtroSituacao === 'em_dia' && c.parcelas_atrasadas === 0 && c.valor_pendente > 0) ||
+      (filtroSituacao === 'quitado' && c.valor_pendente === 0);
 
-  const handleVincular = async (compradorId: string) => {
-    if (!selectedCooperado) return;
+    return matchSearch && matchSituacao;
+  });
 
-    try {
-      const { error } = await supabase
-        .from('compradores_cohapm')
-        .update({ profile_id: selectedCooperado })
-        .eq('id', compradorId);
-
-      if (error) throw error;
-
-      toast.success('Comprador vinculado com sucesso!');
-      setShowVincularDialog(false);
-      loadData();
-    } catch (error) {
-      console.error('Erro ao vincular:', error);
-      toast.error('Erro ao vincular comprador');
-    }
-  };
-
-  const handleDesvincular = async (compradorId: string) => {
-    try {
-      const { error } = await supabase
-        .from('compradores_cohapm')
-        .update({ profile_id: null })
-        .eq('id', compradorId);
-
-      if (error) throw error;
-
-      toast.success('Comprador desvinculado com sucesso!');
-      loadData();
-    } catch (error) {
-      console.error('Erro ao desvincular:', error);
-      toast.error('Erro ao desvincular comprador');
-    }
-  };
-
-  const handleDeleteTempUsers = async () => {
-    if (!confirm('Tem certeza que deseja excluir TODOS os usuários com email @temp.cooperativa.com? Esta ação NÃO pode ser desfeita!')) {
-      return;
-    }
-
-    try {
-      setIsDeletingTemp(true);
-      toast.info('Iniciando exclusão de usuários temporários...');
-
-      const { data, error } = await supabase.functions.invoke('delete-temp-users', {
-        body: {}
-      });
-
-      if (error) throw error;
-
-      toast.success(`${data.deletados} usuários excluídos com sucesso!`);
-      
-      if (data.erros && data.erros.length > 0) {
-        console.error('Erros durante exclusão:', data.erros);
-        toast.warning(`${data.erros.length} usuários não puderam ser excluídos`);
-      }
-
-      loadData();
-    } catch (error) {
-      console.error('Erro ao excluir usuários temporários:', error);
-      toast.error('Erro ao excluir usuários temporários');
-    } finally {
-      setIsDeletingTemp(false);
-    }
-  };
-
-  const cooperadosFiltrados = cooperados.filter(c =>
-    c.nome_completo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.cpf?.includes(searchTerm) ||
-    c.comprador_vinculado?.nome?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  // Estatísticas gerais
   const stats = {
-    totalCooperados: cooperados.length,
-    cooperadosVinculados: cooperados.filter(c => c.comprador_vinculado).length,
-    totalInvestimentos: cooperados.reduce((sum, c) => sum + c.investimentos.valor_total, 0),
-    totalPendente: cooperados.reduce((sum, c) => sum + c.valor_pendente, 0)
+    totalCompradores: compradores.length,
+    totalContratos: compradores.reduce((sum, c) => sum + (c.total_contratos || 0), 0),
+    valorTotal: compradores.reduce((sum, c) => sum + (c.valor_total_contratos || 0), 0),
+    valorPago: compradores.reduce((sum, c) => sum + (c.valor_pago || 0), 0),
+    valorPendente: compradores.reduce((sum, c) => sum + (c.valor_pendente || 0), 0),
+    inadimplentes: compradores.filter(c => c.parcelas_atrasadas > 0).length,
+    emDia: compradores.filter(c => c.parcelas_atrasadas === 0 && c.valor_pendente > 0).length,
+    quitados: compradores.filter(c => c.valor_pendente === 0).length,
+  };
+
+  const getStatusBadge = (comprador: CompradorCOHAPM) => {
+    if (comprador.parcelas_atrasadas > 0) {
+      return <Badge variant="destructive">Inadimplente ({comprador.parcelas_atrasadas})</Badge>;
+    }
+    if (comprador.valor_pendente === 0) {
+      return <Badge variant="default" className="bg-green-600">Quitado</Badge>;
+    }
+    return <Badge variant="secondary">Em Dia</Badge>;
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value || 0);
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Carregando dados financeiros...</p>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold">Gestão Financeira</h2>
-          <p className="text-muted-foreground">Gerencie cooperados, compradores e transações financeiras</p>
-        </div>
-        <Button
-          variant="destructive"
-          size="sm"
-          onClick={handleDeleteTempUsers}
-          disabled={isDeletingTemp}
-        >
-          <Trash2 className="h-4 w-4 mr-2" />
-          {isDeletingTemp ? 'Excluindo...' : 'Limpar Usuários Temporários'}
-        </Button>
+      {/* Cabeçalho */}
+      <div>
+        <h2 className="text-3xl font-bold tracking-tight">Gestão Financeira COHAPM</h2>
+        <p className="text-muted-foreground">
+          Visualize e gerencie dados financeiros dos {stats.totalCompradores} compradores
+        </p>
       </div>
 
-      {/* Estatísticas */}
+      {/* Estatísticas Gerais */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Cooperados</CardTitle>
+            <CardTitle className="text-sm font-medium">Total de Compradores</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalCooperados}</div>
+            <div className="text-2xl font-bold">{stats.totalCompradores}</div>
             <p className="text-xs text-muted-foreground">
-              {stats.cooperadosVinculados} vinculados
+              {stats.totalContratos} contratos ativos
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Investido</CardTitle>
+            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.totalInvestimentos)}
-            </div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.valorTotal)}</div>
+            <p className="text-xs text-muted-foreground">
+              Em contratos COHAPM
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valor Recebido</CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{formatCurrency(stats.valorPago)}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.valorTotal > 0 ? ((stats.valorPago / stats.valorTotal) * 100).toFixed(1) : 0}% do total
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Valor Pendente</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <AlertCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.totalPendente)}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Contratos COHAPM</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {cooperados.reduce((sum, c) => sum + (c.comprador_vinculado?.contratos_count || 0), 0)}
-            </div>
+            <div className="text-2xl font-bold text-orange-600">{formatCurrency(stats.valorPendente)}</div>
+            <p className="text-xs text-muted-foreground">
+              {stats.inadimplentes} inadimplentes
+            </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Busca */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cooperados e Vinculações</CardTitle>
-          <CardDescription>Gerencie cooperados e suas vinculações com compradores COHAPM</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex gap-4 mb-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome, email, CPF..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          </div>
+      {/* Tabs de Análise */}
+      <Tabs defaultValue="todos" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="todos" onClick={() => setFiltroSituacao('todos')}>
+            Todos ({stats.totalCompradores})
+          </TabsTrigger>
+          <TabsTrigger value="em_dia" onClick={() => setFiltroSituacao('em_dia')}>
+            Em Dia ({stats.emDia})
+          </TabsTrigger>
+          <TabsTrigger value="inadimplente" onClick={() => setFiltroSituacao('inadimplente')}>
+            Inadimplentes ({stats.inadimplentes})
+          </TabsTrigger>
+          <TabsTrigger value="quitado" onClick={() => setFiltroSituacao('quitado')}>
+            Quitados ({stats.quitados})
+          </TabsTrigger>
+        </TabsList>
 
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Cooperado</TableHead>
-                  <TableHead>Contato</TableHead>
-                  <TableHead>Lote</TableHead>
-                  <TableHead>Comprador Vinculado</TableHead>
-                  <TableHead>Investimentos</TableHead>
-                  <TableHead>Pendente</TableHead>
-                  <TableHead>Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {cooperadosFiltrados.map(cooperado => (
-                  <TableRow key={cooperado.id}>
-                    <TableCell>
-                      <div>
-                        <div className="font-medium">{cooperado.nome_completo}</div>
-                        <div className="text-sm text-muted-foreground">{cooperado.cpf}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div>{cooperado.email}</div>
-                        <div className="text-muted-foreground">{cooperado.telefone}</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {cooperado.quadra && cooperado.lote ? (
-                        <Badge variant="outline">{cooperado.quadra} / {cooperado.lote}</Badge>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {cooperado.comprador_vinculado ? (
-                        <div className="space-y-1">
-                          <div className="font-medium text-sm">{cooperado.comprador_vinculado.nome}</div>
-                          <div className="text-xs text-muted-foreground">{cooperado.comprador_vinculado.cpf_cnpj}</div>
-                          <Badge variant="secondary" className="text-xs">
-                            {cooperado.comprador_vinculado.contratos_count} contrato(s)
-                          </Badge>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="text-muted-foreground">Não vinculado</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="font-medium">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cooperado.investimentos.valor_total)}
-                        </div>
-                        <div className="text-muted-foreground">{cooperado.investimentos.total} investimento(s)</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <div className="font-medium text-orange-600">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(cooperado.valor_pendente)}
-                        </div>
-                        <div className="text-muted-foreground">{cooperado.parcelas_pendentes} parcela(s)</div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      {cooperado.comprador_vinculado ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDesvincular(cooperado.comprador_vinculado!.id)}
-                        >
-                          <Unlink className="h-4 w-4 mr-1" />
-                          Desvincular
-                        </Button>
-                      ) : (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedCooperado(cooperado.id);
-                            loadCompradoresDisponiveis();
-                            setShowVincularDialog(true);
-                          }}
-                        >
-                          <LinkIcon className="h-4 w-4 mr-1" />
-                          Vincular
-                        </Button>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+        <TabsContent value={filtroSituacao} className="space-y-4">
+          {/* Busca */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Buscar Comprador</CardTitle>
+              <CardDescription>
+                Pesquise por nome, CPF, quadra ou lote
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2">
+                <Search className="h-5 w-5 text-muted-foreground" />
+                <Input
+                  placeholder="Digite para buscar..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
-      {/* Dialog de Vinculação */}
-      <Dialog open={showVincularDialog} onOpenChange={setShowVincularDialog}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Vincular Comprador</DialogTitle>
-            <DialogDescription>
-              Selecione um comprador COHAPM para vincular ao cooperado
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            {compradores.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">
-                Nenhum comprador disponível para vinculação
-              </p>
-            ) : (
+          {/* Tabela de Compradores */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Lista de Compradores</CardTitle>
+              <CardDescription>
+                {compradoresFiltrados.length} {compradoresFiltrados.length === 1 ? 'comprador encontrado' : 'compradores encontrados'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Nome</TableHead>
-                      <TableHead>CPF/CNPJ</TableHead>
-                      <TableHead>Ação</TableHead>
+                      <TableHead>CPF</TableHead>
+                      <TableHead>Quadra/Lote</TableHead>
+                      <TableHead>Contratos</TableHead>
+                      <TableHead>Valor Total</TableHead>
+                      <TableHead>Valor Pago</TableHead>
+                      <TableHead>Valor Pendente</TableHead>
+                      <TableHead>Parcelas</TableHead>
+                      <TableHead>Situação</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {compradores.map(comprador => (
-                      <TableRow key={comprador.id}>
-                        <TableCell>{comprador.nome}</TableCell>
-                        <TableCell>{comprador.cpf_cnpj}</TableCell>
-                        <TableCell>
-                          <Button
-                            size="sm"
-                            onClick={() => handleVincular(comprador.id)}
-                          >
-                            Vincular
-                          </Button>
+                    {compradoresFiltrados.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={9} className="text-center text-muted-foreground">
+                          Nenhum comprador encontrado
                         </TableCell>
                       </TableRow>
-                    ))}
+                    ) : (
+                      compradoresFiltrados.map((comprador) => (
+                        <TableRow key={comprador.id}>
+                          <TableCell className="font-medium">{comprador.nome}</TableCell>
+                          <TableCell className="text-sm text-muted-foreground">
+                            {comprador.cpf_cnpj || '-'}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1">
+                              <Building2 className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm">
+                                {comprador.quadra && comprador.lote
+                                  ? `${comprador.quadra}-${comprador.lote}`
+                                  : '-'}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {comprador.total_contratos || 0}
+                          </TableCell>
+                          <TableCell className="font-medium">
+                            {formatCurrency(comprador.valor_total_contratos)}
+                          </TableCell>
+                          <TableCell className="text-green-600 font-medium">
+                            {formatCurrency(comprador.valor_pago)}
+                          </TableCell>
+                          <TableCell className="text-orange-600 font-medium">
+                            {formatCurrency(comprador.valor_pendente)}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            <div className="space-y-1">
+                              <div>{comprador.parcelas_pagas || 0}/{comprador.total_parcelas || 0} pagas</div>
+                              {comprador.parcelas_atrasadas > 0 && (
+                                <div className="text-red-600 font-medium">
+                                  {comprador.parcelas_atrasadas} atrasadas
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {getStatusBadge(comprador)}
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
                   </TableBody>
                 </Table>
               </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
