@@ -54,7 +54,7 @@ export async function importFinancialData(data: FinancialImportData[]) {
             body: {
               email: tempEmail,
               password: tempPassword,
-              nome: cliente.cliente,
+              nome_completo: cliente.cliente,
               quadra,
               lote,
             },
@@ -84,8 +84,21 @@ export async function importFinancialData(data: FinancialImportData[]) {
       const numeroParcelas = cliente.parcelas.length;
       const valorParcela = numeroParcelas > 0 ? valorTotal / numeroParcelas : 0;
       
-      // Buscar a primeira data de vencimento válida
-      const primeiraData = cliente.parcelas.find(p => p.vencimento)?.vencimento || new Date().toISOString().split('T')[0];
+      // Buscar a primeira data de vencimento válida e garantir que seja uma data razoável
+      let primeiraData = cliente.parcelas.find(p => p.vencimento)?.vencimento;
+      
+      // Validar se a data está em um range razoável (entre 1900 e 2100)
+      if (primeiraData) {
+        const year = parseInt(primeiraData.split('-')[0]);
+        if (year < 1900 || year > 2100) {
+          primeiraData = null;
+        }
+      }
+      
+      // Se não houver data válida, usar data atual
+      if (!primeiraData) {
+        primeiraData = new Date().toISOString().split('T')[0];
+      }
 
       // Verificar se já existe um investimento para este cooperado
       const { data: existingInv } = await supabase
