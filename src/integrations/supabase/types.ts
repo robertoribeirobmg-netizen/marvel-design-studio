@@ -14,6 +14,133 @@ export type Database = {
   }
   public: {
     Tables: {
+      compradores_cohapm: {
+        Row: {
+          cpf_cnpj: string | null
+          created_at: string | null
+          data_extracao: string | null
+          email: string | null
+          empreendimento: string | null
+          fonte: string | null
+          grupo: string | null
+          id: string
+          nome: string
+          profile_id: string | null
+          telefone: string | null
+          tipo: string | null
+          tipo_classificado: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          data_extracao?: string | null
+          email?: string | null
+          empreendimento?: string | null
+          fonte?: string | null
+          grupo?: string | null
+          id: string
+          nome: string
+          profile_id?: string | null
+          telefone?: string | null
+          tipo?: string | null
+          tipo_classificado?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cpf_cnpj?: string | null
+          created_at?: string | null
+          data_extracao?: string | null
+          email?: string | null
+          empreendimento?: string | null
+          fonte?: string | null
+          grupo?: string | null
+          id?: string
+          nome?: string
+          profile_id?: string | null
+          telefone?: string | null
+          tipo?: string | null
+          tipo_classificado?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compradores_cohapm_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contratos_cohapm: {
+        Row: {
+          area_m2: number | null
+          comprador_id: string | null
+          corretor: string | null
+          created_at: string | null
+          data_contrato: string | null
+          id: number
+          imobiliaria: string | null
+          lote: string | null
+          numero_contrato: string | null
+          numero_parcelas: number | null
+          quadra: string | null
+          situacao: string | null
+          status: string | null
+          updated_at: string | null
+          valor_entrada: number | null
+          valor_parcela: number | null
+          valor_total: number | null
+        }
+        Insert: {
+          area_m2?: number | null
+          comprador_id?: string | null
+          corretor?: string | null
+          created_at?: string | null
+          data_contrato?: string | null
+          id?: number
+          imobiliaria?: string | null
+          lote?: string | null
+          numero_contrato?: string | null
+          numero_parcelas?: number | null
+          quadra?: string | null
+          situacao?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor_entrada?: number | null
+          valor_parcela?: number | null
+          valor_total?: number | null
+        }
+        Update: {
+          area_m2?: number | null
+          comprador_id?: string | null
+          corretor?: string | null
+          created_at?: string | null
+          data_contrato?: string | null
+          id?: number
+          imobiliaria?: string | null
+          lote?: string | null
+          numero_contrato?: string | null
+          numero_parcelas?: number | null
+          quadra?: string | null
+          situacao?: string | null
+          status?: string | null
+          updated_at?: string | null
+          valor_entrada?: number | null
+          valor_parcela?: number | null
+          valor_total?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contratos_cohapm_comprador_id_fkey"
+            columns: ["comprador_id"]
+            isOneToOne: false
+            referencedRelation: "compradores_cohapm"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       etapas_obra: {
         Row: {
           created_at: string
@@ -290,6 +417,75 @@ export type Database = {
             columns: ["renegociacao_id"]
             isOneToOne: false
             referencedRelation: "renegociacoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parcelas_cohapm: {
+        Row: {
+          comprador_id: string | null
+          contrato_id: number | null
+          created_at: string | null
+          data_pagamento: string | null
+          data_vencimento: string | null
+          dias_atraso: number | null
+          id: number
+          numero_parcela: number | null
+          status: string | null
+          updated_at: string | null
+          valor_desconto: number | null
+          valor_juros: number | null
+          valor_multa: number | null
+          valor_pago: number | null
+          valor_parcela: number | null
+        }
+        Insert: {
+          comprador_id?: string | null
+          contrato_id?: number | null
+          created_at?: string | null
+          data_pagamento?: string | null
+          data_vencimento?: string | null
+          dias_atraso?: number | null
+          id?: number
+          numero_parcela?: number | null
+          status?: string | null
+          updated_at?: string | null
+          valor_desconto?: number | null
+          valor_juros?: number | null
+          valor_multa?: number | null
+          valor_pago?: number | null
+          valor_parcela?: number | null
+        }
+        Update: {
+          comprador_id?: string | null
+          contrato_id?: number | null
+          created_at?: string | null
+          data_pagamento?: string | null
+          data_vencimento?: string | null
+          dias_atraso?: number | null
+          id?: number
+          numero_parcela?: number | null
+          status?: string | null
+          updated_at?: string | null
+          valor_desconto?: number | null
+          valor_juros?: number | null
+          valor_multa?: number | null
+          valor_pago?: number | null
+          valor_parcela?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parcelas_cohapm_comprador_id_fkey"
+            columns: ["comprador_id"]
+            isOneToOne: false
+            referencedRelation: "compradores_cohapm"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "parcelas_cohapm_contrato_id_fkey"
+            columns: ["contrato_id"]
+            isOneToOne: false
+            referencedRelation: "contratos_cohapm"
             referencedColumns: ["id"]
           },
         ]

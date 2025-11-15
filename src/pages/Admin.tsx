@@ -1787,6 +1787,72 @@ export default function Admin() {
                   </CardContent>
                 </Card>
 
+                {/* Importação COHAPM */}
+                <Card className="border-primary/50 bg-gradient-to-r from-green-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Upload className="h-6 w-6 text-primary" />
+                      Importação COHAPM
+                    </CardTitle>
+                    <CardDescription>
+                      Importe os 726 compradores do sistema COHAPM (Residencial La Felicità)
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Sistema Original IBSystemLote
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          726 compradores extraídos do sistema COHAPM em 15/11/2025
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/importacao-cohapm')}
+                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <Upload className="h-5 w-5 mr-2" />
+                        Importar CSV
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Gerenciar Compradores COHAPM */}
+                <Card className="border-primary/50 bg-gradient-to-r from-green-500/5 to-transparent">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="h-6 w-6 text-primary" />
+                      Compradores COHAPM
+                    </CardTitle>
+                    <CardDescription>
+                      Visualize e gerencie os dados importados do sistema COHAPM
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center justify-between p-4 bg-background rounded-lg border">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          Banco de dados de compradores
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Buscar, exportar e vincular compradores ao sistema atual
+                        </p>
+                      </div>
+                      <Button 
+                        size="lg"
+                        onClick={() => navigate('/compradores-cohapm')}
+                        className="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+                      >
+                        <Users className="h-5 w-5 mr-2" />
+                        Ver Compradores
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+
                 {/* Botão para importação automática direta */}
                 <Card className="border-primary/50 bg-gradient-to-r from-primary/5 to-transparent">
                   <CardHeader>

@@ -1,0 +1,727 @@
+id,nome,grupo,tipo,cpf_cnpj,telefone,data_extracao,fonte,empreendimento,tipo_classificado
+10,ARTHUR,,"Cliente,",623.344.790-98,(71) 9913-2656,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+16,TAISE DANTAS,,"Cliente,",003.695.700-30,(71) 99126-5878,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+19,Wilson Raimundo Dultra Pereira,Administrador,"Cliente,",053.934.505-91,(71) 99417-1997,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+21,diogo rodrigo alves,,"Cliente,",732.802.930-73,(16)99363-9312,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+22,VICELMO MARTINS FERREIRA,,"Cliente,",356.780.705-68,(71) 99933-4455,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+23,MÁRCIA DE JESUS,,"Cliente,",465.954.390-00,(71) 99165-8787,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+24,JOSÉ RAIMUNDO,,"Cliente,",709.638.270-49,(71) 99633-5458,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+31,FATIMA CRUZ DIAS,,"Cliente,",045.471.965-59,(71) 99107-4545,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+32,ANA KÁTIA MENEZES RAMOS COELHO DA SILVA,Cliente,"Cliente,",242.665.235-72,(71) 99318-2704,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+33,CARMEN JULIA DEL REY VILLA FLOR,Cliente,"Cliente,",935.624.115-53,(71) 98864-5665,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+35,MARINEUZA MATOS DOS ANJOS,Cliente,"Cliente,",338.986.345-15,(71) 98899-7456,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+39,FLAVIO ROBERTO DOS SANTOS VIEIRA,Cliente,"Cliente,",910.490.245-91,(71) 99696-9686,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+40,Idália dos Santos Desidério,,"Cliente,",917.598.035-53,(71) 98897-2838,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+41,Flávia Santiago de Almeida Conceição,,"Cliente,",938.929.005-82,(71) 99300-8332,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+42,SEFORA JOCA MACIEL,,"Cliente,",567.000.323-34,(71) 99292-8588,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+43,André Luiz Alves Araújo,,"Cliente,",592.238.805-30,(71) 99412-0560,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+46,Viviane Jesus dos Santos,,"Cliente,",991.187.775-20,(71) 99966-5745,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+47,Maria Junayr Souza Soares dos Santos,,"Cliente,",543.351.595-87,(71) 99656-2018,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+49,EDLEISE MENDES OLIVEIRA SANTOS,,"Cliente,",356.473.105-91,(71) 99125-6557,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+51,LILIANE REGIS DE ALMEIDA MACÊDO,,"Cliente,",666.728.485-68,(71) 99923-6699,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+53,Ieda Silva Carvalho,,"Cliente,",427.355.055-53,(71) 99323-0004,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+54,Cliente Interno Reservador,,"Cliente,",969.448.445-67,(71) 99412-0546,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+56,NORMA SUELI CABRAL MENDES,,"Cliente,",612.413.935-91,(71) 98847-6030,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+57,Aline Passos de Azevedo Sampaio,Cliente,"Cliente,",512.748.925-20,71988597629,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+58,ESTER AIDA GELMAN,Cliente,"Cliente,",125.768.915-00,(71) 99122-4729,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+59,GREYCE DE SOUZA SPOSITO,,"Cliente,",004.787.515-16,(71) 98713-2306,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+60,ANA LUCIA RIBEIRO DA SILVA,,"Cliente,",185.286.355-20,(71) 99136-4088,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+62,cliente,,"Cliente,",613.866.810-32,(16)99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+63,Dona Fabiana,,"Cliente, Proprietario,",220.618.435-49,71999345509,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+65,Brigida Soares Cedraz,,"Cliente,",429.950.195-00,(71) 99348-6372,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+66,Ines Maria Soares Cedraz,,"Cliente,",258.306.195-04,(71) 98767-1927,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+70,Arlon de Santana Bitencourt,,"Cliente,",044.234.005-29,(71) 99284-6860,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+71,Enedi Silva Batista França,,"Cliente,",579.741.015-04,(71) 99395-1742,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+73,Grejonilson Gonçalves Lima,,"Cliente,",185.720.225-20,(71) 99247-8442,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+78,Sivaldo Gonzaga Silva,,"Cliente,",958.155.035-68,(71) 99626-8376,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+81,GILDETE DE SOUSA  PACHECO,,"Cliente,",690.291.058-87,(71) 98639-2191,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+83,CLIENTE TESTE,,"Cliente,",342.131.035-10,(71) 99988-8888,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+94,Carlos Lobão Muniz de Souza Neto,,"Cliente,",349.515.045-53,(71) 99127-6328,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+96,Felisberto Luiz Mascarenhas Daltro,,"Cliente, Conjuge,",109.546.435-34,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+98,Manoel Messias Eugenio Cerqueira,,"Cliente,",862.209.345-04,(75) 98178-6358,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+99,JAIR GOIS DE JESUS,,"Cliente,",489.742.695-20,(71) 99608-0360,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+101,ADILMA DE JESUS RODRIGUES,,"Cliente,",355.146.555-04,(71) 99249-3797,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+106,Leandro José dos Santos,,"Cliente,",029.001.515-46,(71) 98217-4272,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+112,Rosemary Lapa de Oliveira,,"Cliente,",460.126.485-53,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+113,Geórgia Contes Cruz,,"Cliente,",507.213.135-15,(71) 99929-1021,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+114,Rosania Maria Sacramento de Amorim,,"Cliente,",454.194.425-15,(71) 99933-1949,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+116,Maria Líliam de Oliveira Raposo,,"Cliente,",649.469.325-34,(71) 99607-0889,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+117,ANA KAREN ALBUQUERQUE SOARES DE LIMA,,"Cliente,",030.964.505-01,(73) 99112-2332,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+126,VALDIR DE JESUS,,"Cliente,",954.026.325-53,(71) 98454-2122,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+129,Marcos Aurélio Souza Santos,,"Cliente,",472.863.775-15,(71) 98776-9339,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+131,CRISTIANE FREITAS MALHEIROS DE CASTRO,,"Cliente,",950.488.805-44,(71) 99677-4084,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+132,JOSENILDE CASSIA ROCHA FREAZA,Cliente,"Cliente,",349.077.425-68,(71) 98787-2382,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+134,CARLA COSTA SILVA ANGELINI,,"Cliente,",024.323.295-03,(71) 98828-5805,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+135,EDELMIRA RIBEIRO DOS SANTOS,,"Cliente,",119.677.905-82,(71) 98852-4283,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+137,ROBERTA LEAL REIS,,"Cliente,",614.488.935-34,(71) 99129-0029,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+139,Robson Da Silva Santana,,"Cliente,",886.483.705-15,(71) 99908-9219,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+140,JOÃO ALVES DOS SANTOS FILHO,,"Cliente,",567.479.935-00,071996110345,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+141,DORISMAR ANDRADE DO ESPÍRITO SANTO,,"Cliente,",858.181.275-91,(71) 98119-4855,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+142,ANA CRISTINA DE MENDONCA SANTOS,,"Cliente,",457.684.985-91,(71) 99207-4340,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+145,MARCUS DE SOUZA OLIVEIRA,,"Cliente,",964.710.935-00,(71) 98126-2303,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+149,PAULINO ALVES DE OLIVEIRA,,"Cliente,",051.133.505-91,(71) 98764-0071,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+150,SUELI DALTRO PORFIRIO,,"Cliente,",291.182.205-68,(71) 99188-9233,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+152,BÁRBARA ANDRESA RIBEIRO BARBOZA,,"Cliente,",930.726.005-20,(71) 99959-3748,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+154,ARNALDO PEREIRA SILVA,,"Cliente,",293.673.955-15,(71) 99157-4391,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+155,GEOVANICE DA SILVA MELO,,"Cliente,",780.749.675-49,(71) 98864-2071,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+157,DARIO BEZERRA MOREIRA SAMPAIO,Cliente,"Cliente, Conjuge,",548.247.705-30,(71) 98181-6207,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+159,THAIS CRISTINA SANTANA DA SILVA,,"Cliente, Conjuge,",780.772.575-34,(71) 98600-0352,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+163,LUCIANO GOMES PELEGRINO,,"Cliente,",901.221.865-91,(75) 99973-3842,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+166,ALEX SANDRO JESUS DA PAIXÃO,,"Cliente,",978.466.945-53,(71) 99921-2609,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+170,CLIENTE TESTE,,"Cliente,",214.937.385-85,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+173,VITOR LUIS MACIEL SANTOS,,"Cliente,",813.284.275-87,(71) 98769-4990,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+176,SUELY VIANNA GONCALVES PEREIRA,,"Cliente,",297.626.935-15,(71) 99165-1950,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+177,EVANDRO SANTOS AMADO,,"Cliente,",560.217.475-34,(71) 99108-0614,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+184,EDSON DOS SANTOS OLIVEIRA,,"Cliente,",974.003.785-20,(75) 98308-9777,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+186,OSLAIM ARAUJO DA CRUZ,,"Cliente,",507.212.325-15,(71) 99715-6706,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+190,JOAO SANTOS GERMANO FILHO,,"Cliente,",576.391.405-87,(61) 98148-2499,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+192,Lázaro Santos Silva,,"Cliente,",545.045.975-00,(71) 98845-7270,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+194,MAÍLA DE SOUZA OLIVEIRA,,"Cliente,",011.853.835-73,(71) 99122-6541,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+201,José Pereira Rios Júnior,Cliente,"Cliente,",825.791.135-68,(71) 98866-7726,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+203,LÍVIA MARIA ROCHA DOS ANJOS,,"Cliente,",682.734.605-68,(71) 99151-6708,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+205,ARISVAL SANTOS DA COSTA,,"Cliente,",895.503.825-91,(71) 99988-4078,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+207,Edmilson Vieira da Silva,,"Cliente,",003.979.035-53,(71) 98276-5555,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+208,Lukas Rocha Sao Pedro,,"Cliente,",858.593.935-47,(71)99239-4163,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+210,Jeronaldo Araújo de Oliveira,,"Cliente,",615.702.815-72,(71) 98868-2998,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+211,JACI LOPES TORRES,,"Cliente,",126.338.955-49,(71) 99969-5211,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+220,FABRÍSIO SANTOS SILVA,Cliente,"Cliente,",796.026.495-34,(71) 98760-9360,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+222,LEDALENE ALVES DE SOUZA,,"Cliente,",115.664.695-20,(71) 99271-9468,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+224,André Fonseca Damasceno,,"Cliente,",818.949.375-20,(71) 98303-8543,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+229,Genival Moncorvo Santos,,"Cliente,",352.937.645-00,(71) 99112-8149,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+231,Carlos Emilio Garcia Medauar,,"Cliente,",136.348.525-34,(71) 98813-1111,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+233,EVERSON CARDOTTE FILHO,Cliente,"Cliente,",301.358.338-09,(71) 99678-3735,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+234,titto livio ravazzano alonso,,"Cliente,",344.843.965-72,(71) 98211-1071,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+235,aristoteles de oliveira brandao neto,,"Cliente,",803.152.245-68,(71) 98500-1459,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+239,Nelsival de Souza Menezes,,"Cliente,",036.124.655-20,(71) 99914-5084,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+267,Gilmar Gomes dos Santos,,"Cliente,",152.330.225-91,(71) 98203-4675,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+268,ANDREA DA SILVA GUSMAO,,"Cliente,",642.238.175-15,(71) 98708-7479,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+270,MATHEUS ERLAN DO NASCIMENTO SANTOS,,"Cliente, Conjuge,",035.726.405-39,(75) 99806-2198,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+275,MARCOS PAULO MELO VIROLI,Cliente,"Cliente,",796.572.815-04,(73) 99115-0141,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+277,Francineide Xavier dos Santos Carvalho,,"Cliente,",634.993.125-49,(71) 98344-7237,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+279,IVANA CALUMBY DA SILVA,,"Cliente,",249.955.925-04,(71) 99113-8985,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+280,LUCAS ANDRADE DOS SANTOS,,"Cliente,",819.730.715-68,(71) 98744-7788,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+281,SHEILA DOS SANTOS SILVA,Cliente,"Cliente,",933.999.105-25,(71) 98864-3824,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+283,LUIZ HENRIQUE GUEDES PIRES,,"Cliente,",824.441.105-87,(71) 99181-3007,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+285,CRISTIANE OLIVEIRA SANTOS LIMA,,"Cliente,",682.494.465-34,(71) 98728-1597,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+289,Reinaldo das Neves Reis,,"Cliente,",668.414.885-04,(71) 99368-9868,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+293,Ivan Medauar Mascarenhas,Cliente,"Cliente,",011.847.775-78,(71) 99179-1084,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+298,ULISSES SANTANA,,"Cliente,",408.826.915-20,(71) 98841-2839,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+299,Carlos Robson Matos Lima,,"Cliente,",003.628.985-02,(75) 99133-2520,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+301,JULIANA SAMPAIO SANTIAGO,,"Cliente,",741.154.305-59,(71) 98191-6264,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+425,Fabrício Favalessa Pignaton,,"Cliente,",133.144.997-95,(27) 99978-0308,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+426,Eliete das Neves Reis,,"Cliente,",544.184.295-49,(71) 99955-7019,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+427,SARA ELLEN CAMARGO FONSECA DEL NEGRO,Cliente,"Cliente,",802.048.215-68,(71) 98864-3824,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+429,marcela pires west guimaraes,,"Cliente, Conjuge,",053.165.435-48,(71) 99155-4090,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+431,Karoline Barros Freitas da Silva,Cliente,"Cliente,",046.781.755-39,(71) 99308-6030,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+462,Antonio José dos Santos Moura,,"Cliente, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge, Conjuge,",104.368.474-34,(71) 99983-7760,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+479,Djalma Barreto Lustosa,,"Cliente,",785.442.115-34,(71) 99623-7493,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+481,Nadia Barreto Lustosa de Oliveira,,"Cliente, Conjuge,",355.355.985-34,(71) 99942-5141,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+494,Ana Lucia Nunes Pereira,Cliente,"Cliente,",169.616.415-04,(71) 99293-9012,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+501,Pedro Paulo de Oliveira Feijó,,"Cliente,",269.930.068-39,(71) 99682-9858,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+502,JOSELICE SOARES FONSECA,,"Cliente,",622.309.994-00,(71) 99917-6003,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+503,MÔNICA CLARICE SOUSA TORRES,,"Cliente,",649.117.485-91,(71) 99141-3419,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+505,IURI BOAVENTURA SANTOS DE JESUS,Corretor,"Cliente,",016.795.585-36,(71) 99177-9216,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+506,ADYLA KEILA LOPES SILVA OLIVEIRA,,"Cliente,",787.926.815-49,(71) 99122-2442,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+586,EVANDRO CERQUEIRA BARBOSA,,"Cliente, Conjuge,",002.042.745-08,(75) 99110-0105,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+589,HUGO OLIVEIRA ALBUQUERQUE,,"Cliente,",031.075.195-02,(71) 99908-5365,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+590,DANIELE MINISTRO DOS SANTOS,,"Cliente,",029.135.895-02,(71) 98363-0235,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+592,FABIA TOSTA SIMOES DOS SANTOS,,"Cliente,",423.701.595-53,(71) 98651-0646,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+594,VILTON SANTOS MENDES,,"Cliente,",169.166.115-53,(71) 98114-6801,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+595,Claudijan Silva dos Anjos,,"Cliente,",024.372.655-46,(75) 99117-9509,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+596,RUY AGUIAR DIAS,,"Cliente,",362.797.147-72,(71) 99266-0533,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+597,TAIANA REGINA PEREIRA DOS SANTOS,,"Cliente,",788.278.685-34,(71) 99275-0054,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+607,Jose Roberto da Silva Santos,Cliente,"Cliente,",836.505.205-91,(71) 99205-6720,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+608,MARIVALDO RAMOS DE LIMA,,"Cliente,",519.384.725-00,(71) 98865-6837,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+609,EVERALDO MONTEIRO DE CARVALHO,,"Cliente,",352.901.375-72,(71) 98851-4520,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+610,JAMINE SILVA BATISTA,,"Cliente,",941.249.575-72,(71) 98804-8576,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+611,LÊDA GERONIMA DOS SANTOS,Cliente,"Cliente,",386.262.845-00,(71) 98738-1498,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+613,Ademilton Barbosa da Silva,,"Cliente,",021.299.683-50,(73) 99102-1562,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+614,Marcelo da Silva de Azevedo,,"Cliente,",006.198.015-30,(71) 99198-8872,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+616,EDUARDO BARBOSA DE OLIVEIRA,,"Cliente,",950.500.275-00,(71) 98761-1140,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+618,Olívia Oliveira Santos,,"Cliente, Conjuge,",636.582.835-72,(74) 99985-6349,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+619,ALESSANDRO COSTA PINHO,,"Cliente,",047.133.445-67,(84) 98132-4590,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+621,EDUARDO MENEZES DE SOUZA AMARANTE,,"Cliente,",016.549.395-01,(71) 99407-8483,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+624,Ruan Jesse Martins Soares,,"Cliente,",055.634.045-01,(71) 99228-3613,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+626,Luine Costa dos Anjos,,"Cliente,",926.928.855-20,(71) 98810-9830,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+629,EDSON JOSE CORREIA JUNIOR,,"Cliente,",018.831.955-78,(71) 98612-7953,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+631,Lorena Silva Pereira,,"Cliente,",038.710.815-74,(71) 99242-0674,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+633,Simone Neri dos Santos Rocha,,"Cliente,",615.682.795-15,(71) 99336-6210,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+635,ROSEMEIRE DA CONCEIÇÃO ALVES,,"Cliente,",685.803.985-68,(71) 99160-7212,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+636,Gilmara Rodrigues Santos,,"Cliente,",860.106.385-34,(71) 99928-7778,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+637,MARIVALDO SAMPAIO DA SILVA,,"Cliente,",506.911.555-34,(71) 98838-4218,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+639,NILTON JACINTO DE SOUZA,,"Cliente,",084.961.295-00,(71) 98790-5256,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+646,Gleise Quelli Quintela Brandão,,"Cliente,",821.751.285-04,(71) 99282-9262,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+664,HERACLITO MARCELO DA SILVA PATRIARCHA,,"Cliente,",367.891.355-53,(71) 98837-8100,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+666,CLEITON DE JESUS CARVALHO,,"Cliente,",822.031.725-68,(71) 99996-5685,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+668,ANDERSON CESAR DE ABREU SILVA,,"Cliente,",961.215.995-53,(71) 98861-4047,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+669,IVANA MACIEL CARVALHO,,"Cliente,",828.920.595-34,(71) 99388-3373,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+670,CRISTIANE FIGUEIREDO BARRETO FERREIRA,,"Cliente,",700.249.605-00,(71) 99323-2407,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+671,MARIA DE LOURDES FERRAZ SAMPAIO ALMEIDA,,"Cliente,",163.593.485-00,(71) 99611-9310,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+672,Josias Crispiniano dos Santos,,"Cliente,",506.679.635-53,(71) 98747-2645,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+673,MARISA GONÇALVES COSTA,,"Cliente,",153.204.135-72,(71) 99972-7395,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+674,ANA MARIA LÔBO DE OLIVEIRA,,"Cliente,",094.393.405-25,(71) 99665-2824,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+676,IEDA LISBOA VENTURA,,"Cliente,",612.751.585-87,(71) 99974-0353,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+677,MARCELO DA SILVA GOMES,,"Cliente,",775.887.895-49,(71) 98356-4774,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+678,EDSON LUIZ ARAUJO ROCHA,,"Cliente,",545.131.385-72,(71) 99297-0223,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+680,ANA APARECIDA ANTUNES DA SILVA SANTANA,,"Cliente,",152.518.025-87,(71) 99979-3220,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+682,MARCIO ASSIS DE SA,,"Cliente,",864.570.555-91,(71) 99953-1969,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+684,Paulo Vinicius Teixeira de Jesus,,"Cliente,",025.985.885-41,(71) 98869-0486,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+686,Marcia Luiza Chagas de Oliveira Behrens,,"Cliente,",248.677.305-30,(71) 99934-6887,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+687,SILVANA DOS SANTOS SOUZA,,"Cliente,",453.543.085-34,(71) 99977-9305,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+691,ELDENISIO TOSTA SANTOS,,"Cliente,",426.360.435-00,(71) 99263-9657,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+692,Marilza Martins de Andrade Lessa,,"Cliente, Conjuge,",269.126.515-34,(71) 98157-8929,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+694,Heitor Waldeck de Azevedo Filho,,"Cliente,",082.145.905-82,(71) 99282-7991,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+695,GLAIDON FARIAS  SUDARIO DA SILVA,,"Cliente,",803.427.525-53,(71) 99107-9068,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+696,Evilasio Santos Limoeiro da Silva,,"Cliente,",548.255.475-91,(71) 99211-5904,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+698,MIGUEL BARBOSA DOS SANTOS,Cliente,"Cliente,",449.967.805-68,(75) 99153-9289,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+699,ORLANDO SOUZA SANTOS,,"Cliente,",544.256.545-87,(71) 99653-5142,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+701,JEZIEL COSTA SANTOS,,"Cliente,",309.502.445-20,(71) 99197-2827,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+702,Nestor Maciel Figueiredo,,"Cliente,",049.050.965-70,(75) 98176-5554,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+704,Edivan Oliveira dos Santos,,"Cliente,",791.578.905-87,(71) 98863-6126,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+705,CARLOS HENRIQUE FERREIRA MELO,,"Cliente,",282.058.555-87,(71) 98245-6815,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+706,CRISTIANE MODESTO DE JESUS,,"Cliente,",002.005.185-93,(71) 98836-0614,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+707,Tanlismar Maria Silva de Oliveira,,"Cliente,",309.345.325-91,(71) 98816-2982,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+709,Braulino Jesus dos Santos,,"Cliente,",617.268.185-00,(71) 98738-7819,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+710,LINDEMBERG AUGUSTO FERREIRA SERRÃO,,"Cliente,",506.827.845-91,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+711,MARTA MASCARENHAS DE CARVALHO,,"Cliente,",649.824.085-72,(71) 99974-8251,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+713,EDMILSON SANTOS NOGUEIRA,,"Cliente,",319.685.205-97,(71) 99161-7127,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+714,JOSÉ AUGUSTO NUNES DE OLIVEIRA,,"Cliente,",399.156.705-91,(71) 99129-8737,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+716,EMILE ROCHA RIOS,,"Cliente,",014.038.415-43,(71) 99169-6333,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+718,EDILENE MARIA DE OLIVEIRA BARBOSA,,"Cliente,",332.485.755-49,(71) 99977-3724,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+720,JILVAN PEREIRA QUEIROZ,,"Cliente,",309.009.055-49,(71) 99623-3027,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+722,Edilza Maria de Oliveira Santos,,"Cliente,",337.525.755-49,(71) 99941-5695,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+724,ANDRÉA BRAZ SILVA GALEÃO,,"Cliente,",616.902.525-53,(71) 99187-1597,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+725,Fernanda Pessôa do Amaral,,"Cliente, Conjuge,",802.906.205-20,(71) 98808-9834,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+731,ANTONIO FRANCISCO COSTA NETO,,"Cliente,",266.166.101-87,(71) 98686-6761,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+733,Alex Sandro Brandao de Almeida,,"Cliente,",524.458.955-53,(71) 98770-3704,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+735,Emerson de Souza Araujo,,"Cliente,",753.641.404-82,(71) 98101-1794,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+738,TARCISIO DE OLIVEIRA RIBEIRO SANTANA,,"Cliente,",651.038.235-00,(71) 99974-8251,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+740,DIEGO PESTANA GUERREIRO,,"Cliente,",830.925.605-15,(71) 98641-0408,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+742,Weslei Silva Monteiro,Cliente,"Cliente, Conjuge,",808.773.385-15,(71) 98835-7016,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+747,RENATO MARINS MENEZES TRIGUEIRO,,"Cliente,",016.267.225-01,(71) 99309-0323,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+748,HELIO MIGUEL DE CARVALHO E SILVA,,"Cliente,",808.155.705-97,(71) 99960-2668,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+750,JEHOVA NASCIMENTO LEAL,,"Cliente, Conjuge,",348.714.895-15,(71) 99967-2092,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+753,ALDO OLIVEIRA SILVA,,"Cliente, Conjuge,",068.018.114-87,(71) 99274-5479,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+759,JOAB SILVA LOBO,,"Cliente,",009.535.665-79,(71) 98618-1706,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+760,LÍLIAN SCHLANG MOURA GONÇALVES,,"Cliente,",027.173.405-13,(71) 99999-9185,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+761,ALOISIO FERREIRA DA SILVA FILHO,,"Cliente,",530.892.785-53,(71) 99144-9172,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+769,LEMUEL DOS SANTOS BISPO,,"Cliente,",012.894.435-80,(71) 99267-6705,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+770,LORENA MENEZES SANTOS,,"Cliente,",858.036.675-52,(71) 99382-8283,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+772,DEVISON CERQUEIRA DO NASCIMENTO,,"Cliente,",825.766.535-53,(71) 98673-5609,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+774,Sônia  Marise Rodrigues Pereira Tomasoni,Corretor,"Cliente,",293.681.115-53,(71) 99626-8866,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+775,Marcia Virginia Pinto Bomfim,,"Cliente,",262.102.405-00,(71) 99951-5895,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+777,Liana Consuelo Santana Vilarinho,,"Cliente,",512.371.565-72,(71) 99412-1214,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+779,WILNER SOUTO DOS REIS NEVES,,"Cliente,",812.992.305-04,(71) 99106-1396,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+780,JOSE VIROLLI CHAVES,,"Cliente,",404.134.545-68,(71) 99410-8397,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+781,REGINA CELLI FERREIRA DE SANTANA AGAPITO,,"Cliente,",386.079.215-68,(71) 99322-4623,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+782,THOMÁS PAMPHILO DOURADO BASTOS,,"Cliente,",043.049.885-30,(71) 99637-8623,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+783,SORAYA REIS CRUZ,,"Cliente,",292.764.035-15,(71) 98832-3323,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+784,MARISTELA VIDAL CARVALHO PINTO,,"Cliente,",759.034.315-34,(71) 98884-7831,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+786,Jailma Cerqueira de Azevedo Lima,,"Cliente, Conjuge,",948.371.985-20,(71) 98328-2020,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+789,Jonas Reboucas,,"Cliente,",770.765.755-15,(71) 98803-7804,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+790,Deiverson Bispo de Souza,,"Cliente,",021.241.075-00,(71) 99285-7191,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+791,ALZIRA CRISTINA CARDOSO CORREIA DA SILVA,Cliente,"Cliente,",576.550.735-20,(71) 98835-7387,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+792,Elisabete,,"Cliente,",235.037.931-00,(77) 99826-5800,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+794,ANA VERENA OLIVEIRA SILVA,Cliente,"Cliente,",566.307.355-87,(71) 99373-9079,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+796,ANDREA FALCONERY  CAVALCANTI,,"Cliente,",481.670.455-87,(71) 99288-1018,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+798,Pablo da Cunha Santos,,"Cliente,",017.746.915-31,(71) 98113-0414,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+802,Francisco Roque Paim Costa Junior,,"Cliente,",017.260.015-47,(71) 99413-3376,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+804,Leonardo Renato de Oliveira Pereira,,"Cliente,",023.427.605-31,(71) 99242-9091,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+806,Solange Leandro Azevedo,,"Cliente,",024.035.745-03,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+808,Ana Cleide Assis França,,"Cliente,",910.923.705-44,(71) 98735-0122,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+810,ROBERTO TESTE,,"Cliente,",081.074.865-79,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+811,ELIETE ALVES DE SOUSA,,"Cliente,",565.432.125-00,(71) 99187-8197,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+812,ANTÔNIO CEZAR DE OLIVEIRA CARDOSO,,"Cliente,",268.062.585-49,(71) 98898-2600,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+814,ANA MARIA MENDES ARGOLLO,,"Cliente,",402.535.542-68,(91) 98139-7333,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+815,Ana Auxiliadora Cruz Vieira,,"Cliente,",441.679.545-91,(71) 98804-1359,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+816,Rita de Cássia Menezes Monteiro,Cliente,"Cliente,",254.496.055-87,(71) 98707-4533,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+817,RITA DE CASSIA ALVES PEREIRA,,"Cliente,",415.934.805-04,(71) 99628-7449,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+818,MARIA DOLORES DOS SANTOS FIUZA,,"Cliente,",291.803.175-53,(71) 99983-3876,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+819,Sandra Maria Guerra da Rocha,Cliente,"Cliente,",356.155.595-00,(71) 99987-0284,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+820,KARINA MOREIRA MENEZES,,"Cliente,",045.400.476-12,(71) 98255-6030,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+823,ALBA CRISTINA MENEZES DE CARVALHO BISPO,,"Cliente, Conjuge,",776.885.625-20,(71) 98811-8704,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+824,JOÃO LUIS BEHRENS FERREIRA OLIVEIRA,,"Cliente,",012.830.845-11,(71) 99981-5563,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+825,Sinfronio Custódio dos Santos Filho,,"Cliente,",371.699.395-68,(71) 99646-5331,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+826,Osvaldina Araujo Alves,,"Cliente,",335.218.245-00,(71) 99994-9366,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+827,Roberto Araujo Alves,,"Cliente,",449.966.755-00,(71) 98884-1969,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+828,LUCIANA DE SANTANA VIDREIRA,,"Cliente,",651.378.255-49,(71) 98193-6758,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+830,Gloryane Bessa Barreto Dourado Souza,,"Cliente,",007.529.855-40,(71) 99996-6521,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+831,Davisson de Araujo Leandro,,"Cliente,",051.153.175-32,(71) 99184-9524,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+832,MARIANA GUIMARÃES NUNES PIRES,,"Cliente,",007.683.105-12,(71) 99639-6929,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+833,MARIA ESTER SANTANA DE SOUSA,,"Cliente,",508.419.555-49,(71) 99919-6699,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+834,PEDRO SARMENTO DOS SANTOS JUNIOR,Cliente,"Cliente,",375.334.105-30,(71) 99127-1573,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+835,MARINALVA DOS SANTOS LEANDRO,,"Cliente,",515.245.895-00,(71) 98124-5950,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+837,MÁRIO JOSUÉ DE CARVALHO TRINDADE JUNIOR,,"Cliente,",254.373.215-20,(73) 98846-3301,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+838,ANA MARIA DA SILVA FIUZA,,"Cliente,",389.597.205-34,(71) 98875-5885,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+840,Patricia Pires Santa Barbara,,"Cliente,",292.590.615-04,(71) 99201-8788,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+841,AUREA INEZ MUNIZ MEIRELES,,"Cliente,",226.281.265-91,(71) 99920-3033,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+842,ELIANA SILVA DE ARAÚJO,,"Cliente,",615.542.005-04,(71) 99958-8747,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+843,Kleber Carvalho Ferreira,,"Cliente,",015.283.475-36,(71) 99210-4208,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+844,Sirleide Almeida de Sousa Leandro,,"Cliente, Conjuge,",968.197.155-87,(71) 8124-5950,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+845,JOSE ANTONIO DOS SANTOS LEANDRO,,"Cliente, Conjuge,",925.108.335-53,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+846,LUIS PEDRO FONSECA DE LACERDA,,"Cliente,",397.878.425-49,(71) 99307-9170,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+847,MARILENE DOS SANTOS BETROS,,"Cliente,",144.223.605-15,(71) 98232-2271,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+849,Celso dos Santos Bento,,"Cliente,",939.596.645-91,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+855,Marisete Afonso de Sales,,"Cliente,",165.202.625-87,(71) 99271-2652,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+857,Antonio Silva dos Reis,,"Cliente,",506.659.445-00,(71) 98610-7646,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+859,GLEIDSON DINIZ FERREIRA,,"Cliente,",000.986.401-60,(71) 98765-5798,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+861,GUTERVANIA ALVES DOS SANTOS ASFORA,,"Cliente,",426.655.075-87,(71) 99704-4251,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+862,JOSÉ CARLOS DE JESUS,,"Cliente,",370.916.465-68,(71) 99684-9810,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+863,Lucas do Espírito Santo Santa Bárbara,,"Cliente,",033.038.895-97,(71) 98195-1306,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+864,Flavia Santos de Souza,,"Cliente,",912.294.215-72,(71) 98899-5926,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+865,Aristoteles Chaves da Silva,Cliente,"Cliente,",030.065.095-79,(77) 99875-2907,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+866,Jadson da Silva Fiuza,,"Cliente,",006.130.685-13,(71) 98875-5885,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+868,LEONARDO SANTOS SAMPAIO,,"Cliente,",857.858.185-74,(71) 99698-5954,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+869,GERLANE OLIVEIRA CERQUEIRA,,"Cliente,",018.355.845-60,(71) 99129-8894,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+870,LORILEIDE DA SILVA,,"Cliente,",662.681.335-87,(71) 98707-0601,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+871,Andréa Lima Santana,,"Cliente,",912.078.005-20,(71) 99192-9139,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+874,Durval Carneiro Filho,,"Cliente,",022.556.775-04,(71) 99989-4784,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+875,Sonia de Sousa Azevedo,Cliente,"Cliente,",615.563.435-15,(71) 98847-8157,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+876,DIANA DE CASTRO ATAGIBA,,"Cliente,",930.436.435-34,(71) 98356-8442,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+877,BRUNO JOVINIANO DE SANTANA SILVA,,"Cliente,",013.426.825-30,(71) 99116-6180,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+879,ADALZIRA MARIA BORGES SILVA,,"Cliente,",083.473.365-04,(71) 99168-2113,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+880,FRANCISCO FERREIRA NASCIMENTO,,"Cliente,",313.691.705-72,(71) 98859-7110,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+882,ANDERSON GUILHERME BARRETO DORIA,,"Cliente, Conjuge,",019.318.615-28,(71) 98143-9838,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+883,ADRIANA MEIRELLES DE MOURA,,"Cliente,",598.143.575-53,(71) 99284-2051,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+884,JARBAS CARVALHO LIMA,,"Cliente,",358.646.725-72,(71) 99166-6610,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+885,Sandro Marcello Borges e Silva,,"Cliente,",810.713.025-15,(71) 99102-8044,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+886,MARICELIA CLARINDA CARMO,Cliente,"Cliente,",033.472.115-61,(71) 99247-0192,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+887,JOSEVALDO LIMA SANTOS,,"Cliente,",430.486.175-15,(71) 99608-9902,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+888,OTAVIANO ANDRADE DOS SANTOS NETO,,"Cliente,",030.785.545-70,(71) 99358-8270,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+889,ANDERSON GONCALVES CAVALCANTE,,"Cliente,",898.381.905-78,(71) 98799-3997,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+890,ANA MARIA DO CARMO SOUZA SILVA,,"Cliente,",869.526.845-49,(71) 99223-3428,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+891,FREDERICO AUGUSTO ROCHA,Cliente,"Cliente,",432.210.335-91,(71) 98829-0180,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+893,Paulo Sergio da Rocha Passos,,"Cliente,",083.039.245-91,(71) 99721-5947,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+895,REINALDO LIMA BISPO,,"Cliente,",802.135.105-53,(71) 98517-3169,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+897,Telma Brito Rocha,,"Cliente,",855.844.605-91,(71) 99261-8044,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+898,Eulice Alves Pimentel,,"Cliente,",146.868.055-20,(71) 99665-8987,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+899,MICHELLE PIRES ALVES,,"Cliente,",376.440.598-81,(73) 98897-7210,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+902,Anatanael Aires dos Santos Filho,,"Cliente,",257.489.985-72,(71) 98201-7593,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+904,Jessé de Souza Santos,,"Cliente,",293.491.335-04,(71) 98751-3789,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+905,Jeane Barbosa Bastos,,"Cliente, Conjuge,",021.551.249-96,(11) 99557-1123,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+906,Luiz Carlos Gomes de Oliveira,,"Cliente,",008.055.525-02,(11) 91611-1123,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+908,Edgard Ferreira Cerqueira,,"Cliente,",262.842.945-49,(71) 99665-8987,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+910,Davi Bispo dos Santos,,"Cliente,",431.756.945-00,(71) 98740-4142,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+964,Nelia de Souza Amorim Gomes,,"Cliente,",645.837.325-20,(71) 99975-5326,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+965,ROSÁLIA DA CONCEIÇÃO GUEDES,,"Cliente,",185.366.205-44,(71) 98441-9692,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+966,Lorena Raissa Guedes Bezerra,,"Cliente,",042.565.295-51,(71) 99163-3160,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+967,EDER SANTOS PRADO,,"Cliente,",825.417.015-00,(71) 98836-8899,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+970,VALDIR DOS SANTOS,Cliente,"Cliente,",355.048.135-73,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+973,valter santos,Cliente,"Cliente,",767.257.175-35,(71) 99877-5676,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+976,ANA MARIA SILVA,Cliente,"Cliente,",530.881.425-26,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+978,julia cunha,,"Cliente,",663.223.665-05,(99) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+980,luana prado,Cliente,"Cliente,",013.231.156-92,(88) 88888-8888,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+982,MARCELO THIESEN,Cliente,"Cliente,",663.666.897-09,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+984,Roberto muniz carvalho,Cliente,"Cliente,",451.280.918-05,(71) 90909-0909,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+986,marcia santana albuquerque,Cliente,"Cliente,",233.030.800-03,(71) 99919-2029,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+987,ELIAS MENDES,Cliente,"Cliente,",465.866.630-83,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+989,marcelo serrado,,"Cliente,",578.238.546-43,(99) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+991,valnei de souza,,"Cliente,",861.556.632-11,(71) 98787-6776,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+993,mariana brito,,"Cliente,",347.867.320-87,(88) 88888-8888,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+995,ELISABETH NERY,Cliente,"Cliente,",123.217.730-06,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+997,felipe dias,,"Cliente,",584.258.745-99,(88) 88888-8888,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+999,JOÃO PAULO ANTAS DE FIGUEIREDO BELEM,Cliente,"Cliente,",234.326.390-66,(85) 99198-5058,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1001,joilson augusto de souza,,"Cliente,",568.748.880-48,(71) 90987-7666,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1002,RINALDO BARROS SANTOS,Cliente,"Cliente,",031.173.756-00,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1004,maria eduarda do nascimento,,"Cliente,",418.788.061-57,(71) 98787-8788,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1005,NEIDE RIBEIRO SILVA,Cliente,"Cliente,",366.102.374-84,(71) 99999-9990,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1007,clara dias,Cliente,"Cliente,",753.598.675-74,(00) 00000-0000,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1009,itamar de souza,,"Cliente,",365.105.941-37,(71) 98788-7788,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1011,ANTONIO REIS,Cliente,"Cliente,",566.381.148-67,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1012,CARLOS FARIAS,Cliente,"Cliente,",114.367.856-77,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1014,carlos roberto de souza,Cliente,"Cliente,",061.052.965-09,(71) 98787-6777,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1016,KATIA MARINES COUTINHO,,"Cliente,",689.943.250-18,(71) 98619-5059,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1018,JOAO SOUZA JUNIOR,Cliente,"Cliente,",652.333.357-43,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1019,FERNANDO DE ASSIS,Cliente,"Cliente,",519.087.657-80,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1021,thais damasceno,,"Cliente,",212.364.614-87,(00) 00000-0000,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1023,tassia vanessa santos souza,,"Cliente,",929.254.080-79,(71) 99198-3066,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1025,reginaldo dias silva,,"Cliente,",376.367.265-64,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1027,ADRIANO DE FRANÇA SILVA,,"Cliente,",017.444.220-36,(71) 99613-1717,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1030,thais castro,,"Cliente,",887.263.849-65,(88) 88888-8888,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1032,IZABEL CRISTIN MESSIAS DE SOUZA,,"Cliente,",222.047.270-16,(71) 99236-0011,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1034,Daiana Lima,,"Cliente,",179.428.374-91,(88) 88888-8888,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1037,Marta jacobina,,"Cliente,",191.435.033-22,(99) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1039,silas seichas,,"Cliente,",487.528.748-85,(99) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1041,FERNANDO OLIVEIRA PIRES,,"Cliente,",041.534.065-97,(71) 99898-9889,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1043,ELAINE SANTOS,Cliente,"Cliente,",443.280.746-60,(71) 99999-9999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1045,bruno dias do nascimento,,"Cliente,",717.467.110-19,(71) 98989-8989,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1047,MARCIA CONCEIÇÃO CONCEIÇÃO,,"Cliente,",496.100.880-07,(71) 99727-6077,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1049,MARIANA ANDRADE PARANHOS,,"Cliente,",766.975.470-22,(71) 99969-0913,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1051,SENIVALDO MATOS TIZEN,,"Cliente,",460.028.450-03,(71) 98875-4321,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1053,ROSEMBEG MORAIS MOREIRA,,"Cliente,",138.214.390-76,(71) 98845-2317,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1055,Francisco Pimentel Ferreira,,"Cliente,",220.221.985-49,(71) 99984-4935,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1060,INDIARA MARIA BASTOS MATTOS,,"Cliente,",537.413.155-91,(71) 99726-9500,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1062,Paulo Roberto Pimenta De Oliveira,,"Cliente,",163.547.025-00,(71) 99203-0646,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1064,PATRICIA OLIVEIRA RIBEIRO DA SILVA,,"Cliente,",783.066.395-53,(73) 99912-0228,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1065,Jefferson de Araujo Ferreira,,"Cliente,",929.071.995-87,(71) 98161-7498,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1079,Sérgio Ricardo Almeida Lima,,"Cliente,",541.102.205-30,(71) 98898-8483,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1080,SUELY MARIA DORIA GOMES,,"Cliente,",388.314.495-91,(71) 99990-2464,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1082,JEANE NASCIMENTO FERREIRA DA SILVA SOUSA,,"Cliente,",789.506.605-63,(71) 98790-4607,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1089,Paulo Rodrigo Passos Silva Carvalho,,"Cliente,",031.859.845-01,(71) 99962-9838,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1090,ADRIANA DOS SANTOS PIMENTEL,,"Cliente,",951.033.845-15,(71) 98223-7316,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1091,Jocimar Bulhosa de Sousa Santos,,"Cliente,",363.101.745-68,(71) 99264-6308,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1093,Luciana Oliveira Silva,,"Cliente,",977.170.885-68,(71) 99643-9273,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1094,ANA LICIA TEIXEIRA DE SANTANA,Cliente,"Cliente,",494.527.545-91,(71) 98277-2735,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1095,GLEN VINICIUS RIBEIRO CHALHUB,,"Cliente,",043.689.575-71,(71) 98837-5018,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1096,LEYLA DOS REIS RIBEIRO,,"Cliente, Conjuge,",544.756.355-00,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1097,ARY MENEZES PASSOS,,"Cliente, Conjuge,",780.728.755-15,(71) 98837-5018,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1098,Ana Claudia Peixoto Moraes,,"Cliente,",542.208.405-59,(71) 99372-6842,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1099,LUCIANA ARAUJO GOMES,,"Cliente,",028.538.885-17,(71) 98806-5597,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1100,ANGELA DOS SANTOS CORREIA,,"Cliente,",741.030.915-68,(71) 98533-2235,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1102,LUCIA MARIA MOTA GONSALEZ DE OLIVEIRA,,"Cliente,",169.000.145-34,(71) 99969-6717,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1103,JANIRA FREITAS DA PAIXAO,,"Cliente,",374.935.825-72,(71) 98805-5301,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1106,Adriana Oliveira Biscarde,,"Cliente,",547.099.035-49,(71) 99995-7329,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1107,Julia Nascimento Barata Godinho,,"Cliente,",066.668.785-40,(71) 99330-6387,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1110,Edilmar Benta da Conceição Sales,,"Cliente,",785.548.455-87,(71) 98899-7015,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1111,VALDECI SOARES NUNES,,"Cliente,",049.675.405-03,(71) 99452-0530,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1113,Joandson do Espirito Santo Costa,,"Cliente,",025.037.545-11,(71) 98808-9970,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1114,Cristiane Carvalho Pinto,,"Cliente,",352.245.255-00,(71) 99949-6395,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1116,ANGELO MARCIO FERREIRA DE SOUZA,,"Cliente,",606.582.905-68,(71) 98102-5060,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1118,ALEX SANDRO SANTOS SILVA,,"Cliente,",576.475.345-72,(71) 99276-2357,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1119,CARLOS TIAGO NUNES DA SILVA,,"Cliente,",020.714.585-75,(71) 99737-2116,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1120,Marcus Vinícius Santos Silva,,"Cliente, Proprietario,",819.800.005-49,(71) 99708-2500,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1121,Lilian Rosamar Vieira Franklin,,"Cliente, Proprietario,",621.565.273-34,(71) 99708-2500,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1122,ALLAN RICARDO RODRIGUES GOMES,,"Cliente,",816.191.385-49,(71) 98841-0202,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1123,Luiza Olivia Lacerda Ramos,,"Cliente,",496.890.535-15,(71) 99184-9111,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1124,NELSON GRECO SILVA AMPARO,,"Cliente, Proprietario,",604.037.305-97,(71) 99731-1971,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1125,PIETRO PELOSINI AMPARO,,"Cliente,",061.432.175-13,(71) 99731-1971,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1127,ANTONIO OLIVEIRA DA SILVA,,"Cliente,",110.542.555-04,(71) 99964-6001,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1129,LORENA SOUZA TEIXEIRA OLIVEIRA SILVA,,"Cliente,",018.493.215-74,(71) 99186-7435,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1130,SANDRA MARIA DIAS BASTOS,,"Cliente,",121.098.785-68,(71) 98363-4568,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1132,MARILANJA DOS SANTOS PEREIRA,,"Cliente,",482.295.205-34,(71) 99717-9031,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1134,Clevia Cerqueira Trocoli,,"Cliente,",039.934.955-35,(71) 98899-6714,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1136,Andrea de Araujo Carneiro Nunes,,"Cliente,",975.641.845-15,(75) 98877-8196,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1137,FÁBIO CARVALHO DA HORA,,"Cliente,",915.851.475-91,(71) 99962-3087,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1138,Christina Ferreira de Jesus,,"Cliente,",453.404.715-00,(71) 98875-8119,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1139,Gilma Santos da Anunciação,,"Cliente,",872.344.325-15,(71) 98617-9921,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1140,Rosangela Barreto de Andrade,,"Cliente,",282.302.305-44,(71) 99382-6664,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1142,Luciano Andrade Lemos,,"Cliente,",548.341.555-87,(71) 99204-0361,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1143,Aurilene Cerqueira Sotero,,"Cliente,",437.219.905-87,(75) 99958-3739,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1145,Igor de Lima Falcão,,"Cliente,",815.307.305-20,(71) 99178-4910,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1146,Arivanda Cerqueira Sotero,,"Cliente,",605.799.195-87,(75) 99972-7218,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1148,José Ramos de Azevedo Falcão,,"Cliente,",095.575.805-00,(71) 99945-5797,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1150,EVERALDO ANTONIO SOUSA SANTANA,,"Cliente,",716.989.225-15,(71) 98886-3455,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1152,CARLA DANIELLE CABRAL LUZ,,"Cliente,",081.559.164-05,(71) 99399-9711,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1154,Joelma Felix Brandão,,"Cliente,",654.247.005-00,(71) 98851-0870,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1155,Luiz Oswaldo do Rego Monteiro,,"Cliente,",349.584.797-91,(71) 98491-2787,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1157,Maria Fernanda Daltro Venancio,,"Cliente,",024.269.017-30,(71) 98112-1408,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1158,Maria Elisa Soares Pinheiro,,"Cliente, Proprietario,",397.014.685-20,(14) 37833-0810,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1159,Gabriela June Pinheiro Braithwaite,,"Cliente, Proprietario,",866.878.475-70,(14) 37833-0810,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1161,Cristiane de Sousa Dutra,,"Cliente,",315.631.123-53,(71) 99914-3842,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1162,LUIS TAVARES DA SILVA FILHO,,"Cliente,",183.318.315-00,(71) 99113-8691,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1164,Dinazilda idalicio konan,,"Cliente,",349.974.405-82,(71) 99252-6439,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1166,ANA LUCIA RIBEIRO DOS SANTOS MENDONÇA,,"Cliente,",268.656.375-34,(71) 99279-4169,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1168,ELISANGELA APARECIDA DE SOUZA,,"Cliente,",650.192.295-04,(71) 98206-8013,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1169,JOSÉ RAIMUNDO DE JESUS DOS SANTOS,,"Cliente,",198.007.705-34,(71) 98885-0468,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1170,GILDETE MARIA COSTA DE OLIVEIRA,,"Cliente,",064.981.755-91,(71) 99181-9002,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1171,Sergio Nogueira Nonato,,"Cliente,",429.438.685-15,(71) 98878-3345,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1173,Carolina Barretto Lima Obregon,,"Cliente,",160.023.775-49,(71) 99942-0083,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1175,Jane Lordêlo Peneluc Souza,,"Cliente,",930.084.815-15,(71) 98841-3271,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1177,Raissa Almeida da Silveira,,"Cliente,",854.153.405-72,(71) 99163-5330,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1179,JOSÉ ROBSON DA SILVA DIAS,,"Cliente,",937.990.395-20,(71) 99941-2554,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1180,MÁRCIA MAGALHÃES GUIMARÃES,,"Cliente,",877.422.095-00,(71) 99965-9284,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1181,MARTA MESQUITA RAMOS,,"Cliente,",586.571.505-49,(71) 99952-8096,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1182,MARIA MOURA MOTA,,"Cliente,",634.469.365-72,(71) 99279-1482,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1184,ANA MARIA POMPÍLIO BASTOS,,"Cliente,",238.243.875-49,(71) 99142-8508,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1186,Rosilene Santana Lage Colmán,,"Cliente,",420.774.005-87,(71) 99291-1670,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1187,JORGE MOURA MOTA,,"Cliente,",905.655.845-53,(71) 99279-1482,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1188,RENATO ALMEIDA DE ANDRADE,,"Cliente,",014.031.345-10,(71) 98783-6606,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1189,Rosineth Carneiro Almeida,,"Cliente,",297.018.305-63,(71) 99195-3099,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1191,ADSON DE MOURA SANTANA,Cliente,"Cliente,",867.252.205-25,(71) 99181-9001,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1192,Marisa Santos Ribeiro,,"Cliente,",644.211.125-34,(71) 99131-7734,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1194,Iane Barbosa de Jesus,,"Cliente,",568.667.205-91,(77) 99138-1733,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1195,Carlos José Cordeiro,,"Cliente, Conjuge,",672.671.307-04,(71) 99340-3331,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1197,Josiel de Jesus Costa,,"Cliente,",394.249.875-87,(71) 99944-8046,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1198,Marta Caires de Sousa,,"Cliente,",951.758.655-87,(71) 98836-7030,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1199,Jorge Luiz Guimaraes,,"Cliente, Conjuge,",020.546.715-68,(71) 99925-3393,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1200,Aimée Cardoso Gomes Mesquita,,"Cliente,",117.686.065-87,(71) 99925-3393,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1201,Kayze Sobreira Peixoto Bem,,"Cliente, Cliente,",037.809.464-59,(71) 99211-6665,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1202,Suzana Meire dos Santos,,"Cliente,",207.674.982-91,(71) 99740-4130,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1204,Paulo Henrique Cruz Lobo,,"Cliente,",008.680.815-07,(75) 99968-0033,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1206,SUELY VIDAL DOS SANTOS DA SILVA,,"Cliente,",390.611.595-04,(71) 98121-9293,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1207,Fabrício Santana Sacramento,,"Cliente,",014.037.545-78,(71) 98726-6575,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1209,NELMA MARIA DOS SANTOS RIBEIRO,,"Cliente,",233.916.424-91,(75) 99222-5672,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1210,Cassia Carla dos Santos Correa da Silva,,"Cliente,",928.695.645-20,(71) 99229-9628,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1212,MOISES PEREIRA DA CRUZ,,"Cliente,",507.509.685-91,(71) 99956-4951,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1213,Rozana dos Santos Teixeira,,"Cliente,",278.920.695-34,(71) 99204-4844,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1215,Marcos Almeida Carvalho,,"Cliente,",885.968.935-04,(75) 98102-8700,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1218,Luciana de Oliveira Maia,,"Cliente,",549.745.185-34,(75) 99950-7398,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1220,Lucimar Costa de Melo,,"Cliente,",767.683.415-53,(71) 99197-0833,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1221,Maria Jose Dantas da Silva,,"Cliente,",382.024.095-00,(71) 99992-3366,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1224,ANATALIA SOARES BARRETO FILHA,,"Cliente,",033.922.375-82,(71) 98763-7644,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1225,Erika Bahiense Porto,,"Cliente,",099.808.857-93,(71) 99238-1736,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1226,Marcos Ribeiro dos Santos,,"Cliente,",019.935.585-19,(71) 99903-2086,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1227,NUBIA SOARES NOVAES,,"Cliente,",923.504.615-72,(75) 99131-4884,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1228,Daniel Conceicao Rocha,,"Cliente,",975.272.465-53,(11) 96403-2921,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1230,Ana Carla Muniz Ferreira,,"Cliente,",727.465.215-04,(71) 99654-5533,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1231,Marcelle Neves Rodrigues,Cliente,"Cliente,",812.559.185-00,(71) 98827-0986,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1233,Jomaria Alessandra Queiroz de Cerqueira Araujo,,"Cliente,",716.302.365-00,(71) 99319-3497,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1234,Eliete dos Santos Lima,,"Cliente,",388.384.515-91,(71) 99279-4102,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1235,AUGUSTO JESUINO LACERDA SANTOS,,"Cliente,",263.290.265-72,(71) 99971-7769,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1236,Isabel de Araujo Barbosa,,"Cliente,",580.212.645-00,(71) 99185-7760,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1237,Luzia de Jesus Santos,,"Cliente,",313.802.805-59,(71) 99330-9930,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1238,Suzana Nascimento dos Santos,,"Cliente,",677.068.515-91,(71) 98752-7098,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1239,JADIEL FRANCISCO VARGES,,"Cliente,",748.996.355-91,(71) 99185-5004,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1240,MARIANA ARAUJO DE OLIVEIRA,,"Cliente,",031.080.035-85,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1241,Leonardo Jardim Bahia,,"Cliente,",033.946.555-78,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1242,GIOVANA MULLER JESUINO,,"Cliente,",086.907.005-36,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1243,Jussara Santos da Conceição,,"Cliente,",782.286.545-53,(44)74424-0429,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1244,JONES MARCIO BAHIENSE SENA,,"Cliente,",905.105.185-91,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1245,Milena de Carvalho Cordeiro,,"Cliente,",940.854.805-10,(71) 98788-8678,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1246,LYGIA MARIA BURGOS MENEZES BAQUEIRO,,"Cliente,",354.128.795-00,(71) 99340-8025,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1248,Maria Veronica Correia Madeiro Meira,,"Cliente,",554.736.445-20,(71) 99241-0803,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1250,Erickson Juliano Santos de Almeida,,"Cliente,",805.364.845-20,(71) 98261-5159,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1251,ADRIANA BURGOS MENEZES BAQUEIR,,"Cliente,",482.511.005-34,(71)99340-8025,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1252,LUIS CARLOS NOVAIS DA ENCARNAÇÃO,,"Cliente,",765.886.025-53,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1253,AILTON GONCALVES DA COSTA JUNIOR,,"Cliente,",013.211.905-65,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1254,Vanda da Cruz Santos,,"Cliente,",958.185.105-49,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1255,Antonio Fernando de Souza Leal Souza,,"Cliente,",014.074.955-18,(11)98227-3400,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1256,Marcos Antonio da Conceição Pinto,,"Cliente,",330.831.425-87,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1257,Antonio Claudio Bastos de Andrade,,"Cliente,",519.230.175-00,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1258,ANTONIO VICENTE BARBOSA DO VALE,,"Cliente,",799.492.745-91,(71) 99978-7959,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1259,Marcela Simões Pires Ribeiro,,"Cliente,",014.753.365-19,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1260,Dino Cesar Guerreiro Lima,,"Cliente,",013.371.185-40,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1262,Romulo Alves Teixeira,,"Cliente,",925.827.615-91,(71) 99290-1921,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1264,ABIMAEL OLIVEIRA DA SILVA,,"Cliente,",515.323.605-68,(71) 99301-3319,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1266,Marcelo de Araujo Boureau,,"Cliente,",933.825.615-49,(71) 99130-2697,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1268,Allan Fragueiro Atta,,"Cliente,",729.076.905-82,(71) 99275-0451,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1269,Filipe Araújo Teixeira Noronha,,"Cliente,",037.955.365-10,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1270,CANDIDO MATHEUS MAGALHAES LIMA,,"Cliente,",026.941.655-24,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1271,Gastão Luis de Castro Junior,,"Cliente,",021.513.255-63,(71) 98757-8103,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1273,Marco Nunes Hoffmann,,"Cliente,",029.113.645-11,(71) 98837-1590,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1275,Mateus Rodrigues Souza de Azevedo,,"Cliente,",852.566.175-91,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1276,WALDSON SOARES MACHADO,Cliente,"Cliente,",959.469.775-04,(45) 92681-6461,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1278,Jamil Belo Jende,Cliente,"Cliente,",782.168.265-91,(71) 99952-3519,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1279,SILVIO FERNANDO LIMA DE SANTANA,Cliente,"Cliente,",535.568.445-91,(71) 98728-2805,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1280,João Victor Alves Nascimento da Luz,Cliente,"Cliente,",071.874.555-85,(71) 99324-8555,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1282,Roberval Santana Souto,Cliente,"Cliente,",538.877.005-20,(71) 99944-5420,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1284,Maria Celia Pedreira de Freitas Fonte,Cliente,"Cliente,",450.286.994-53,(71) 98787-3944,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1286,Emanuel São Pedro Ramos Accioly,Cliente,"Cliente,",316.334.635-91,(71) 99701-2110,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1288,ROSEMEIRE GERVÁSIO SODRÉ MACHADO,Cliente,"Cliente,",884.852.185-15,(71) 98500-1042,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1289,Ian Carvalho de Sá,Cliente,"Cliente,",924.494.845-15,(71) 98834-1801,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1290,LUCIENE BEZERRA SOARES,,"Cliente,",044.665.134-65,(71) 99736-5695,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1291,Igor Nunes Valadares,,"Cliente,",001.698.885-09,71984289651,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1293,Bruno De Freitas Soromenho,,"Cliente,",014.246.175-02,(71) 9313-1271,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1295,Juarez Pinho Dos Santos,,"Cliente,",351.244.235-87,(74) 99977-2831,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1297,Luis Antonio Brandão Santos,,"Cliente,",396.441.895-15,(77) 99193-2717,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1298,Marinalva De Jesus,,"Cliente,",089.090.915-68,(71) 98522-3652,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1300,Sandra Santos Vunjão,,"Cliente,",366.564.965-04,(71) 99278-3864,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1301,Genilda Santos Dos Anjos,,"Cliente,",646.910.125-91,(71) 99728-4031,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1303,Edcarlos Freire dos Santos,,"Cliente,",809.964.505-72,(71) 99982-3363,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1304,Edmeire Santos Costa,,"Cliente,",439.956.405-91,(71) 99115-3930,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1305,Gabriel Nascimento de Santana,,"Cliente,",083.422.325-22,(71) 99280-0296,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1307,Victor Igor Tittoni Brandão,,"Cliente,",012.451.565-78,(71) 98879-7741,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1308,Kelma Costa Dos Santos,,"Cliente,",008.527.605-74,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1309,Diego De Oliveira Andrade,,"Cliente,",834.963.005-15,(71) 98728-8027,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1315,Marcel Simoes Mutti,,"Cliente,",925.181.415-53,(71) 98153-7547,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1317,Sandro Eduardo Cerqueira Campos,,"Cliente,",993.374.875-00,(71) 98885-0225,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1319,Marcos Vinicio Reis dos Santos,,"Cliente,",790.957.635-87,(71) 99188-6590,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1321,UELLINGTON NASCIMENTO DOS SANTOS,,"Cliente,",822.633.375-04,(71) 99999-0649,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1323,Marcelo Indio dos Reis,,"Cliente,",647.190.815-68,(35) 19324-1013,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1325,VICENTE AUGUSTO TEIXEIRA DOS SANTOS,,"Cliente,",809.512.955-00,(71) 98705-0983,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1327,Jose Lucas Sena da Silva,,"Cliente,",041.908.705-28,(71) 98894-1131,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1328,Patrícia Rebouças  da Silva,,"Cliente,",018.577.845-37,75988089716,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1331,Janete Ferreira Dos Santos Sartoretto,,"Cliente,",823.525.005-59,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1333,Carlos Alberto Veloso Freire,,"Cliente,",213.757.635-04,(71) 98290-2522,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1335,Damasia Carvalho de Oliveira Fernandes,,"Cliente,",882.946.415-53,(71) 99118-3095,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1337,PATRICIA VIANA FARIAS DE LIMA,,"Cliente,",780.720.005-78,(71) 99190-4525,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1338,Elizeu Mendes Souza,,"Cliente,",668.490.205-87,(71) 99943-3263,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1340,Ana Sueli Ribeiro Dos Santos Souza,,"Cliente,",122.263.785-53,(71) 99353-0275,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1342,Lucas Muniz de Santana,,"Cliente,",017.845.275-05,(71) 98422-2292,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1343,Priscila Santos Oliveira,,"Cliente,",988.491.585-72,(75) 98801-3706,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1344,Jose Luis Oliveira Cruz,,"Cliente,",805.626.205-91,(71) 99166-1533,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1345,Adiany Aguiar Lima,,"Cliente,",036.359.485-00,(71) 99910-8737,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1347,Bruna Cardoso Lemos Bahia,,"Cliente,",048.453.425-45,(71) 99232-6742,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1349,Marcio Vieira Lisboa,,"Cliente,",782.970.605-00,(71) 99165-5159,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1351,Antônia Guimarães Farias Gomes,,"Cliente,",418.599.525-34,(71) 99644-9216,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1352,SORAYA MARLA RIBEIRO DE QUEIROZ,,"Cliente,",803.662.955-00,(75) 99123-9015,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1353,CARLOS AUGUSTO SANTOS OLIVEIRA JUNIOR,,"Cliente,",824.828.105-15,(71) 99625-8545,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1355,Luis Alberto Garcia Chavez Junior,,"Cliente,",344.576.155-87,(71) 99911-9494,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1356,Joselito Silva do Espirito Santo,,"Cliente,",648.028.095-49,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1357,William Fonseca de Albuquerque,,"Cliente,",815.492.105-72,(11) 97384-0982,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1358,Alessandra Maria Dourado De Moraes,,"Cliente,",631.222.945-91,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1359,ALIPIO VALVERDE MARTINS NETO,,"Cliente,",074.788.655-50,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1360,JORGE LUCAS GONÇALVES ALELUIA,,"Cliente,",010.700.555-73,(71) 98117-3537,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1362,Jucinete Bispo Da Silva,,"Cliente,",635.014.305-15,(71) 99187-1291,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1367,Leandro Santos De Lima,,"Cliente,",039.185.285-02,(71) 98502-0499,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1368,ROBERTO DOMINGOS DOS SANTOS NETO,,"Cliente,",491.553.695-53,(71) 98214-5388,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1369,Meire Macêdo Da Conceição,,"Cliente,",404.405.405-34,(71) 98476-0230,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1372,Valdir Tosta Amorim,,"Cliente,",114.345.385-91,(71) 98198-7400,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1373,Luiz Alvim Boaventura Junior,,"Cliente,",622.993.525-20,(75) 98835-6680,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1375,Carlos Alfredo Pereira Piedade,,"Cliente,",794.876.885-87,(71) 98871-1021,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1376,Marcus Vercingetorix Lopes Bispo,,"Cliente,",640.996.365-34,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1377,Nei Marcio Almeida De Jesus,,"Cliente,",889.424.145-91,(71) 98838-8928,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1379,Moisés Ouais da Silva,,"Cliente,",921.499.365-34,(71) 98787-9180,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1380,Edna Maria Da Silva,,"Cliente,",128.073.115-04,(73) 98113-3252,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1381,RAMIRO ROBSON FERNANDES MASCARENHAS,,"Cliente,",114.090.885-53,(71) 98882-9157,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1382,Shirley Campos Carvalho,,"Cliente,",362.605.175-72,(71) 99212-2564,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1383,Marinalva Batista e Silva,,"Cliente,",577.287.125-00,(71) 99258-9891,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1384,Gilcelia Magalhaes dos Santos,,"Cliente,",355.590.805-78,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1385,Krysna Pires Lessa,,"Cliente,",051.733.555-73,(71) 99105-9821,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1386,Ciro Barbosa Silva,,"Cliente,",019.855.635-76,(71) 99184-4532,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1388,Igor Giovani Santos De Araujo,,"Cliente,",031.442.955-74,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1390,Sueli da Silva Xavier Cabalero,,"Cliente,",891.013.325-20,(71) 99907-5575,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1392,Ricardo Tadeu Dos Santos Chagas,,"Cliente,",267.773.715-91,(73) 99131-6574,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1393,JAQUELINE ROCHA MUNIZ FERREIRA,,"Cliente,",782.643.915-91,(71) 98175-5534,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1394,Ricardo Oliveira De Freitas,,"Cliente,",934.163.697-34,(71) 99292-7380,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1395,Gabriel Moreira David Carvalho,,"Cliente,",068.649.815-17,(73) 98871-0628,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1397,Thiago Costa Oliveira,,"Cliente,",070.734.545-63,(75) 99101-1101,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1398,Diogenes Frederico Conceição Silva,,"Cliente,",388.450.595-53,(71) 98870-5177,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1399,VERA MARTA OLIVEIRA REIS,,"Cliente,",149.911.015-49,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1400,Joao Henrique Silva Souza,,"Cliente,",043.949.815-57,(15) 21210-7212,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1401,ANDRE LUIZ BARBOSA ROCHA,,"Cliente,",913.099.805-00,(74) 99812-2115,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1402,Naiane Dos Santos Cruz,,"Cliente,",783.838.705-15,(71) 99181-2197,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1403,Fábio Nunes Oliveira,,"Cliente,",781.184.095-20,(71) 98134-0038,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1405,Solange Gonçalves Da Silva Almeida,,"Cliente,",453.413.895-49,(71) 98105-1877,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1407,Cleide da Silva Macedo,,"Cliente,",326.287.655-00,(71) 99378-2577,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1409,ANDREIA MARIA DA SILVA ROCHA,,"Cliente,",641.777.505-49,(71) 98241-6188,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1410,Márcia Bomfim Dos Santos,,"Cliente,",339.852.785-04,(71) 99301-8837,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1411,Sacha Figueiredo Bahia,,"Cliente,",042.814.075-02,(71) 98892-7842,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1412,Maria Eunice Gomes dos Santos,,"Cliente,",250.621.905-68,(71) 98831-0398,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1414,Tárcio Mauricio Figueiras Santos,,"Cliente,",814.392.375-49,(71) 99207-1991,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1416,Rosangela Magno Santos Das Neves,,"Cliente,",339.580.335-04,(71) 99244-9185,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1417,Samara Lobo Da Silva,,"Cliente,",001.235.305-12,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1419,Miraci Gonçalves Da Silva,,"Cliente,",492.775.455-34,(75) 98282-4455,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1420,Elza Silva dos Santos,,"Cliente,",527.760.855-91,(75) 99165-5693,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1421,Flavia Rocha de Deus,,"Cliente,",032.807.685-60,(71) 99863-3562,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1422,Nilza Ribeiro Santa Bárbara,,"Cliente,",168.359.805-91,(71) 99972-5417,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1423,Alaine de Carvalho Vitorio,,"Cliente,",803.840.135-20,(71) 99995-6343,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1424,Fabiana de Jesus das Neves,,"Cliente,",009.237.675-41,(71) 99740-8083,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1426,CRISTIANE MENEZES SANTOS DOS SANTOS,,"Cliente,",944.395.755-87,(71) 99187-1100,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1428,ADRIANA LIMA RIBEIRO DA SILVA PAIVA,,"Cliente,",925.382.905-20,(71) 99721-9858,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1430,EMERSON AUGUSTO BISET MARQUES,,"Cliente,",515.510.805-59,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1432,LIDIANE DE OLIVEIRA CONCEIÇÃO BARRETO,,"Cliente,",914.191.075-34,(71) 99600-6828,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1433,Daniela Valle Gonçalves,,"Cliente,",792.386.455-15,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1435,MARCUS VENICIUS FERNANDES FAGUNDES,,"Cliente,",938.552.145-49,(71) 99201-8993,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1436,THAIRA PAIVA LOBÃO,,"Cliente,",066.193.895-62,(16) 19455-7692,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1437,Antonio Carlos Cardoso Lobo Junior,,"Cliente,",805.729.795-68,(71) 99317-5856,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1439,Rodrigo Lima Costa de Menezes,,"Cliente,",791.684.855-49,(11) 94339-9978,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1440,Nívea Maria Portugal Gaeschlin,,"Cliente,",611.371.895-68,(71) 98214-2366,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1442,ISAAC CARDOSO PINHEIRO,,"Cliente,",039.798.725-05,(71) 99635-7912,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1443,Auricelia Ribeiro Santarem,,"Cliente,",621.005.805-15,(71) 99191-5253,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1445,JOAO FIRMINO DE MAGALHAES,,"Cliente,",250.164.315-15,(77) 99989-6646,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1447,ADELMO SANTOS BRITO,,"Cliente,",509.249.075-68,(71) 98203-6154,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1449,PAULO CESAR LUZ NUNES,,"Cliente,",538.558.845-87,(71) 99631-8507,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1451,PATRICIA NOGUEIRA PEIXOTO,,"Cliente,",675.682.975-00,(71) 98749-8953,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1453,CRISTIANE DE AGUIAR PEIXOTO FALCAO,,"Cliente,",563.357.095-20,(75) 98845-4276,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1454,ANTONIO CARLOS SANTOS,,"Cliente,",447.217.145-72,(71) 98894-4792,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1456,MARTA REJANE LOPES CARVALHO,,"Cliente,",618.925.805-00,(71) 99129-6191,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1458,Lázaro Raimundo Oliveira Monteiro,,"Cliente,",366.838.415-00,(71) 99377-4636,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1459,Marly Sousa Ramos,,"Cliente,",275.350.965-49,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1461,Carlos Alberto Moreno de Oliveira,,"Cliente,",255.579.045-49,(71) 99621-4421,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1462,Alex Viana dos Santos,,"Cliente,",786.183.635-53,(71) 99910-5556,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1463,CARLOS EDUARDO DE JESUS BARRETO,,"Cliente,",047.528.755-00,(71) 99222-3687,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1464,Eugenia Louise Gomes Siqueira de Oliveira,,"Cliente,",028.403.945-45,(71) 99311-4899,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1465,IGOR CLEY ABREU DE OLIVEIRA,,"Cliente,",034.836.785-65,(71) 99362-4936,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1467,MARCOS BEZERRA SANTOS,,"Cliente,",783.062.055-53,(71) 99973-2755,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1468,DENISE CABRAL SANTOS,,"Cliente,",940.461.405-00,(71) 99724-9756,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1470,ADEMARIO LOPES FERREIRA DOS SANTOS,,"Cliente,",008.570.895-01,(71) 99996-4353,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1471,JAMILE RODRIGUES NONATO,,"Cliente,",023.430.625-44,(71) 99609-3935,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1472,Renata da Silva Santana,,"Cliente,",792.927.395-49,(71) 99131-3101,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1473,JOAO PAULO SERRADO PEREIRA,,"Cliente,",808.568.455-15,(71) 99218-0654,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1475,TAISE SANTOS ROCHA SILVA,,"Cliente,",019.374.105-95,(71) 98645-8418,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1476,SILVIO DA CRUZ SOUSA,,"Cliente,",889.602.855-87,(71) 98860-3682,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1477,MARCELO FILADELFO SILVA,,"Cliente,",776.708.505-82,(71) 99169-3290,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1479,Mab Azevedo Ribeiro,,"Cliente,",240.670.675-34,(71) 99373-4186,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1480,MARIA LUIZA GONÇALVES CAVALCANTE CATTONY,,"Cliente,",057.799.045-45,(71) 99199-4597,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1481,RAFAEL SANTIAGO PRAZERES,,"Cliente,",034.511.315-28,(71) 98711-3570,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1483,HAMILTON CARDOSO,,"Cliente,",134.051.365-04,(75) 99164-2044,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1485,SILVANA FREIRE REZENDE,,"Cliente,",835.098.445-72,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1486,Iara da Silva Santos,,"Cliente,",685.349.905-06,(75) 99965-4617,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1488,ANDRE CALHEIRA MENEZES,,"Cliente,",813.476.265-49,(71) 98891-4990,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1489,Maria Claudia Jesus da Silva,,"Cliente,",880.928.875-00,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1490,Poliana Fernandes Alves Viana,,"Cliente,",942.618.575-53,(71) 99373-6833,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1492,JOIMAR BRITO GONCALVES,,"Cliente,",147.465.575-00,(75) 99821-8676,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1493,Cláudia Ferreira de Brito Passos,,"Cliente,",394.462.475-00,(71) 99326-6444,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1494,JESSICA BORGES DE QUEIROZ ALMEIDA,,"Cliente,",853.361.575-20,(71) 99247-1552,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1495,Eliane Conceição Pereira,,"Cliente,",964.528.385-04,(71) 98641-9299,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1497,LUIS CLAUDIO DE LIMA PINTO,,"Cliente,",252.085.005-15,(71) 98602-7643,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1498,MARIALICE DE BARROS CASTRO,,"Cliente,",364.927.015-34,(71) 99145-5015,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1499,ANA LUCIA DOS SANTOS,,"Cliente,",420.163.635-68,(71) 99220-7850,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1500,OTAVIO MORAES DA HORA,,"Cliente,",101.957.265-53,(77) 99211-7943,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1501,ANTONIO JOSE SANTANA LIMA FREAZA,,"Cliente,",787.398.455-91,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1503,Dulcileia Bonfim Pereira,,"Cliente,",806.649.545-53,(71) 98889-5590,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1504,HARMONIA ADMINISTRAÇÃO DE BENS DE FAMILIA LTDA,,"Cliente, Empresa,",54.063.426/0001-13,(71) 99880-1334,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1506,Magda Oliveira Kiss,,"Cliente,",120.503.935-04,(71) 99218-1908,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1507,Marcos Davi Santos Pinto,,"Cliente,",545.622.525-53,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1509,MANOEL BILUCA DE ANDRADE NETO,,"Cliente,",026.760.555-26,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1511,ISAAC PEREIRA DOS SANTOS,,"Cliente,",009.173.645-54,(75) 99105-1629,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1512,AUGUSTO GUIMARAES FERREIRA,,"Cliente,",015.739.665-76,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1513,Jaqueline de Souza Silva,,"Cliente,",058.112.765-08,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1514,IVAN CARLOS SAMPAIO ANDRADE,,"Cliente,",997.305.535-72,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1515,JAIRO CESAR DA CRUZ NASCIMENTO,,"Cliente,",257.367.525-49,(71) 98867-0899,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1516,JUSSYARA BRANDAO ALVES,,"Cliente,",388.005.865-20,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1517,Rudney Daltro de Macedo,,"Cliente,",806.846.455-72,(71) 99267-9169,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1518,EDVALDO DE JESUS VILAS BOAS,,"Cliente,",078.903.895-15,(71) 99924-2933,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1519,Gabrielle Lemos da Hora,Cliente,"Cliente,",031.193.895-79,(71) 98829-9856,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1522,PAULO CEZAR OLIVEIRA DA SILVA,,"Cliente,",420.017.815-04,(64) 21127-5580,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1523,YÊDA SOUZA DE JESUS,,"Cliente,",013.913.765-36,(71) 98344-4920,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1524,Angela Zamilute Do Amorim,,"Cliente,",022.978.568-90,(71) 99136-9033,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1526,Alex Jesus De Figueiredo,,"Cliente,",827.999.115-87,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1528,Jusciley Calixto da Silveira,,"Cliente,",057.225.064-94,(84) 99115-4392,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1529,Gicélia Mota Crispim,,"Cliente,",404.926.805-15,(71) 98777-2766,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1530,Marinélia Rosa dos Santos,,"Cliente,",136.192.845-04,(71) 98805-1339,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1531,Roberta Portella Novaes,,"Cliente,",822.579.495-87,(71) 98117-0753,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1532,CESAR CERQUEIRA LIMA DE ARAUJO,,"Cliente,",032.947.775-74,(71) 9161-8252,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1533,MAYSA GOMES COSTA,,"Cliente,",020.926.345-85,(71) 99161-8252,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1534,José Assunção Braga Neto,,"Cliente,",061.520.836-30,(71) 99972-7695,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1536,ROBERTO BATISTA DE ALMEIDA,,"Cliente,",220.227.245-34,(71) 99996-1760,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1537,WILLY PEREIRA DE SOUZA,,"Cliente,",047.965.071-32,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1538,Jeanine Costa Lourenco De Souza,,"Cliente,",090.194.877-28,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1539,Tiago Lima Levendakos,,"Cliente,",016.854.685-00,(75) 99192-1987,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1540,LEIDINAURA PEREIRA DO CARMO,,"Cliente,",694.164.431-15,(45) 8161-2262,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1542,Idenilson Oliveira Santos,,"Cliente,",816.166.435-87,(71) 98852-1010,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1543,André Lima Levendakos,,"Cliente,",195.908.905-63,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1544,Maria Angélica Lima Levendakos,,"Cliente,",161.714.625-00,(75) 99969-0999,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1546,Jeferson Oliveira Santos,,"Cliente,",046.102.985-54,(71) 99317-5375,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1547,Iara Thalita Gusmão Guedes,,"Cliente,",057.804.495-11,(77) 99952-3450,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1549,Elza Távila de Souza Tavares Barreto,,"Cliente,",351.226.018-79,(71) 98337-3750,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1551,Anderson Joao Dos Santos Alves,,"Cliente,",787.470.905-53,(71) 99695-2499,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1553,Rodrigo Viana Panzeri,,"Cliente,",963.776.235-34,(71) 98890-2220,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1554,JEFERSON DA SILVA ASSIS,,"Cliente,",269.320.405-49,(71) 99999-4884,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1556,Itana Serra Lima,,"Cliente,",835.126.755-49,(71) 98892-1176,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1558,Sergio Ricardo Marconi Costa,,"Cliente,",254.117.948-03,(11) 98304-3939,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1559,Sergio Afonso Lima Silva,,"Cliente,",365.269.915-72,(71) 98870-6145,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1560,Alberico Dos Santos,,"Cliente,",798.494.665-53,(71) 98199-5976,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1561,CARLA ALEXANDRA VIDEIRA CACADOR,,"Cliente,",064.247.726-42,(33) 64309-8632,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1564,Sandra Lordelo Sousa da Cunha,,"Cliente,",565.361.435-15,(71) 99365-7388,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1565,Joao Duque De Bueno Neto,,"Cliente,",404.238.245-20,(71) 99644-0065,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1566,CAIO TAVARES DOS NASCIMENTO,,"Cliente,",058.693.275-55,(71)99627-6619,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1567,Alexsandra dos Santos de Souza,,"Cliente,",586.317.805-10,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1569,Cristiane Marconi Costa,,"Cliente,",300.158.438-66,(11) 99181-4190,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1570,Cayo Reis Cardoso,,"Cliente,",051.377.975-29,(71) 99387-9387,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1571,Josenilda Araujo Damasceno,,"Cliente,",812.935.005-00,(75) 99983-7088,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1572,Roberta Pereira Do Espirito Santo De Amorim,,"Cliente,",008.119.385-81,,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1573,Giselia Pimenta dos Santos,,"Cliente,",651.415.125-68,(71) 99392-8277,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1575,Danusa de Oliveira Andrade,,"Cliente,",800.662.755-04,(71) 99949-0153,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1576,Hirlene dos Santos Pereira,,"Cliente,",514.941.755-68,(71) 99968-2765,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1578,Marcelo Vera Cruz Diniz,,"Cliente,",795.630.585-34,(71) 98875-8670,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1579,Andrea Da Conceição Cerqueira,,"Cliente,",613.215.085-49,(71) 99379-4520,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1580,David Berbert,,"Cliente,",404.004.685-49,(71) 99917-9206,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1581,Nelia Glória Dos Santos,,"Cliente,",183.543.945-49,(71) 99213-2805,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1584,Marcio Luis Pires Sampaio,,"Cliente,",824.226.215-20,(71) 98794-3472,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1585,Irleide De Almeida,,"Cliente,",347.221.225-04,(71) 98676-5411,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1587,ELINALDO SILVA SANTANA,,"Cliente,",791.680.515-49,(71) 99922-8505,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1588,Lara Osório Queiroz,,"Cliente,",050.566.235-39,(71) 99309-7760,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1589,Valdir Oliveira Dos Santos,,"Cliente,",007.234.045-26,(71) 99204-0246,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1590,Fernanda Franca De Macedo,,"Cliente,",658.314.035-72,(71) 99106-5548,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1591,Rute Santos Correia,,"Cliente,",133.701.465-68,(71) 98360-5959,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1592,Elidete Oliveira da Silva,,"Cliente,",579.977.215-68,(71) 99378-2206,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1593,Ylan Silva da Costa,,"Cliente,",655.750.915-20,(77) 99148-1207,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1594,Juraci Rangel De Magalhães Filho,,"Cliente,",215.807.075-72,(71) 98115-6433,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1596,JOSE MARCOLINO DOS SANTOS JUNIOR,,"Cliente,",824.784.495-87,(71) 99363-5774,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1597,João Paulo Pires Sampaio,,"Cliente,",827.674.915-15,(71) 98794-3470,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1599,Valdiceia Silva Dos Santos Moraes,,"Cliente,",614.694.835-72,(71) 98778-6266,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1601,Miraelson Oliveira Santos,,"Cliente,",920.255.955-49,(75) 99231-4327,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1604,JOILDO FRANCA DA CRUZ,,"Cliente,",601.809.435-53,(71) 98818-0069,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1605,Angélica Conceição Ferreira Gomes,,"Cliente,",238.009.415-20,(71) 99292-1925,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1606,Rosangela Cerqueira Santos,,"Cliente,",598.928.705-49,(71) 99936-3628,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1608,Helder da Silva Luzardo,,"Cliente,",694.916.311-87,(44) 98842-4416,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1610,LILIANY VITAL DE PINHO SANTOS ROSA,,"Cliente,",303.981.748-57,(71) 99724-8447,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1612,TIAGO AUGUSTO DOS SANTOS ALVES,,"Cliente,",028.355.795-83,(71) 99910-9777,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1613,ALISSON GABRIEL BASTOS MOTTA,,"Cliente,",861.221.085-29,(71) 99317-4001,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1615,JOSE MARIO GOIS DA SILVA,,"Cliente,",187.751.105-63,(71) 98762-1951,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1617,RONIVAL LEITE SANTOS,,"Cliente,",025.491.215-03,(71) 98635-7559,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1618,Otonei Silva Xavier,,"Cliente,",806.099.965-68,(71) 98755-6607,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1620,Emílio Alves de Souza Filho,,"Cliente,",404.934.315-00,(73) 99161-0533,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador
+1621,Telma Suely Cerqueira Assunção,,"Cliente,",230.622.235-53,(71) 99163-2642,2025-11-15T10:09:42.833677,sistema_cohapm,Residencial La Felicità,Comprador

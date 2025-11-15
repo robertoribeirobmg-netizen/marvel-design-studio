@@ -20,6 +20,8 @@ import AdminDashboard from "./pages/AdminDashboard";
 import ClienteDashboard from "./pages/ClienteDashboard";
 import ImportacaoFinanceira from "./pages/ImportacaoFinanceira";
 import CadastroLote from "./pages/CadastroLote";
+import ImportacaoCohapm from "./pages/ImportacaoCohapm";
+import CompradoresCohapm from "./pages/CompradoresCohapm";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -114,6 +116,22 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <CadastroLote />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/importacao-cohapm"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <ImportacaoCohapm />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/compradores-cohapm"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <CompradoresCohapm />
                     </ProtectedRoute>
                   }
                 />
