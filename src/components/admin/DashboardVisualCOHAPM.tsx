@@ -41,6 +41,7 @@ export function DashboardVisualCOHAPM() {
   const [arrecadacaoData, setArrecadacaoData] = useState<ArrecadacaoMensal[]>([]);
   const [inadimplenciaData, setInadimplenciaData] = useState<InadimplenciaQuadra[]>([]);
   const [projecaoData, setProjecaoData] = useState<ProjecaoReceita[]>([]);
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [stats, setStats] = useState<EstatisticasGerais>({
     total_compradores: 0,
     total_arrecadado: 0,
@@ -51,11 +52,65 @@ export function DashboardVisualCOHAPM() {
 
   useEffect(() => {
     loadDashboardData();
+
+    // Notificar que realtime está ativo
+    toast.success('Dashboard em tempo real ativado', {
+      description: 'Os dados serão atualizados automaticamente'
+    });
+
+    // Configurar Supabase Realtime para atualizações automáticas
+    const channel = supabase
+      .channel('dashboard-cohapm-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'compradores_cohapm'
+        },
+        () => {
+          console.log('Compradores COHAPM atualizado - recarregando dashboard');
+          toast.info('Dados atualizados em tempo real');
+          loadDashboardData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'parcelas_cohapm'
+        },
+        () => {
+          console.log('Parcelas COHAPM atualizadas - recarregando dashboard');
+          toast.info('Dados atualizados em tempo real');
+          loadDashboardData();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'contratos_cohapm'
+        },
+        () => {
+          console.log('Contratos COHAPM atualizados - recarregando dashboard');
+          toast.info('Dados atualizados em tempo real');
+          loadDashboardData();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const loadDashboardData = async () => {
     try {
       setLoading(true);
+      setLastUpdate(new Date());
 
       // Buscar dados de resumo financeiro
       const { data: resumoData, error: resumoError } = await supabase
@@ -207,8 +262,32 @@ export function DashboardVisualCOHAPM() {
     );
   }
 
+  const formatLastUpdate = () => {
+    return lastUpdate.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    });
+  };
+
   return (
     <div className="space-y-6">
+      {/* Header com indicador de atualização em tempo real */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold">Dashboard Financeiro em Tempo Real</h2>
+          <p className="text-muted-foreground mt-1">
+            Dados atualizados automaticamente
+          </p>
+        </div>
+        <div className="flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-lg border border-primary/20">
+          <div className="h-2 w-2 bg-green-500 rounded-full animate-pulse" />
+          <span className="text-sm font-medium">
+            Última atualização: {formatLastUpdate()}
+          </span>
+        </div>
+      </div>
+
       {/* Cards de Estatísticas */}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
