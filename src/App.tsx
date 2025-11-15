@@ -19,6 +19,7 @@ import ProcessImport from "./pages/ProcessImport";
 import AdminDashboard from "./pages/AdminDashboard";
 import ClienteDashboard from "./pages/ClienteDashboard";
 import ImportacaoFinanceira from "./pages/ImportacaoFinanceira";
+import CadastroLote from "./pages/CadastroLote";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -105,6 +106,14 @@ const App = () => (
                   element={
                     <ProtectedRoute adminOnly>
                       <ImportacaoFinanceira />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/cadastro-lote"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <CadastroLote />
                     </ProtectedRoute>
                   }
                 />
