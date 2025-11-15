@@ -20,12 +20,31 @@ export function ProcessarCOHAPMAuto() {
     setStats(null);
 
     try {
-      toast.info('Iniciando processamento automático...');
-      setProgress(30);
+      toast.info('Carregando arquivo Excel...');
+      setProgress(20);
 
-      // Chamar edge function
+      // Buscar o arquivo Excel da pasta public
+      const fileResponse = await fetch('/compradores_cohapm_dados_completos.xlsx');
+      
+      if (!fileResponse.ok) {
+        throw new Error('Arquivo Excel não encontrado');
+      }
+
+      const fileBlob = await fileResponse.blob();
+      const arrayBuffer = await fileBlob.arrayBuffer();
+      const base64Data = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+
+      toast.info('Enviando dados para processamento...');
+      setProgress(40);
+
+      // Chamar edge function com o arquivo
       const { data, error: functionError } = await supabase.functions.invoke('process-cohapm-auto', {
         method: 'POST',
+        body: {
+          fileData: base64Data
+        }
       });
 
       if (functionError) throw functionError;
