@@ -8,6 +8,7 @@ interface AuthContextType {
   user: User | null;
   session: Session | null;
   isAdmin: boolean;
+  isAdminObras: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, nomeCompleto: string) => Promise<void>;
@@ -20,6 +21,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isAdminObras, setIsAdminObras] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -65,14 +67,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .eq('role', 'admin')
-        .maybeSingle();
+        .in('role', ['admin', 'admin_obras']);
 
       if (error) throw error;
-      setIsAdmin(!!data);
+      
+      const roles = data?.map(r => r.role) || [];
+      setIsAdmin(roles.includes('admin'));
+      setIsAdminObras(roles.includes('admin_obras'));
     } catch (error) {
       console.error('Erro ao verificar role:', error);
       setIsAdmin(false);
+      setIsAdminObras(false);
     } finally {
       setIsLoading(false);
     }
@@ -139,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user,
         session,
         isAdmin,
+        isAdminObras,
         isLoading,
         signIn,
         signUp,

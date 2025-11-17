@@ -5,10 +5,11 @@ import { useAuth } from '@/hooks/useAuth';
 interface ProtectedRouteProps {
   children: ReactNode;
   adminOnly?: boolean;
+  adminObrasOnly?: boolean;
 }
 
-export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
-  const { user, isAdmin, isLoading } = useAuth();
+export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = false }: ProtectedRouteProps) {
+  const { user, isAdmin, isAdminObras, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -17,9 +18,11 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
         navigate('/login');
       } else if (adminOnly && !isAdmin) {
         navigate('/area-cooperado');
+      } else if (adminObrasOnly && !isAdminObras && !isAdmin) {
+        navigate('/area-cooperado');
       }
     }
-  }, [user, isAdmin, isLoading, adminOnly, navigate]);
+  }, [user, isAdmin, isAdminObras, isLoading, adminOnly, adminObrasOnly, navigate]);
 
   if (isLoading) {
     return (
@@ -29,7 +32,7 @@ export function ProtectedRoute({ children, adminOnly = false }: ProtectedRoutePr
     );
   }
 
-  if (!user || (adminOnly && !isAdmin)) {
+  if (!user || (adminOnly && !isAdmin) || (adminObrasOnly && !isAdminObras && !isAdmin)) {
     return null;
   }
 
