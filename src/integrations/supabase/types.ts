@@ -1042,7 +1042,7 @@ export type Database = {
       normalizar_nome: { Args: { nome: string }; Returns: string }
     }
     Enums: {
-      app_role: "admin" | "cooperado"
+      app_role: "admin" | "cooperado" | "admin_obras"
       categoria_obra:
         | "1ª Fase do Muro"
         | "2ª Fase do Muro"
@@ -1180,7 +1180,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "cooperado"],
+      app_role: ["admin", "cooperado", "admin_obras"],
       categoria_obra: [
         "1ª Fase do Muro",
         "2ª Fase do Muro",
