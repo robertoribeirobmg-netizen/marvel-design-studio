@@ -4,19 +4,53 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { Play, CheckCircle2, XCircle, Info, Loader2, Download } from 'lucide-react';
+import { Play, CheckCircle2, XCircle, Info, Loader2, Download, Upload, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import * as XLSX from 'xlsx';
+import { COHAPMColumnMapper } from './COHAPMColumnMapper';
+import { Input } from '@/components/ui/input';
 
 export function ProcessarCOHAPMAuto() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [stats, setStats] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewData, setPreviewData] = useState<any[]>([]);
+  const [columnMapping, setColumnMapping] = useState<Record<string, string>>({});
+  const [showMapping, setShowMapping] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
+
+  const targetFields = {
+    // Campos do Comprador
+    'comprador_id': 'ID do Comprador',
+    'comprador_nome': 'Nome do Comprador',
+    'comprador_cpf_cnpj': 'CPF/CNPJ',
+    'comprador_telefone': 'Telefone',
+    'comprador_email': 'Email',
+    'comprador_quadra': 'Quadra',
+    'comprador_lote': 'Lote',
+    'comprador_grupo': 'Grupo',
+    'comprador_empreendimento': 'Empreendimento',
+    'comprador_tipo_classificado': 'Tipo Classificado',
+    // Campos do Contrato
+    'contrato_data': 'Data do Contrato',
+    'contrato_area_m2': 'Área (m²)',
+    'contrato_valor_total': 'Valor Total do Contrato',
+    // Campos da Parcela
+    'tipo_parcela': 'Tipo de Parcela',
+    'vencimento_parcela': 'Vencimento da Parcela',
+    'valor_parcela': 'Valor da Parcela',
+    'situacao': 'Situação',
+    'data_recebimento': 'Data Recebimento',
+    'desconto': 'Desconto',
+    'juros': 'Juros',
+    'honorarios': 'Honorários',
+    'valor_pago': 'Valor Pago',
+  };
 
   const handleDownloadTemplate = () => {
     try {
-      // Baixar template completo do servidor
       const link = document.createElement('a');
       link.href = '/template_cohapm_completo.xlsx';
       link.download = 'template_importacao_cohapm.xlsx';
@@ -30,22 +64,93 @@ export function ProcessarCOHAPMAuto() {
     }
   };
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedFile(file);
+    setError(null);
+
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+      const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+      const data = XLSX.utils.sheet_to_json(firstSheet, { defval: '' });
+
+      setPreviewData(data.slice(0, 5));
+      setShowMapping(true);
+      toast.success('Arquivo carregado! Configure o mapeamento de colunas.');
+    } catch (err) {
+      console.error('Erro ao ler arquivo:', err);
+      setError('Erro ao ler arquivo Excel');
+      toast.error('Erro ao ler arquivo Excel');
+    }
+  };
+
+  const handleClearDatabase = async () => {
+    if (!confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os dados de compradores, contratos e parcelas COHAPM do banco de dados. Esta ação não pode ser desfeita. Deseja continuar?')) {
+      return;
+    }
+
+    setIsClearing(true);
+    try {
+      toast.info('Limpando dados do banco...');
+
+      // Deletar parcelas primeiro (devido às foreign keys)
+      const { error: parcelasError } = await supabase
+        .from('parcelas_cohapm')
+        .delete()
+        .neq('id', 0); // Deleta todos os registros
+
+      if (parcelasError) throw parcelasError;
+
+      // Deletar contratos
+      const { error: contratosError } = await supabase
+        .from('contratos_cohapm')
+        .delete()
+        .neq('id', 0);
+
+      if (contratosError) throw contratosError;
+
+      // Deletar compradores
+      const { error: compradoresError } = await supabase
+        .from('compradores_cohapm')
+        .delete()
+        .neq('id', '');
+
+      if (compradoresError) throw compradoresError;
+
+      toast.success('Todos os dados COHAPM foram removidos com sucesso!');
+      setStats(null);
+    } catch (err: any) {
+      console.error('Erro ao limpar banco:', err);
+      toast.error('Erro ao limpar dados: ' + err.message);
+    } finally {
+      setIsClearing(false);
+    }
+  };
+
   const handleProcessar = async () => {
+    if (!selectedFile) {
+      toast.error('Por favor, selecione um arquivo Excel');
+      return;
+    }
+
+    if (Object.keys(columnMapping).length === 0) {
+      toast.error('Por favor, configure o mapeamento de colunas');
+      return;
+    }
+
     setIsProcessing(true);
     setProgress(0);
     setError(null);
     setStats(null);
 
     try {
-      toast.info('Carregando arquivo Excel...');
+      toast.info('Processando arquivo Excel...');
       setProgress(5);
 
-      // Carregar arquivo
-      const fileResponse = await fetch('/compradores_cohapm_dados_completos.xlsx');
-      if (!fileResponse.ok) throw new Error('Arquivo não encontrado');
-
-      const fileBlob = await fileResponse.blob();
-      const arrayBuffer = await fileBlob.arrayBuffer();
+      const arrayBuffer = await selectedFile.arrayBuffer();
 
       toast.info('Processando Excel no navegador...');
       setProgress(15);
@@ -71,15 +176,24 @@ export function ProcessarCOHAPMAuto() {
       const parcelasList: any[] = [];
 
       rawData.forEach((row: any) => {
-        const compradorId = row.comprador_id || row.id;
+        // Aplicar mapeamento de colunas
+        const mappedRow: any = {};
+        Object.keys(columnMapping).forEach(excelCol => {
+          const systemCol = columnMapping[excelCol];
+          if (systemCol && row[excelCol] !== undefined) {
+            mappedRow[systemCol] = row[excelCol];
+          }
+        });
+
+        const compradorId = mappedRow.comprador_id;
         
         // Extrair dados do comprador (consolidar duplicatas)
         if (compradorId && !compradoresMap.has(compradorId)) {
           const comprador: any = { id: compradorId };
-          Object.keys(row).forEach(key => {
+          Object.keys(mappedRow).forEach(key => {
             if (key.startsWith('comprador_')) {
               const newKey = key.replace('comprador_', '');
-              if (row[key]) comprador[newKey] = row[key];
+              if (mappedRow[key]) comprador[newKey] = mappedRow[key];
             }
           });
           if (Object.keys(comprador).length > 1) {
@@ -88,13 +202,13 @@ export function ProcessarCOHAPMAuto() {
         }
 
         // Extrair dados do contrato (consolidar duplicatas por comprador+data)
-        const contratoKey = `${compradorId}_${row.contrato_data}`;
-        if (compradorId && row.contrato_data && !contratosMap.has(contratoKey)) {
+        const contratoKey = `${compradorId}_${mappedRow.contrato_data}`;
+        if (compradorId && mappedRow.contrato_data && !contratosMap.has(contratoKey)) {
           const contrato: any = { comprador_id: compradorId };
-          Object.keys(row).forEach(key => {
+          Object.keys(mappedRow).forEach(key => {
             if (key.startsWith('contrato_')) {
               const newKey = key.replace('contrato_', '');
-              if (row[key]) contrato[newKey] = row[key];
+              if (mappedRow[key]) contrato[newKey] = mappedRow[key];
             }
           });
           if (Object.keys(contrato).length > 1) {
@@ -105,20 +219,12 @@ export function ProcessarCOHAPMAuto() {
         // Extrair dados da parcela (cada linha é uma parcela única)
         const parcela: any = { comprador_id: compradorId };
         let hasParcela = false;
-        Object.keys(row).forEach(key => {
-          // Mapear campos sem prefixo que são de parcela
+        Object.keys(mappedRow).forEach(key => {
           if (key === 'tipo_parcela' || key === 'vencimento_parcela' || key === 'valor_parcela' || 
-              key === 'Situação' || key === 'Data Recebimento' || key === 'Desconto' || 
-              key === 'Juros' || key === 'Honorarios' || key === 'Valor Pago') {
+              key === 'situacao' || key === 'data_recebimento' || key === 'desconto' || 
+              key === 'juros' || key === 'honorarios' || key === 'valor_pago') {
             hasParcela = true;
-            const mappedKey = key.toLowerCase().replace(/\s+/g, '_');
-            parcela[mappedKey] = row[key];
-          }
-          // Campos com prefixo parcela_
-          if (key.startsWith('parcela_')) {
-            hasParcela = true;
-            const newKey = key.replace('parcela_', '');
-            parcela[newKey] = row[key];
+            parcela[key] = mappedRow[key];
           }
         });
         if (hasParcela && Object.keys(parcela).length > 1) {
@@ -277,20 +383,18 @@ export function ProcessarCOHAPMAuto() {
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          <strong>Processamento Otimizado:</strong> O Excel é processado no navegador e enviado em lotes de 10 registros.
+          <strong>Nova Importação:</strong> Selecione um arquivo Excel, mapeie as colunas e processe os dados em lotes otimizados.
         </AlertDescription>
       </Alert>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Play className="h-5 w-5 text-primary" />
-            Processar Dados COHAPM
+            <Upload className="h-5 w-5 text-primary" />
+            Importar Dados COHAPM
           </CardTitle>
           <CardDescription>
-            Baixe o template Excel com a estrutura completa (compradores, contratos e parcelas). 
-            Preencha com os dados e o sistema processará automaticamente, consolidando compradores e contratos duplicados.
-            Campos suportados: tipo_parcela, vencimento_parcela, Situação, Data Recebimento, Desconto, Juros, Honorarios, Valor Pago.
+            Faça upload da planilha Excel e configure o mapeamento de colunas para importar compradores, contratos e parcelas.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -312,20 +416,60 @@ export function ProcessarCOHAPMAuto() {
             </Alert>
           )}
 
-          <div className="space-y-3">
-            <Button 
-              onClick={handleDownloadTemplate}
-              variant="outline"
-              className="w-full" 
-              size="lg"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              Baixar Template Excel
-            </Button>
+          <div className="space-y-4">
+            <div className="flex gap-3">
+              <Button 
+                onClick={handleDownloadTemplate}
+                variant="outline"
+                className="flex-1" 
+                size="lg"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Baixar Template
+              </Button>
+
+              <Button 
+                onClick={handleClearDatabase}
+                disabled={isClearing}
+                variant="destructive"
+                className="flex-1" 
+                size="lg"
+              >
+                {isClearing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Limpando...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Limpar Banco
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Selecionar Arquivo Excel</label>
+              <Input
+                type="file"
+                accept=".xlsx,.xls"
+                onChange={handleFileSelect}
+                disabled={isProcessing}
+              />
+            </div>
+
+            {showMapping && previewData.length > 0 && (
+              <COHAPMColumnMapper
+                previewData={previewData}
+                targetFields={targetFields}
+                onMappingChange={setColumnMapping}
+              />
+            )}
 
             <Button 
               onClick={handleProcessar} 
-              disabled={isProcessing} 
+              disabled={isProcessing || !selectedFile || Object.keys(columnMapping).length === 0} 
               className="w-full" 
               size="lg"
             >
