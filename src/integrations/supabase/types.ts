@@ -559,7 +559,9 @@ export type Database = {
           observacoes_parcela: string | null
           periodo_fim: string | null
           periodo_inicio: string | null
+          situacao: string | null
           status: string | null
+          tipo_parcela: string | null
           updated_at: string | null
           valor_desconto: number | null
           valor_juros: number | null
@@ -590,7 +592,9 @@ export type Database = {
           observacoes_parcela?: string | null
           periodo_fim?: string | null
           periodo_inicio?: string | null
+          situacao?: string | null
           status?: string | null
+          tipo_parcela?: string | null
           updated_at?: string | null
           valor_desconto?: number | null
           valor_juros?: number | null
@@ -621,7 +625,9 @@ export type Database = {
           observacoes_parcela?: string | null
           periodo_fim?: string | null
           periodo_inicio?: string | null
+          situacao?: string | null
           status?: string | null
+          tipo_parcela?: string | null
           updated_at?: string | null
           valor_desconto?: number | null
           valor_juros?: number | null

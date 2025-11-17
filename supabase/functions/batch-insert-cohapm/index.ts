@@ -152,22 +152,35 @@ serve(async (req) => {
     } else if (tipo === 'parcelas') {
       for (const row of batch) {
         try {
+          // Mapear campos do template com nomes alternativos
+          const vencimento = row.vencimento_parcela || row.data_vencimento;
+          const valorParcela = row.valor_parcela;
+          const situacao = row.situacao || row.status;
+          const dataRecebimento = row.data_recebimento || row['Data Recebimento'];
+          const desconto = row.desconto || row.valor_desconto;
+          const juros = row.juros || row.valor_juros;
+          const honorarios = row.honorarios || row.valor_honorarios;
+          const valorPago = row.valor_pago || row['Valor Pago'];
+
           const parcelaData: any = {
             comprador_id: row.comprador_id?.toString() || null,
             contrato_id: row.contrato_id ? parseInt(row.contrato_id) : null,
             numero_parcela: parseInt(row.numero_parcela) || null,
-            valor_parcela: parseFloat(row.valor_parcela) || null,
-            valor_original: parseFloat(row.valor_original) || null,
-            data_vencimento: row.data_vencimento ? new Date(row.data_vencimento).toISOString().split('T')[0] : null,
+            valor_parcela: parseFloat(valorParcela) || null,
+            valor_original: parseFloat(row.valor_original) || parseFloat(valorParcela) || null,
+            data_vencimento: vencimento ? new Date(vencimento).toISOString().split('T')[0] : null,
             data_pagamento: row.data_pagamento ? new Date(row.data_pagamento).toISOString().split('T')[0] : null,
-            data_recebimento: row.data_recebimento ? new Date(row.data_recebimento).toISOString().split('T')[0] : null,
+            data_recebimento: dataRecebimento ? new Date(dataRecebimento).toISOString().split('T')[0] : null,
             data_lancamento: row.data_lancamento ? new Date(row.data_lancamento).toISOString().split('T')[0] : null,
-            valor_pago: parseFloat(row.valor_pago) || null,
-            valor_juros: parseFloat(row.valor_juros) || 0,
+            valor_pago: parseFloat(valorPago) || null,
+            valor_juros: parseFloat(juros) || 0,
             valor_multa: parseFloat(row.valor_multa) || 0,
-            valor_desconto: parseFloat(row.valor_desconto) || 0,
+            valor_desconto: parseFloat(desconto) || 0,
+            honorarios: parseFloat(honorarios) || 0,
             valor_total_calculado: parseFloat(row.valor_total_calculado) || null,
-            status: row.status || null,
+            status: situacao || null,
+            tipo_parcela: row.tipo_parcela || null,
+            situacao: situacao || null,
             dias_atraso: parseInt(row.dias_atraso) || 0,
             forma_pagamento: row.forma_pagamento || null,
             banco: row.banco || null,
