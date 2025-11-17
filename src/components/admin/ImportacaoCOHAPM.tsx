@@ -6,7 +6,7 @@ import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Info, Zap } from 'lucide-react';
+import { Upload, FileSpreadsheet, CheckCircle2, XCircle, Download, Info, Zap, Trash2, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { ProcessarCOHAPMAuto } from './ProcessarCOHAPMAuto';
 
@@ -15,6 +15,7 @@ export function ImportacaoCOHAPM() {
   const [isImporting, setIsImporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [stats, setStats] = useState<any>(null);
+  const [isClearing, setIsClearing] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -25,6 +26,49 @@ export function ImportacaoCOHAPM() {
 
   const handleDownloadTemplate = () => {
     window.open('/compradores_cohapm_template.xlsx', '_blank');
+  };
+
+  const handleClearDatabase = async () => {
+    if (!confirm('⚠️ ATENÇÃO: Esta ação irá apagar TODOS os dados de compradores, contratos e parcelas COHAPM do banco de dados. Esta ação não pode ser desfeita. Deseja continuar?')) {
+      return;
+    }
+
+    setIsClearing(true);
+    try {
+      toast.info('Limpando dados do banco...');
+
+      // Deletar parcelas primeiro (devido às foreign keys)
+      const { error: parcelasError } = await supabase
+        .from('parcelas_cohapm')
+        .delete()
+        .neq('id', 0); // Deleta todos os registros
+
+      if (parcelasError) throw parcelasError;
+
+      // Deletar contratos
+      const { error: contratosError } = await supabase
+        .from('contratos_cohapm')
+        .delete()
+        .neq('id', 0);
+
+      if (contratosError) throw contratosError;
+
+      // Deletar compradores
+      const { error: compradoresError } = await supabase
+        .from('compradores_cohapm')
+        .delete()
+        .neq('id', '');
+
+      if (compradoresError) throw compradoresError;
+
+      toast.success('Todos os dados COHAPM foram removidos com sucesso!');
+      setStats(null);
+    } catch (err: any) {
+      console.error('Erro ao limpar banco:', err);
+      toast.error('Erro ao limpar dados: ' + err.message);
+    } finally {
+      setIsClearing(false);
+    }
   };
 
   const handleImport = async () => {
@@ -101,23 +145,35 @@ export function ImportacaoCOHAPM() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="flex items-center justify-between p-4 border rounded-lg bg-muted/50">
-                <div className="flex items-center gap-3">
-                  <FileSpreadsheet className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="font-medium">Arquivo Template</p>
-                    <p className="text-sm text-muted-foreground">
-                      compradores_completo_20251115_115857.xlsx (726 registros)
-                    </p>
-                  </div>
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
+              <div className="flex gap-3">
+                <Button 
                   onClick={handleDownloadTemplate}
+                  variant="outline"
+                  className="flex-1" 
+                  size="lg"
                 >
                   <Download className="h-4 w-4 mr-2" />
-                  Download
+                  Baixar Template
+                </Button>
+
+                <Button 
+                  onClick={handleClearDatabase}
+                  disabled={isClearing}
+                  variant="destructive"
+                  className="flex-1" 
+                  size="lg"
+                >
+                  {isClearing ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Limpando...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Limpar Banco
+                    </>
+                  )}
                 </Button>
               </div>
 
