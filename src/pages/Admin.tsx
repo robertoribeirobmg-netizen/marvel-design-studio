@@ -43,6 +43,8 @@ export default function Admin() {
   // Form state
   const [newEmail, setNewEmail] = useState('');
   const [newNome, setNewNome] = useState('');
+  const [newCpf, setNewCpf] = useState('');
+  const [newTelefone, setNewTelefone] = useState('');
   const [newQuadra, setNewQuadra] = useState('');
   const [newLote, setNewLote] = useState('');
   const [newFase, setNewFase] = useState('');
@@ -218,6 +220,8 @@ export default function Admin() {
           email: newEmail,
           password: autoPassword,
           nome_completo: newNome,
+          cpf: newCpf || null,
+          telefone: newTelefone || null,
           quadra: newQuadra || null,
           lote: newLote || null,
           fase: newFase || null,
@@ -242,6 +246,8 @@ export default function Admin() {
       toast.success('Cooperado criado com sucesso!');
       setNewEmail('');
       setNewNome('');
+      setNewCpf('');
+      setNewTelefone('');
       setNewQuadra('');
       setNewLote('');
       setNewFase('');
@@ -1234,14 +1240,23 @@ export default function Admin() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="nome">Nome Completo *</Label>
+                    <Label htmlFor="cpf">CPF</Label>
                     <Input
-                      id="nome"
+                      id="cpf"
                       type="text"
-                      placeholder="Nome completo do cooperado"
-                      value={newNome}
-                      onChange={(e) => setNewNome(e.target.value)}
-                      required
+                      placeholder="000.000.000-00"
+                      value={newCpf}
+                      onChange={(e) => setNewCpf(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="telefone">Telefone</Label>
+                    <Input
+                      id="telefone"
+                      type="text"
+                      placeholder="(00) 00000-0000"
+                      value={newTelefone}
+                      onChange={(e) => setNewTelefone(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -1288,6 +1303,77 @@ export default function Admin() {
                   {isCreating ? 'Criando...' : 'Criar Cooperado'}
                 </Button>
               </form>
+            </CardContent>
+          </Card>
+
+          {/* Lista de Cooperadores */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-primary" />
+                Lista de Cooperadores Compradores
+              </CardTitle>
+              <CardDescription>
+                Todos os cooperados cadastrados no sistema
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="text-center py-8">Carregando...</div>
+              ) : cooperados.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  Nenhum cooperado cadastrado ainda
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>CPF</TableHead>
+                        <TableHead>Telefone</TableHead>
+                        <TableHead>Quadra</TableHead>
+                        <TableHead>Lote</TableHead>
+                        <TableHead>Fase</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cooperados.map((cooperado) => (
+                        <TableRow key={cooperado.id}>
+                          <TableCell className="font-medium">{cooperado.nome_completo}</TableCell>
+                          <TableCell>{cooperado.email || '-'}</TableCell>
+                          <TableCell>{cooperado.cpf || '-'}</TableCell>
+                          <TableCell>{cooperado.telefone || '-'}</TableCell>
+                          <TableCell>{cooperado.quadra || '-'}</TableCell>
+                          <TableCell>{cooperado.lote || '-'}</TableCell>
+                          <TableCell>{cooperado.fase || '-'}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingCooperado(cooperado);
+                                setEditNome(cooperado.nome_completo);
+                                setEditTelefone(cooperado.telefone || '');
+                                setEditCpf(cooperado.cpf || '');
+                                setEditQuadra(cooperado.quadra || '');
+                                setEditLote(cooperado.lote || '');
+                                setEditFase(cooperado.fase || '');
+                                setEditDataCompra(cooperado.data_compra || '');
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
             </CardContent>
           </Card>
 
