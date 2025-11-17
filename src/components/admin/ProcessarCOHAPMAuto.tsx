@@ -16,63 +16,13 @@ export function ProcessarCOHAPMAuto() {
 
   const handleDownloadTemplate = () => {
     try {
-      // Criar workbook com UMA ÚNICA ABA
-      const wb = XLSX.utils.book_new();
-
-      // Dados combinados em uma única linha
-      const dadosCombinados = [
-        {
-          // Dados do Comprador
-          'comprador_id': 'COMP001',
-          'comprador_nome': 'João da Silva Santos',
-          'comprador_cpf_cnpj': '123.456.789-00',
-          'comprador_telefone': '(71) 99999-9999',
-          'comprador_email': 'joao@email.com',
-          'comprador_quadra': 'A',
-          'comprador_lote': '01',
-          'comprador_grupo': 'Grupo 1',
-          'comprador_empreendimento': 'Residencial La Felicità',
-          'comprador_tipo_classificado': 'Comprador',
-          
-          // Dados do Contrato
-          'contrato_numero': 'CT-2024-001',
-          'contrato_numero_ficha': 'F-001',
-          'contrato_data': '2024-01-15',
-          'contrato_area_m2': '450',
-          'contrato_valor_total': '150000',
-          'contrato_valor_entrada': '30000',
-          'contrato_valor_financiado': '120000',
-          'contrato_numero_parcelas': '60',
-          'contrato_valor_parcela': '2000',
-          'contrato_situacao': 'Ativo',
-          'contrato_status': 'Em dia',
-          'contrato_imobiliaria': 'Imobiliária XYZ',
-          'contrato_corretor': 'Maria Souza',
-          
-          // Dados da Parcela
-          'parcela_numero': '1',
-          'parcela_valor': '2000',
-          'parcela_valor_original': '2000',
-          'parcela_data_vencimento': '2024-02-15',
-          'parcela_data_pagamento': '2024-02-10',
-          'parcela_valor_pago': '2000',
-          'parcela_valor_juros': '0',
-          'parcela_valor_multa': '0',
-          'parcela_valor_desconto': '0',
-          'parcela_status': 'Pago',
-          'parcela_dias_atraso': '0',
-          'parcela_forma_pagamento': 'PIX',
-          'parcela_banco': 'Banco do Brasil',
-          'parcela_agencia': '1234-5',
-          'parcela_conta': '12345-6'
-        }
-      ];
-      
-      const ws = XLSX.utils.json_to_sheet(dadosCombinados);
-      XLSX.utils.book_append_sheet(wb, ws, 'Dados COHAPM');
-
-      // Fazer download
-      XLSX.writeFile(wb, 'template_importacao_cohapm.xlsx');
+      // Baixar template completo do servidor
+      const link = document.createElement('a');
+      link.href = '/template_cohapm_completo.xlsx';
+      link.download = 'template_importacao_cohapm.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
       toast.success('Template baixado com sucesso!');
     } catch (err) {
       console.error('Erro ao gerar template:', err);
@@ -116,37 +66,70 @@ export function ProcessarCOHAPMAuto() {
       const rawData = XLSX.utils.sheet_to_json(worksheet);
 
       // Separar os dados por tipo baseado nos prefixos das colunas
+      const compradoresMap = new Map();
+      const contratosMap = new Map();
+      const parcelasList: any[] = [];
+
       rawData.forEach((row: any) => {
-        // Extrair dados do comprador
-        const comprador: any = { id: row.comprador_id || row.id };
-        Object.keys(row).forEach(key => {
-          if (key.startsWith('comprador_')) {
-            const newKey = key.replace('comprador_', '');
-            comprador[newKey] = row[key];
+        const compradorId = row.comprador_id || row.id;
+        
+        // Extrair dados do comprador (consolidar duplicatas)
+        if (compradorId && !compradoresMap.has(compradorId)) {
+          const comprador: any = { id: compradorId };
+          Object.keys(row).forEach(key => {
+            if (key.startsWith('comprador_')) {
+              const newKey = key.replace('comprador_', '');
+              if (row[key]) comprador[newKey] = row[key];
+            }
+          });
+          if (Object.keys(comprador).length > 1) {
+            compradoresMap.set(compradorId, comprador);
           }
-        });
-        if (Object.keys(comprador).length > 1) allData.compradores.push(comprador);
+        }
 
-        // Extrair dados do contrato
-        const contrato: any = { comprador_id: row.comprador_id || row.id };
-        Object.keys(row).forEach(key => {
-          if (key.startsWith('contrato_')) {
-            const newKey = key.replace('contrato_', '');
-            contrato[newKey] = row[key];
+        // Extrair dados do contrato (consolidar duplicatas por comprador+data)
+        const contratoKey = `${compradorId}_${row.contrato_data}`;
+        if (compradorId && row.contrato_data && !contratosMap.has(contratoKey)) {
+          const contrato: any = { comprador_id: compradorId };
+          Object.keys(row).forEach(key => {
+            if (key.startsWith('contrato_')) {
+              const newKey = key.replace('contrato_', '');
+              if (row[key]) contrato[newKey] = row[key];
+            }
+          });
+          if (Object.keys(contrato).length > 1) {
+            contratosMap.set(contratoKey, contrato);
           }
-        });
-        if (Object.keys(contrato).length > 1) allData.contratos.push(contrato);
+        }
 
-        // Extrair dados da parcela
-        const parcela: any = { comprador_id: row.comprador_id || row.id };
+        // Extrair dados da parcela (cada linha é uma parcela única)
+        const parcela: any = { comprador_id: compradorId };
+        let hasParcela = false;
         Object.keys(row).forEach(key => {
+          // Mapear campos sem prefixo que são de parcela
+          if (key === 'tipo_parcela' || key === 'vencimento_parcela' || key === 'valor_parcela' || 
+              key === 'Situação' || key === 'Data Recebimento' || key === 'Desconto' || 
+              key === 'Juros' || key === 'Honorarios' || key === 'Valor Pago') {
+            hasParcela = true;
+            const mappedKey = key.toLowerCase().replace(/\s+/g, '_');
+            parcela[mappedKey] = row[key];
+          }
+          // Campos com prefixo parcela_
           if (key.startsWith('parcela_')) {
+            hasParcela = true;
             const newKey = key.replace('parcela_', '');
             parcela[newKey] = row[key];
           }
         });
-        if (Object.keys(parcela).length > 1) allData.parcelas.push(parcela);
+        if (hasParcela && Object.keys(parcela).length > 1) {
+          parcelasList.push(parcela);
+        }
       });
+
+      // Converter maps para arrays
+      allData.compradores = Array.from(compradoresMap.values());
+      allData.contratos = Array.from(contratosMap.values());
+      allData.parcelas = parcelasList;
 
       const totalRegistros = allData.compradores.length + allData.contratos.length + allData.parcelas.length;
       console.log(`📊 Compradores: ${allData.compradores.length}, Contratos: ${allData.contratos.length}, Parcelas: ${allData.parcelas.length}`);
@@ -305,7 +288,9 @@ export function ProcessarCOHAPMAuto() {
             Processar Dados COHAPM
           </CardTitle>
           <CardDescription>
-            Baixe o template em planilha única, preencha com seus dados e faça a importação automática
+            Baixe o template Excel com a estrutura completa (compradores, contratos e parcelas). 
+            Preencha com os dados e o sistema processará automaticamente, consolidando compradores e contratos duplicados.
+            Campos suportados: tipo_parcela, vencimento_parcela, Situação, Data Recebimento, Desconto, Juros, Honorarios, Valor Pago.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
