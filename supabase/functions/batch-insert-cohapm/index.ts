@@ -159,7 +159,6 @@ serve(async (req) => {
           const dataRecebimento = row.data_recebimento || row['Data Recebimento'];
           const desconto = row.desconto || row.valor_desconto;
           const juros = row.juros || row.valor_juros;
-          const honorarios = row.honorarios || row.valor_honorarios;
           const valorPago = row.valor_pago || row['Valor Pago'];
 
           const parcelaData: any = {
@@ -176,7 +175,6 @@ serve(async (req) => {
             valor_juros: parseFloat(juros) || 0,
             valor_multa: parseFloat(row.valor_multa) || 0,
             valor_desconto: parseFloat(desconto) || 0,
-            honorarios: parseFloat(honorarios) || 0,
             valor_total_calculado: parseFloat(row.valor_total_calculado) || null,
             status: situacao || null,
             tipo_parcela: row.tipo_parcela || null,
