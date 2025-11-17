@@ -20,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { user, isAdmin, signOut } = useAuth();
+  const { user, isAdmin, isAdminObras, signOut } = useAuth();
   const collapsed = state === "collapsed";
 
   if (!user) return null;
@@ -117,6 +117,21 @@ export function AppSidebar() {
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 </>
+              )}
+
+              {isAdminObras && !isAdmin && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild>
+                    <NavLink
+                      to="/admin?tab=obras"
+                      className="hover:bg-muted/50"
+                      activeClassName="bg-muted text-primary font-medium"
+                    >
+                      <Upload className="h-4 w-4" />
+                      {!collapsed && <span>Gestão de Obras</span>}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
               )}
             </SidebarMenu>
           </SidebarGroupContent>

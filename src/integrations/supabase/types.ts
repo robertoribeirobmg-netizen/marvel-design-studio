@@ -1039,6 +1039,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin_or_admin_obras: { Args: { _user_id: string }; Returns: boolean }
       normalizar_nome: { Args: { nome: string }; Returns: string }
     }
     Enums: {

@@ -34,7 +34,7 @@ import { CheckCircle2, XCircle, Download } from 'lucide-react';
 import { downloadFinancialTemplate, downloadCooperadosTemplate } from '@/lib/excelTemplateGenerator';
 
 export default function Admin() {
-  const { signOut } = useAuth();
+  const { signOut, isAdmin, isAdminObras } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [cooperados, setCooperados] = useState<any[]>([]);
@@ -1147,28 +1147,32 @@ export default function Admin() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          <Tabs defaultValue="dashboard" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-8">
-              <TabsTrigger value="dashboard" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Dashboard
-              </TabsTrigger>
-              <TabsTrigger value="cooperados" className="flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Cooperados
-              </TabsTrigger>
-              <TabsTrigger value="financeiro" className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                Financeiro
-              </TabsTrigger>
-              <TabsTrigger value="cohapm" className="flex items-center gap-2">
-                <FileSpreadsheet className="h-4 w-4" />
-                COHAPM
-              </TabsTrigger>
-              <TabsTrigger value="graficos" className="flex items-center gap-2">
-                <LineChart className="h-4 w-4" />
-                Gráficos
-              </TabsTrigger>
+          <Tabs defaultValue={isAdminObras && !isAdmin ? "obras" : "dashboard"} className="space-y-6">
+            <TabsList className={`grid w-full ${isAdminObras && !isAdmin ? 'grid-cols-2' : 'grid-cols-8'}`}>
+              {isAdmin && (
+                <>
+                  <TabsTrigger value="dashboard" className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4" />
+                    Dashboard
+                  </TabsTrigger>
+                  <TabsTrigger value="cooperados" className="flex items-center gap-2">
+                    <Users className="h-4 w-4" />
+                    Cooperados
+                  </TabsTrigger>
+                  <TabsTrigger value="financeiro" className="flex items-center gap-2">
+                    <DollarSign className="h-4 w-4" />
+                    Financeiro
+                  </TabsTrigger>
+                  <TabsTrigger value="cohapm" className="flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    COHAPM
+                  </TabsTrigger>
+                  <TabsTrigger value="graficos" className="flex items-center gap-2">
+                    <LineChart className="h-4 w-4" />
+                    Gráficos
+                  </TabsTrigger>
+                </>
+              )}
               <TabsTrigger value="obras" className="flex items-center gap-2">
                 <Building2 className="h-4 w-4" />
                 Obras
@@ -1177,19 +1181,24 @@ export default function Admin() {
                 <Camera className="h-4 w-4" />
                 Galeria
               </TabsTrigger>
-              <TabsTrigger value="validation" className="flex items-center gap-2">
-                <Shield className="h-4 w-4" />
-                Validação
-              </TabsTrigger>
+              {isAdmin && (
+                <TabsTrigger value="validation" className="flex items-center gap-2">
+                  <Shield className="h-4 w-4" />
+                  Validação
+                </TabsTrigger>
+              )}
             </TabsList>
 
-            <TabsContent value="dashboard" className="space-y-6">
-              <DashboardCooperados cooperados={cooperados} />
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="dashboard" className="space-y-6">
+                <DashboardCooperados cooperados={cooperados} />
+              </TabsContent>
+            )}
 
-            <TabsContent value="cooperados" className="space-y-8">
-          {/* Create User Form */}
-          <Card>
+            {isAdmin && (
+              <TabsContent value="cooperados" className="space-y-8">
+            {/* Create User Form */}
+            <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5 text-primary" />
@@ -1282,25 +1291,32 @@ export default function Admin() {
             </CardContent>
           </Card>
 
-            </TabsContent>
+              </TabsContent>
+            )}
 
-            <TabsContent value="financeiro">
-              <div className="space-y-6">
-                <FinanceiroAdminDashboard />
-              </div>
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="financeiro">
+                <div className="space-y-6">
+                  <FinanceiroAdminDashboard />
+                </div>
+              </TabsContent>
+            )}
 
-            <TabsContent value="cohapm">
-              <div className="space-y-6">
-                <ImportacaoCOHAPM />
-              </div>
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="cohapm">
+                <div className="space-y-6">
+                  <ImportacaoCOHAPM />
+                </div>
+              </TabsContent>
+            )}
 
-            <TabsContent value="graficos">
-              <div className="space-y-6">
-                <DashboardVisualCOHAPM />
-              </div>
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="graficos">
+                <div className="space-y-6">
+                  <DashboardVisualCOHAPM />
+                </div>
+              </TabsContent>
+            )}
 
             <TabsContent value="obras">
               <div className="space-y-6">
@@ -1315,9 +1331,11 @@ export default function Admin() {
               <AdminGaleria />
             </TabsContent>
 
-            <TabsContent value="validation">
-              <ValidationErrorsAnalytics />
-            </TabsContent>
+            {isAdmin && (
+              <TabsContent value="validation">
+                <ValidationErrorsAnalytics />
+              </TabsContent>
+            )}
           </Tabs>
         </div>
       </main>
