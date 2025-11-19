@@ -2,23 +2,43 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { User, Building2, FileText, DollarSign, Calendar, AlertTriangle } from 'lucide-react';
-import { format, differenceInDays, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { DollarSign, FileText } from 'lucide-react';
+import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 interface FinanceiroCooperadoDashboardProps {
   userId: string;
 }
 
+interface ParcelaFinanceira {
+  comprador_id: string;
+  comprador_nome: string;
+  comprador_telefone: string;
+  comprador_email: string;
+  comprador_quadra: string;
+  comprador_lote: string;
+  comprador_grupo: string;
+  comprador_empreendimento: string;
+  comprador_tipo_classificado: string;
+  contrato_id: number;
+  contrato_data: string;
+  contrato_area_m2: number;
+  contrato_valor_total: number;
+  parcela_id: number;
+  tipo_parcela: string;
+  numero_parcela: number;
+  vencimento_parcela: string;
+  valor_parcela: number;
+  situacao: string;
+  data_recebimento: string | null;
+  desconto: number;
+  juros: number;
+  valor_pago: number | null;
+}
+
 export function FinanceiroCooperadoDashboard({ userId }: FinanceiroCooperadoDashboardProps) {
-  const [profile, setProfile] = useState<any>(null);
-  const [comprador, setComprador] = useState<any>(null);
-  const [contratos, setContratos] = useState<any[]>([]);
-  const [parcelasCohapm, setParcelasCohapm] = useState<any[]>([]);
-  const [investimentos, setInvestimentos] = useState<any[]>([]);
-  const [parcelas, setParcelas] = useState<any[]>([]);
+  const [parcelas, setParcelas] = useState<ParcelaFinanceira[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,415 +51,250 @@ export function FinanceiroCooperadoDashboard({ userId }: FinanceiroCooperadoDash
     try {
       setIsLoading(true);
 
-      // Buscar perfil do cooperado
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .single();
-
-      if (profileError) throw profileError;
-      setProfile(profileData);
-
-      // Buscar comprador vinculado
       const { data: compradorData, error: compradorError } = await supabase
         .from('compradores_cohapm')
-        .select('*')
+        .select('id, nome, telefone, email, quadra, lote, grupo, empreendimento, tipo_classificado')
         .eq('profile_id', userId)
         .maybeSingle();
 
       if (compradorError) throw compradorError;
-      setComprador(compradorData);
 
-      if (compradorData) {
-        // Buscar contratos do comprador
-        const { data: contratosData, error: contratosError } = await supabase
-          .from('contratos_cohapm')
-          .select('*')
-          .eq('comprador_id', compradorData.id)
-          .order('data_contrato', { ascending: false });
-
-        if (contratosError) throw contratosError;
-        setContratos(contratosData || []);
-
-        // Buscar parcelas COHAPM
-        const { data: parcelasCohapmData, error: parcelasCohapmError } = await supabase
-          .from('parcelas_cohapm')
-          .select('*')
-          .eq('comprador_id', compradorData.id)
-          .order('data_vencimento');
-
-        if (parcelasCohapmError) throw parcelasCohapmError;
-        setParcelasCohapm(parcelasCohapmData || []);
+      if (!compradorData) {
+        setParcelas([]);
+        setIsLoading(false);
+        return;
       }
 
-      // Buscar investimentos do cooperado
-      const { data: investimentosData, error: investimentosError } = await supabase
-        .from('investimentos')
-        .select('*')
-        .eq('user_id', userId)
-        .order('data_inicio', { ascending: false });
+      const { data: contratosData, error: contratosError } = await supabase
+        .from('contratos_cohapm')
+        .select('id, data_contrato, area_m2, valor_total')
+        .eq('comprador_id', compradorData.id);
 
-      if (investimentosError) throw investimentosError;
-      setInvestimentos(investimentosData || []);
+      if (contratosError) throw contratosError;
 
-      // Buscar parcelas dos investimentos
-      if (investimentosData && investimentosData.length > 0) {
-        const investimentoIds = investimentosData.map(i => i.id);
-        const { data: parcelasData, error: parcelasError } = await supabase
-          .from('parcelas')
-          .select('*')
-          .in('investimento_id', investimentoIds)
-          .order('data_vencimento');
+      const { data: parcelasData, error: parcelasError } = await supabase
+        .from('parcelas_cohapm')
+        .select(`
+          id,
+          numero_parcela,
+          data_vencimento,
+          valor_parcela,
+          situacao,
+          data_recebimento,
+          valor_desconto,
+          valor_juros,
+          valor_pago,
+          tipo_parcela,
+          contrato_id
+        `)
+        .eq('comprador_id', compradorData.id)
+        .order('data_vencimento', { ascending: false });
 
-        if (parcelasError) throw parcelasError;
-        setParcelas(parcelasData || []);
-      }
+      if (parcelasError) throw parcelasError;
 
+      const parcelasCompletas = (parcelasData || []).map(parcela => {
+        const contrato = contratosData?.find(c => c.id === parcela.contrato_id);
+
+        return {
+          comprador_id: compradorData.id,
+          comprador_nome: compradorData.nome,
+          comprador_telefone: compradorData.telefone || 'N/A',
+          comprador_email: compradorData.email || 'N/A',
+          comprador_quadra: compradorData.quadra || 'N/A',
+          comprador_lote: compradorData.lote || 'N/A',
+          comprador_grupo: compradorData.grupo || 'N/A',
+          comprador_empreendimento: compradorData.empreendimento || 'N/A',
+          comprador_tipo_classificado: compradorData.tipo_classificado || 'N/A',
+          contrato_id: parcela.contrato_id || 0,
+          contrato_data: contrato?.data_contrato || 'N/A',
+          contrato_area_m2: contrato?.area_m2 || 0,
+          contrato_valor_total: contrato?.valor_total || 0,
+          parcela_id: parcela.id,
+          tipo_parcela: parcela.tipo_parcela || 'N/A',
+          numero_parcela: parcela.numero_parcela || 0,
+          vencimento_parcela: parcela.data_vencimento || 'N/A',
+          valor_parcela: parcela.valor_parcela || 0,
+          situacao: parcela.situacao || 'N/A',
+          data_recebimento: parcela.data_recebimento || null,
+          desconto: parcela.valor_desconto || 0,
+          juros: parcela.valor_juros || 0,
+          valor_pago: parcela.valor_pago || null,
+        };
+      });
+
+      setParcelas(parcelasCompletas);
     } catch (error) {
       console.error('Erro ao carregar dados:', error);
+      toast.error('Erro ao carregar dados financeiros');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
-      'pago': { label: 'Pago', variant: 'default' },
-      'pendente': { label: 'Pendente', variant: 'secondary' },
-      'vencida': { label: 'Vencida', variant: 'destructive' },
-      'renegociada': { label: 'Renegociada', variant: 'outline' }
-    };
-
-    const statusInfo = statusMap[status?.toLowerCase()] || { label: status, variant: 'outline' };
-    return <Badge variant={statusInfo.variant}>{statusInfo.label}</Badge>;
+  const stats = {
+    totalParcelas: parcelas.length,
+    valorTotal: parcelas.reduce((sum, p) => sum + (p.valor_parcela || 0), 0),
+    valorPago: parcelas.reduce((sum, p) => sum + (p.valor_pago || 0), 0),
+    valorPendente: parcelas.reduce((sum, p) => sum + ((p.valor_pago ? 0 : p.valor_parcela) || 0), 0),
   };
 
-  const calcularDiasAtraso = (dataVencimento: string) => {
-    const hoje = new Date();
-    const vencimento = parseISO(dataVencimento);
-    return Math.max(0, differenceInDays(hoje, vencimento));
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value || 0);
   };
 
-  const statsInvestimentos = {
-    valorTotal: investimentos.reduce((sum, inv) => sum + (inv.valor_total || 0), 0),
-    valorPago: parcelas.filter(p => p.status === 'pago').reduce((sum, p) => sum + (p.valor_pago || 0), 0),
-    valorPendente: parcelas.filter(p => p.status === 'pendente' || p.status === 'vencida').reduce((sum, p) => sum + (p.valor_parcela || 0), 0),
-    parcelasAtrasadas: parcelas.filter(p => p.status === 'vencida').length
-  };
-
-  const statsCohapm = {
-    valorTotal: contratos.reduce((sum, c) => sum + (c.valor_total || 0), 0),
-    valorPago: parcelasCohapm.filter(p => p.status === 'pago').reduce((sum, p) => sum + (p.valor_pago || 0), 0),
-    valorPendente: parcelasCohapm.filter(p => p.status === 'pendente' || p.status === 'atrasada').reduce((sum, p) => sum + (p.valor_parcela || 0), 0),
-    parcelasAtrasadas: parcelasCohapm.filter(p => p.status === 'atrasada').length
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return '-';
+    try {
+      return format(new Date(dateStr), 'dd/MM/yyyy');
+    } catch {
+      return dateStr;
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center p-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
       </div>
+    );
+  }
+
+  if (parcelas.length === 0) {
+    return (
+      <Card>
+        <CardContent className="py-8">
+          <p className="text-center text-muted-foreground">
+            Nenhum dado financeiro encontrado para sua conta.
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-3xl font-bold">Minha Área Financeira</h2>
-        <p className="text-muted-foreground">Acompanhe seus investimentos e contratos</p>
+        <h2 className="text-3xl font-bold tracking-tight">Minha Área Financeira</h2>
+        <p className="text-muted-foreground">
+          Acompanhe suas parcelas e contratos
+        </p>
       </div>
 
-      {/* Comprador Vinculado */}
-      {comprador && (
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Dados do Comprador COHAPM
-            </CardTitle>
-            <CardDescription>Informações do comprador vinculado ao seu perfil</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Parcelas</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Nome</p>
-                <p className="font-medium">{comprador.nome}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">CPF/CNPJ</p>
-                <p className="font-medium">{comprador.cpf_cnpj || '-'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Email</p>
-                <p className="font-medium">{comprador.email || '-'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Telefone</p>
-                <p className="font-medium">{comprador.telefone || '-'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Grupo</p>
-                <p className="font-medium">{comprador.grupo || '-'}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Tipo</p>
-                <p className="font-medium">{comprador.tipo_classificado || '-'}</p>
-              </div>
-            </div>
+            <div className="text-2xl font-bold">{stats.totalParcelas}</div>
           </CardContent>
         </Card>
-      )}
 
-      {/* Tabs de Financeiro */}
-      <Tabs defaultValue="investimentos" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="investimentos">Meus Investimentos</TabsTrigger>
-          <TabsTrigger value="cohapm" disabled={!comprador}>Contratos COHAPM</TabsTrigger>
-        </TabsList>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.valorTotal)}</div>
+          </CardContent>
+        </Card>
 
-        {/* Tab Investimentos */}
-        <TabsContent value="investimentos" className="space-y-4">
-          {/* Stats Investimentos */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(statsInvestimentos.valorTotal)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Valor Pago</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(statsInvestimentos.valorPago)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Valor Pendente</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(statsInvestimentos.valorPendente)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Parcelas Atrasadas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {statsInvestimentos.parcelasAtrasadas}
-                </div>
-              </CardContent>
-            </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valor Pago</CardTitle>
+            <DollarSign className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.valorPago)}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Valor Pendente</CardTitle>
+            <DollarSign className="h-4 w-4 text-orange-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.valorPendente)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Minhas Parcelas</CardTitle>
+          <CardDescription>
+            Detalhamento completo das suas parcelas e contratos
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Telefone</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Quadra</TableHead>
+                  <TableHead>Lote</TableHead>
+                  <TableHead>Grupo</TableHead>
+                  <TableHead>Empreendimento</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Data Contrato</TableHead>
+                  <TableHead>Área (m²)</TableHead>
+                  <TableHead>Valor Contrato</TableHead>
+                  <TableHead>Tipo Parcela</TableHead>
+                  <TableHead>Nº</TableHead>
+                  <TableHead>Vencimento</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Situação</TableHead>
+                  <TableHead>Data Receb.</TableHead>
+                  <TableHead>Desconto</TableHead>
+                  <TableHead>Juros</TableHead>
+                  <TableHead>Honorários</TableHead>
+                  <TableHead>Valor Pago</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {parcelas.map((parcela) => (
+                  <TableRow key={parcela.parcela_id}>
+                    <TableCell className="font-medium">{parcela.comprador_nome}</TableCell>
+                    <TableCell>{parcela.comprador_telefone}</TableCell>
+                    <TableCell>{parcela.comprador_email}</TableCell>
+                    <TableCell>{parcela.comprador_quadra}</TableCell>
+                    <TableCell>{parcela.comprador_lote}</TableCell>
+                    <TableCell>{parcela.comprador_grupo}</TableCell>
+                    <TableCell>{parcela.comprador_empreendimento}</TableCell>
+                    <TableCell>{parcela.comprador_tipo_classificado}</TableCell>
+                    <TableCell>{formatDate(parcela.contrato_data)}</TableCell>
+                    <TableCell>{parcela.contrato_area_m2}</TableCell>
+                    <TableCell>{formatCurrency(parcela.contrato_valor_total)}</TableCell>
+                    <TableCell>{parcela.tipo_parcela}</TableCell>
+                    <TableCell>{parcela.numero_parcela}</TableCell>
+                    <TableCell>{formatDate(parcela.vencimento_parcela)}</TableCell>
+                    <TableCell>{formatCurrency(parcela.valor_parcela)}</TableCell>
+                    <TableCell>
+                      <Badge variant={parcela.situacao === 'PAGO' ? 'default' : 'secondary'}>
+                        {parcela.situacao}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(parcela.data_recebimento)}</TableCell>
+                    <TableCell>{formatCurrency(parcela.desconto)}</TableCell>
+                    <TableCell>{formatCurrency(parcela.juros)}</TableCell>
+                    <TableCell>-</TableCell>
+                    <TableCell>{formatCurrency(parcela.valor_pago || 0)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
-
-          {/* Lista de Investimentos */}
-          {investimentos.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                Nenhum investimento encontrado
-              </CardContent>
-            </Card>
-          ) : (
-            investimentos.map(investimento => {
-              const parcelasInvestimento = parcelas.filter(p => p.investimento_id === investimento.id);
-              return (
-                <Card key={investimento.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <DollarSign className="h-5 w-5" />
-                        Investimento - {format(parseISO(investimento.data_inicio), "dd/MM/yyyy")}
-                      </span>
-                      <span className="text-lg">
-                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investimento.valor_total)}
-                      </span>
-                    </CardTitle>
-                    <CardDescription>
-                      {investimento.numero_parcelas} parcelas de {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(investimento.valor_parcela)}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Parcela</TableHead>
-                            <TableHead>Vencimento</TableHead>
-                            <TableHead>Valor</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Pagamento</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {parcelasInvestimento.map(parcela => {
-                            const diasAtraso = parcela.status === 'vencida' ? calcularDiasAtraso(parcela.data_vencimento) : 0;
-                            return (
-                              <TableRow key={parcela.id}>
-                                <TableCell>{parcela.numero_parcela}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    {format(parseISO(parcela.data_vencimento), "dd/MM/yyyy")}
-                                    {diasAtraso > 0 && (
-                                      <Badge variant="destructive" className="text-xs">
-                                        <AlertTriangle className="h-3 w-3 mr-1" />
-                                        {diasAtraso}d
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parcela.valor_parcela)}
-                                </TableCell>
-                                <TableCell>{getStatusBadge(parcela.status)}</TableCell>
-                                <TableCell>
-                                  {parcela.data_pagamento ? format(parseISO(parcela.data_pagamento), "dd/MM/yyyy") : '-'}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </TabsContent>
-
-        {/* Tab COHAPM */}
-        <TabsContent value="cohapm" className="space-y-4">
-          {/* Stats COHAPM */}
-          <div className="grid gap-4 md:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(statsCohapm.valorTotal)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Valor Pago</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-green-600">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(statsCohapm.valorPago)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Valor Pendente</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-orange-600">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(statsCohapm.valorPendente)}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium">Parcelas Atrasadas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-red-600">
-                  {statsCohapm.parcelasAtrasadas}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Lista de Contratos */}
-          {contratos.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center text-muted-foreground">
-                Nenhum contrato encontrado
-              </CardContent>
-            </Card>
-          ) : (
-            contratos.map(contrato => {
-              const parcelasContrato = parcelasCohapm.filter(p => p.contrato_id === contrato.id);
-              return (
-                <Card key={contrato.id}>
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      <span className="flex items-center gap-2">
-                        <FileText className="h-5 w-5" />
-                        Contrato {contrato.numero_contrato}
-                      </span>
-                      <span className="text-lg">
-                        {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(contrato.valor_total)}
-                      </span>
-                    </CardTitle>
-                    <CardDescription>
-                      Quadra {contrato.quadra} / Lote {contrato.lote} - {contrato.area_m2}m²
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="rounded-md border">
-                      <Table>
-                        <TableHeader>
-                          <TableRow>
-                            <TableHead>Parcela</TableHead>
-                            <TableHead>Vencimento</TableHead>
-                            <TableHead>Valor</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Pagamento</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {parcelasContrato.map(parcela => {
-                            const diasAtraso = parcela.dias_atraso || 0;
-                            return (
-                              <TableRow key={parcela.id}>
-                                <TableCell>{parcela.numero_parcela}</TableCell>
-                                <TableCell>
-                                  <div className="flex items-center gap-2">
-                                    {parcela.data_vencimento ? format(parseISO(parcela.data_vencimento), "dd/MM/yyyy") : '-'}
-                                    {diasAtraso > 0 && (
-                                      <Badge variant="destructive" className="text-xs">
-                                        <AlertTriangle className="h-3 w-3 mr-1" />
-                                        {diasAtraso}d
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </TableCell>
-                                <TableCell>
-                                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parcela.valor_parcela)}
-                                </TableCell>
-                                <TableCell>{getStatusBadge(parcela.status)}</TableCell>
-                                <TableCell>
-                                  {parcela.data_pagamento ? format(parseISO(parcela.data_pagamento), "dd/MM/yyyy") : '-'}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })
-          )}
-        </TabsContent>
-      </Tabs>
+        </CardContent>
+      </Card>
     </div>
   );
 }
