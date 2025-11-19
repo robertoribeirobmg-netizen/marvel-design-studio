@@ -36,7 +36,11 @@ interface Arquivo {
   data_upload: string;
 }
 
-export function AdminObras() {
+interface AdminObrasProps {
+  readOnly?: boolean;
+}
+
+export function AdminObras({ readOnly = false }: AdminObrasProps) {
   const [etapas, setEtapas] = useState<EtapaObra[]>([]);
   const [selectedEtapa, setSelectedEtapa] = useState<EtapaObra | null>(null);
   const [arquivos, setArquivos] = useState<Arquivo[]>([]);
@@ -259,17 +263,18 @@ export function AdminObras() {
                         {etapa.percentual_concluido}% concluído
                       </p>
                     </div>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setSelectedEtapa(etapa)}
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Editar
-                        </Button>
-                      </DialogTrigger>
+                    {!readOnly && (
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedEtapa(etapa)}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Editar
+                          </Button>
+                        </DialogTrigger>
                       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
                         <DialogHeader>
                           <DialogTitle>{etapa.nome}</DialogTitle>
@@ -533,9 +538,10 @@ export function AdminObras() {
                               />
                             )}
                           </TabsContent>
-                        </Tabs>
-                      </DialogContent>
-                    </Dialog>
+                          </Tabs>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </div>
                 </CardContent>
               </Card>

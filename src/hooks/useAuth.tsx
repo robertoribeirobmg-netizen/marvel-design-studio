@@ -9,6 +9,7 @@ interface AuthContextType {
   session: Session | null;
   isAdmin: boolean;
   isAdminObras: boolean;
+  isExecutivoVendas: boolean;
   isLoading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, nomeCompleto: string) => Promise<void>;
@@ -22,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isAdminObras, setIsAdminObras] = useState(false);
+  const [isExecutivoVendas, setIsExecutivoVendas] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -67,17 +69,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .from('user_roles')
         .select('role')
         .eq('user_id', userId)
-        .in('role', ['admin', 'admin_obras']);
+        .in('role', ['admin', 'admin_obras', 'executivo_vendas']);
 
       if (error) throw error;
       
       const roles = data?.map(r => r.role) || [];
       setIsAdmin(roles.includes('admin'));
       setIsAdminObras(roles.includes('admin_obras'));
+      setIsExecutivoVendas(roles.includes('executivo_vendas'));
     } catch (error) {
       console.error('Erro ao verificar role:', error);
       setIsAdmin(false);
       setIsAdminObras(false);
+      setIsExecutivoVendas(false);
     } finally {
       setIsLoading(false);
     }
@@ -145,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         session,
         isAdmin,
         isAdminObras,
+        isExecutivoVendas,
         isLoading,
         signIn,
         signUp,

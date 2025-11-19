@@ -20,7 +20,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function AppSidebar() {
   const { state } = useSidebar();
-  const { user, isAdmin, isAdminObras, signOut } = useAuth();
+  const { user, isAdmin, isAdminObras, isExecutivoVendas, signOut } = useAuth();
   const collapsed = state === "collapsed";
 
   if (!user) return null;
@@ -76,7 +76,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {(isAdmin || isAdminObras) && (
+              {(isAdmin || isAdminObras || isExecutivoVendas) && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -85,7 +85,7 @@ export function AppSidebar() {
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <Shield className="h-4 w-4" />
-                      {!collapsed && <span>Admin</span>}
+                      {!collapsed && <span>{isExecutivoVendas ? 'Obras' : 'Admin'}</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
