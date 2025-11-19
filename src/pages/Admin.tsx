@@ -12,12 +12,11 @@ import { Progress } from '@/components/ui/progress';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious, PaginationEllipsis } from "@/components/ui/pagination";
-import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, BarChart3, FileText, Building2, Copy, Eye, EyeOff, Check, GitCompare, RefreshCw, LineChart } from 'lucide-react';
+import { LogOut, UserPlus, Shield, Users, Trash2, Camera, Upload, DollarSign, FileSpreadsheet, Search, X, Edit, ChevronLeft, ChevronRight, FileText, Building2, Copy, Eye, EyeOff, Check, GitCompare, RefreshCw, LineChart } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { DashboardCooperados } from '@/components/DashboardCooperados';
 import { AdminObras } from '@/components/AdminObras';
 import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
 
@@ -1153,14 +1152,10 @@ export default function Admin() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          <Tabs defaultValue={isAdminObras && !isAdmin ? "obras" : "dashboard"} className="space-y-6">
-            <TabsList className={`grid w-full ${isAdminObras && !isAdmin ? 'grid-cols-2' : 'grid-cols-7'}`}>
+          <Tabs defaultValue={isAdminObras && !isAdmin ? "obras" : "cooperados"} className="space-y-6">
+            <TabsList className={`grid w-full ${isAdminObras && !isAdmin ? 'grid-cols-2' : 'grid-cols-6'}`}>
               {isAdmin && (
                 <>
-                  <TabsTrigger value="dashboard" className="flex items-center gap-2">
-                    <BarChart3 className="h-4 w-4" />
-                    Dashboard
-                  </TabsTrigger>
                   <TabsTrigger value="cooperados" className="flex items-center gap-2">
                     <Users className="h-4 w-4" />
                     Cooperados
@@ -1184,12 +1179,6 @@ export default function Admin() {
                 Galeria
               </TabsTrigger>
             </TabsList>
-
-            {isAdmin && (
-              <TabsContent value="dashboard" className="space-y-6">
-                <DashboardCooperados cooperados={cooperados} />
-              </TabsContent>
-            )}
 
             {isAdmin && (
               <TabsContent value="cooperados" className="space-y-8">
