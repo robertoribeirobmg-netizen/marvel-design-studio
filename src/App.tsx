@@ -8,7 +8,6 @@ import { AuthProvider } from "./hooks/useAuth";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./components/AppLayout";
 import Index from "./pages/Index";
-import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import AreaCooperado from "./pages/AreaCooperado";
 import Admin from "./pages/Admin";
@@ -31,7 +30,6 @@ const App = () => (
             <AppLayout>
               <Routes>
                 <Route path="/" element={<Index />} />
-                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/login" element={<Login />} />
                 <Route
                   path="/area-cooperado"
