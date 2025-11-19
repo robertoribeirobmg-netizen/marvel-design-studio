@@ -128,10 +128,10 @@ serve(async (req) => {
           console.log(`Inserido: ${compradorData.nome}`);
         }
 
-        // Tentar vincular com profile existente (por CPF)
+        // Tentar vincular com profile existente ou criar novo (por CPF)
         if (compradorData.cpf_cnpj) {
           const cpfLimpo = compradorData.cpf_cnpj.replace(/\D/g, "");
-          if (cpfLimpo) {
+          if (cpfLimpo && cpfLimpo.length >= 11) {
             const { data: profile } = await supabase
               .from("profiles")
               .select("id")
@@ -139,12 +139,39 @@ serve(async (req) => {
               .maybeSingle();
 
             if (profile) {
+              // Vincular ao profile existente
               await supabase
                 .from("compradores_cohapm")
                 .update({ profile_id: profile.id })
                 .eq("id", compradorData.id);
               
-              console.log(`Vinculado ao profile: ${compradorData.nome}`);
+              console.log(`Vinculado ao profile existente: ${compradorData.nome}`);
+            } else if (compradorData.email && compradorData.nome) {
+              // Criar novo usuário cooperado se tiver email e nome
+              try {
+                const { data: newProfile, error: createError } = await supabase
+                  .rpc("create_profile_with_temp_password", {
+                    p_email: compradorData.email,
+                    p_nome: compradorData.nome,
+                    p_cpf: cpfLimpo,
+                    p_quadra: compradorData.quadra || null,
+                    p_lote: compradorData.lote || null,
+                  });
+
+                if (createError) {
+                  console.error(`Erro ao criar usuário para ${compradorData.nome}:`, createError.message);
+                } else if (newProfile) {
+                  // Vincular ao novo profile criado
+                  await supabase
+                    .from("compradores_cohapm")
+                    .update({ profile_id: newProfile })
+                    .eq("id", compradorData.id);
+                  
+                  console.log(`Novo usuário cooperado criado e vinculado: ${compradorData.nome}`);
+                }
+              } catch (createErr: any) {
+                console.error(`Erro ao criar usuário para ${compradorData.nome}:`, createErr.message);
+              }
             }
           }
         }
