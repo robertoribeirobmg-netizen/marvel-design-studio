@@ -70,14 +70,29 @@ serve(async (req) => {
 
           let profileId = existente?.profile_id;
 
-          // Se tem CPF e email, criar/vincular profile
-          if (compradorData.cpf_cnpj && compradorData.email) {
-            // Buscar profile pelo CPF
-            const { data: profileExistente } = await supabase
-              .from("profiles")
-              .select("id")
-              .eq("cpf", compradorData.cpf_cnpj)
-              .maybeSingle();
+          // Se tem email, criar/vincular profile
+          if (compradorData.email && compradorData.nome) {
+            let profileExistente = null;
+            
+            // Se tem CPF, buscar profile pelo CPF
+            if (compradorData.cpf_cnpj) {
+              const { data } = await supabase
+                .from("profiles")
+                .select("id")
+                .eq("cpf", compradorData.cpf_cnpj)
+                .maybeSingle();
+              profileExistente = data;
+            }
+            
+            // Se não achou pelo CPF, buscar pelo email
+            if (!profileExistente) {
+              const { data } = await supabase
+                .from("profiles")
+                .select("id")
+                .eq("email", compradorData.email)
+                .maybeSingle();
+              profileExistente = data;
+            }
 
             if (profileExistente) {
               profileId = profileExistente.id;
@@ -89,6 +104,7 @@ serve(async (req) => {
                   nome_completo: compradorData.nome,
                   email: compradorData.email,
                   telefone: compradorData.telefone,
+                  cpf: compradorData.cpf_cnpj || null,
                   quadra: compradorData.quadra,
                   lote: compradorData.lote,
                   fase: row.fase || null,
@@ -97,7 +113,9 @@ serve(async (req) => {
                 .eq("id", profileId);
             } else {
               // Criar novo usuário e profile
-              const senha = compradorData.cpf_cnpj.replace(/\D/g, '').substring(0, 4);
+              const senha = compradorData.cpf_cnpj 
+                ? compradorData.cpf_cnpj.replace(/\D/g, '').substring(0, 4)
+                : Math.random().toString().substring(2, 6);
               
               try {
                 const { data: authData, error: authError } = await supabase.auth.admin.createUser({
@@ -121,7 +139,7 @@ serve(async (req) => {
                       id: profileId,
                       nome_completo: compradorData.nome,
                       email: compradorData.email,
-                      cpf: compradorData.cpf_cnpj,
+                      cpf: compradorData.cpf_cnpj || null,
                       telefone: compradorData.telefone,
                       quadra: compradorData.quadra,
                       lote: compradorData.lote,
