@@ -16,6 +16,7 @@ import { useParcelasData } from '@/hooks/useParcelasData';
 import { format, differenceInDays, parseISO, isBefore, isAfter, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlterarSenhaPrimeiroAcesso } from '@/components/AlterarSenhaPrimeiroAcesso';
 
 export default function AreaCooperado() {
   const { user, signOut, isAdmin } = useAuth();
@@ -31,6 +32,7 @@ export default function AreaCooperado() {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [showAlterarSenha, setShowAlterarSenha] = useState(false);
 
   const { parcelas, isLoading: isLoadingParcelas } = useParcelasData(user?.id);
 
@@ -51,6 +53,11 @@ export default function AreaCooperado() {
 
       if (error) throw error;
       setProfile(data);
+      
+      // Verificar se é o primeiro acesso
+      if (data && !data.primeira_senha_alterada) {
+        setShowAlterarSenha(true);
+      }
     } catch (error) {
       console.error('Erro ao carregar perfil:', error);
     } finally {
@@ -138,6 +145,15 @@ export default function AreaCooperado() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
+      {/* Modal de Alteração de Senha no Primeiro Acesso */}
+      <AlterarSenhaPrimeiroAcesso
+        open={showAlterarSenha}
+        onSuccess={() => {
+          setShowAlterarSenha(false);
+          loadProfile();
+        }}
+      />
+      
       {/* Header */}
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">

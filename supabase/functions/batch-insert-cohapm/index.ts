@@ -61,11 +61,94 @@ serve(async (req) => {
             compradorData.parcelas_pagas = compradorData.total_parcelas - compradorData.parcelas_atrasadas;
           }
 
+          // Verificar se comprador já existe
           const { data: existente } = await supabase
             .from("compradores_cohapm")
-            .select("id")
+            .select("id, profile_id")
             .eq("id", compradorData.id)
             .maybeSingle();
+
+          let profileId = existente?.profile_id;
+
+          // Se tem CPF e email, criar/vincular profile
+          if (compradorData.cpf_cnpj && compradorData.email) {
+            // Buscar profile pelo CPF
+            const { data: profileExistente } = await supabase
+              .from("profiles")
+              .select("id")
+              .eq("cpf", compradorData.cpf_cnpj)
+              .maybeSingle();
+
+            if (profileExistente) {
+              profileId = profileExistente.id;
+              
+              // Atualizar dados do profile
+              await supabase
+                .from("profiles")
+                .update({
+                  nome_completo: compradorData.nome,
+                  email: compradorData.email,
+                  telefone: compradorData.telefone,
+                  quadra: compradorData.quadra,
+                  lote: compradorData.lote,
+                  fase: row.fase || null,
+                  updated_at: new Date().toISOString()
+                })
+                .eq("id", profileId);
+            } else {
+              // Criar novo usuário e profile
+              const senha = compradorData.cpf_cnpj.replace(/\D/g, '').substring(0, 5);
+              
+              try {
+                const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+                  email: compradorData.email,
+                  password: senha,
+                  email_confirm: true,
+                  user_metadata: {
+                    nome_completo: compradorData.nome
+                  }
+                });
+
+                if (authError) throw authError;
+                
+                if (authData.user) {
+                  profileId = authData.user.id;
+
+                  // Criar profile
+                  await supabase
+                    .from("profiles")
+                    .insert({
+                      id: profileId,
+                      nome_completo: compradorData.nome,
+                      email: compradorData.email,
+                      cpf: compradorData.cpf_cnpj,
+                      telefone: compradorData.telefone,
+                      quadra: compradorData.quadra,
+                      lote: compradorData.lote,
+                      fase: row.fase || null,
+                      primeira_senha_alterada: false
+                    });
+
+                  // Criar user role
+                  await supabase
+                    .from("user_roles")
+                    .insert({
+                      user_id: profileId,
+                      role: 'cooperado'
+                    });
+
+                  console.log(`✅ Usuário criado: ${compradorData.email}`);
+                }
+              } catch (authError: any) {
+                console.error(`Erro ao criar usuário para ${compradorData.email}:`, authError.message);
+              }
+            }
+          }
+
+          // Vincular profile_id ao comprador
+          if (profileId) {
+            compradorData.profile_id = profileId;
+          }
 
           if (existente) {
             const { error: updateError } = await supabase
