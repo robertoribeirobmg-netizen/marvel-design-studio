@@ -30,6 +30,7 @@ export function ProcessarCOHAPMAuto() {
     'comprador_email': 'Email',
     'comprador_quadra': 'Quadra',
     'comprador_lote': 'Lote',
+    'comprador_fase': 'Fase',
     'comprador_grupo': 'Grupo',
     'comprador_empreendimento': 'Empreendimento',
     'comprador_tipo_classificado': 'Tipo Classificado',

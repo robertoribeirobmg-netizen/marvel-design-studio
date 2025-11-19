@@ -717,6 +717,7 @@ export type Database = {
           id: string
           lote: string | null
           nome_completo: string
+          primeira_senha_alterada: boolean | null
           quadra: string | null
           telefone: string | null
           updated_at: string
@@ -730,6 +731,7 @@ export type Database = {
           id: string
           lote?: string | null
           nome_completo: string
+          primeira_senha_alterada?: boolean | null
           quadra?: string | null
           telefone?: string | null
           updated_at?: string
@@ -743,6 +745,7 @@ export type Database = {
           id?: string
           lote?: string | null
           nome_completo?: string
+          primeira_senha_alterada?: boolean | null
           quadra?: string | null
           telefone?: string | null
           updated_at?: string
