@@ -315,11 +315,13 @@ export default function AreaCooperado() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Link to="/dashboard">
-                  <Button variant="outline" className="w-full">
-                    Ver Progresso
-                  </Button>
-                </Link>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => document.getElementById('dashboard-obra')?.scrollIntoView({ behavior: 'smooth' })}
+                >
+                  Ver Progresso
+                </Button>
               </CardContent>
             </Card>
 
@@ -344,6 +346,41 @@ export default function AreaCooperado() {
               </CardContent>
             </Card>
 
+          </div>
+
+          {/* Seção de Obra */}
+          <div id="dashboard-obra" className="space-y-6">
+            {/* Acompanhamento de Obras */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="h-5 w-5 text-primary" />
+                  Acompanhamento de Obras
+                </CardTitle>
+                <CardDescription>
+                  Veja o andamento detalhado de cada etapa da construção
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AcompanhamentoObras />
+              </CardContent>
+            </Card>
+
+            {/* Dashboard Comparativo */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Análise Comparativa
+                </CardTitle>
+                <CardDescription>
+                  Compare o progresso real com o planejado
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <DashboardComparativoObras />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Dashboard Financeiro */}
@@ -734,37 +771,6 @@ export default function AreaCooperado() {
             </CardContent>
           </Card>
 
-          {/* Acompanhamento de Obras */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Building2 className="h-5 w-5 text-primary" />
-                Acompanhamento de Obras
-              </CardTitle>
-              <CardDescription>
-                Veja o andamento detalhado de cada etapa da construção
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AcompanhamentoObras />
-            </CardContent>
-          </Card>
-
-          {/* Dashboard Comparativo */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Análise Comparativa
-              </CardTitle>
-              <CardDescription>
-                Compare o progresso real com o planejado
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <DashboardComparativoObras />
-            </CardContent>
-          </Card>
         </div>
       </main>
 
