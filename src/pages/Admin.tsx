@@ -26,7 +26,7 @@ import { AdminGaleria } from '@/components/AdminGaleria';
 
 import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { ImportacaoCOHAPM } from '@/components/admin/ImportacaoCOHAPM';
-import { DashboardVisualCOHAPM } from '@/components/admin/DashboardVisualCOHAPM';
+
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -1154,7 +1154,7 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue={isAdminObras && !isAdmin ? "obras" : "dashboard"} className="space-y-6">
-            <TabsList className={`grid w-full ${isAdminObras && !isAdmin ? 'grid-cols-2' : 'grid-cols-8'}`}>
+            <TabsList className={`grid w-full ${isAdminObras && !isAdmin ? 'grid-cols-2' : 'grid-cols-7'}`}>
               {isAdmin && (
                 <>
                   <TabsTrigger value="dashboard" className="flex items-center gap-2">
@@ -1172,10 +1172,6 @@ export default function Admin() {
                   <TabsTrigger value="cohapm" className="flex items-center gap-2">
                     <FileSpreadsheet className="h-4 w-4" />
                     COHAPM
-                  </TabsTrigger>
-                  <TabsTrigger value="graficos" className="flex items-center gap-2">
-                    <LineChart className="h-4 w-4" />
-                    Gráficos
                   </TabsTrigger>
                 </>
               )}
@@ -1390,13 +1386,6 @@ export default function Admin() {
               </TabsContent>
             )}
 
-            {isAdmin && (
-              <TabsContent value="graficos">
-                <div className="space-y-6">
-                  <DashboardVisualCOHAPM />
-                </div>
-              </TabsContent>
-            )}
 
             <TabsContent value="obras">
               <div className="space-y-6">
