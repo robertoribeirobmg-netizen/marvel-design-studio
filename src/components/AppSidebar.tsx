@@ -76,7 +76,7 @@ export function AppSidebar() {
                 </SidebarMenuButton>
               </SidebarMenuItem>
 
-              {(isAdmin || isAdminObras || isExecutivoVendas) && (
+              {(isAdmin || isAdminObras) && (
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild>
                     <NavLink
@@ -85,7 +85,7 @@ export function AppSidebar() {
                       activeClassName="bg-muted text-primary font-medium"
                     >
                       <Shield className="h-4 w-4" />
-                      {!collapsed && <span>{isExecutivoVendas ? 'Obras' : 'Admin'}</span>}
+                      {!collapsed && <span>Admin</span>}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

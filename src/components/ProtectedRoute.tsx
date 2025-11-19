@@ -6,10 +6,11 @@ interface ProtectedRouteProps {
   children: ReactNode;
   adminOnly?: boolean;
   adminObrasOnly?: boolean;
+  adminOrObras?: boolean;
   executivoVendasOnly?: boolean;
 }
 
-export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = false, executivoVendasOnly = false }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = false, adminOrObras = false, executivoVendasOnly = false }: ProtectedRouteProps) {
   const { user, isAdmin, isAdminObras, isExecutivoVendas, isLoading } = useAuth();
   const navigate = useNavigate();
 
@@ -19,13 +20,15 @@ export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = f
         navigate('/login');
       } else if (adminOnly && !isAdmin) {
         navigate('/area-cooperado');
+      } else if (adminOrObras && !isAdmin && !isAdminObras) {
+        navigate('/area-cooperado');
       } else if (adminObrasOnly && !isAdminObras && !isAdmin && !isExecutivoVendas) {
         navigate('/area-cooperado');
       } else if (executivoVendasOnly && !isExecutivoVendas && !isAdmin) {
         navigate('/area-cooperado');
       }
     }
-  }, [user, isAdmin, isAdminObras, isExecutivoVendas, isLoading, adminOnly, adminObrasOnly, executivoVendasOnly, navigate]);
+  }, [user, isAdmin, isAdminObras, isExecutivoVendas, isLoading, adminOnly, adminObrasOnly, adminOrObras, executivoVendasOnly, navigate]);
 
   if (isLoading) {
     return (
@@ -35,7 +38,7 @@ export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = f
     );
   }
 
-  if (!user || (adminOnly && !isAdmin) || (adminObrasOnly && !isAdminObras && !isAdmin && !isExecutivoVendas) || (executivoVendasOnly && !isExecutivoVendas && !isAdmin)) {
+  if (!user || (adminOnly && !isAdmin) || (adminOrObras && !isAdmin && !isAdminObras) || (adminObrasOnly && !isAdminObras && !isAdmin && !isExecutivoVendas) || (executivoVendasOnly && !isExecutivoVendas && !isAdmin)) {
     return null;
   }
 
