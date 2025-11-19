@@ -395,9 +395,315 @@ export default function AreaCooperado() {
                 </div>
 
                 {/* Category Filters */}
-...
+                <div className="mb-4">
+                  <h4 className="text-xs text-muted-foreground mb-2">Categoria</h4>
+                  <div className="flex flex-wrap gap-2">
+                  <Button
+                    variant={filtroCategoria === 'todas' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('todas')}
+                    className="flex items-center gap-2"
+                  >
+                    <Filter className="h-4 w-4" />
+                    Todas
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === '1ª Fase do Muro' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('1ª Fase do Muro')}
+                  >
+                    1ª Fase do Muro
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === '2ª Fase do Muro' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('2ª Fase do Muro')}
+                  >
+                    2ª Fase do Muro
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === '3ª Fase do Muro' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('3ª Fase do Muro')}
+                  >
+                    3ª Fase do Muro
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === 'Supressão Vegetal' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('Supressão Vegetal')}
+                  >
+                    Supressão Vegetal
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === 'Terraplanagem' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('Terraplanagem')}
+                  >
+                    Terraplanagem
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === 'Infraestrutura' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('Infraestrutura')}
+                  >
+                    Infraestrutura
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === 'Pavimentação' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('Pavimentação')}
+                  >
+                    Pavimentação
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === 'Portaria e Clube' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('Portaria e Clube')}
+                  >
+                    Portaria e Clube
+                  </Button>
+                  <Button
+                    variant={filtroCategoria === 'Paisagismo' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setFiltroCategoria('Paisagismo')}
+                  >
+                    Paisagismo
+                  </Button>
+                </div>
+                </div>
+
+                {/* Date Range Filters */}
+                <div className="mb-4">
+                  <h4 className="text-xs text-muted-foreground mb-2">Filtrar por Data</h4>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn("justify-start text-left font-normal", !dateFrom && "text-muted-foreground")}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Data Início"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComp
+                          mode="single"
+                          selected={dateFrom}
+                          onSelect={setDateFrom}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className={cn("justify-start text-left font-normal", !dateTo && "text-muted-foreground")}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {dateTo ? format(dateTo, "dd/MM/yyyy") : "Data Fim"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <CalendarComp
+                          mode="single"
+                          selected={dateTo}
+                          onSelect={setDateTo}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+
+                    {(dateFrom || dateTo) && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearDateFilters}
+                        className="flex items-center gap-1"
+                      >
+                        <X className="h-4 w-4" />
+                        Limpar Datas
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
                 {/* Photos/Videos Grid or List */}
-...
+                {fotos.length === 0 ? (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>Nenhuma foto ou vídeo encontrado</p>
+                  </div>
+                ) : (
+                  <>
+                    {viewMode === 'grid' ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {fotos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((foto, index) => (
+                          <div
+                            key={foto.id}
+                            className="group relative overflow-hidden rounded-lg border bg-card cursor-pointer hover:shadow-lg transition-all"
+                            onClick={() => {
+                              setLightboxIndex((currentPage - 1) * itemsPerPage + index);
+                              setLightboxOpen(true);
+                            }}
+                          >
+                            {foto.video_url ? (
+                              <div className="aspect-video bg-muted flex items-center justify-center">
+                                <video
+                                  src={foto.video_url}
+                                  className="w-full h-full object-cover"
+                                  controls={false}
+                                  muted
+                                  preload="metadata"
+                                />
+                              </div>
+                            ) : (
+                              <div className="aspect-video bg-muted">
+                                {foto.foto_url && (
+                                  <img
+                                    src={foto.foto_url}
+                                    alt={foto.titulo}
+                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                  />
+                                )}
+                              </div>
+                            )}
+                            <div className="p-4">
+                              <h4 className="font-semibold mb-1 line-clamp-1">{foto.titulo}</h4>
+                              {foto.descricao && (
+                                <p className="text-sm text-muted-foreground line-clamp-2 mb-2">{foto.descricao}</p>
+                              )}
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Badge variant="secondary" className="text-xs">
+                                  {foto.categoria}
+                                </Badge>
+                                <span>{format(parseISO(foto.data_upload), 'dd/MM/yyyy')}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="space-y-4 mb-6">
+                        {fotos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((foto, index) => (
+                          <div
+                            key={foto.id}
+                            className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
+                            onClick={() => {
+                              setLightboxIndex((currentPage - 1) * itemsPerPage + index);
+                              setLightboxOpen(true);
+                            }}
+                          >
+                            {foto.video_url ? (
+                              <div className="w-32 h-32 flex-shrink-0 bg-muted rounded-md overflow-hidden">
+                                <video
+                                  src={foto.video_url}
+                                  className="w-full h-full object-cover"
+                                  controls={false}
+                                  muted
+                                  preload="metadata"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-32 h-32 flex-shrink-0 bg-muted rounded-md overflow-hidden">
+                                {foto.foto_url && (
+                                  <img
+                                    src={foto.foto_url}
+                                    alt={foto.titulo}
+                                    className="w-full h-full object-cover"
+                                  />
+                                )}
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-2">{foto.titulo}</h4>
+                              {foto.descricao && (
+                                <p className="text-sm text-muted-foreground mb-3">{foto.descricao}</p>
+                              )}
+                              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <Badge variant="secondary" className="text-xs">
+                                  {foto.categoria}
+                                </Badge>
+                                <span>{format(parseISO(foto.data_upload), 'dd/MM/yyyy')}</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Pagination */}
+                    {fotos.length > itemsPerPage && (
+                      <div className="flex items-center justify-between flex-wrap gap-4">
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage - 1)}
+                            disabled={currentPage === 1}
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </Button>
+                          
+                          <div className="flex gap-1">
+                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                              let pageNum;
+                              if (totalPages <= 5) {
+                                pageNum = i + 1;
+                              } else if (currentPage <= 3) {
+                                pageNum = i + 1;
+                              } else if (currentPage >= totalPages - 2) {
+                                pageNum = totalPages - 4 + i;
+                              } else {
+                                pageNum = currentPage - 2 + i;
+                              }
+                              
+                              return (
+                                <Button
+                                  key={pageNum}
+                                  variant={currentPage === pageNum ? 'default' : 'outline'}
+                                  size="sm"
+                                  onClick={() => handlePageChange(pageNum)}
+                                  className="w-9"
+                                >
+                                  {pageNum}
+                                </Button>
+                              );
+                            })}
+                          </div>
+                          
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handlePageChange(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </Button>
+                        </div>
+
+                        <select
+                          value={itemsPerPage}
+                          onChange={(e) => {
+                            setItemsPerPage(Number(e.target.value));
+                            setCurrentPage(1);
+                          }}
+                          className="text-sm border rounded-md px-2 py-1 bg-background"
+                        >
+                          <option value={6}>6 por página</option>
+                          <option value={12}>12 por página</option>
+                          <option value={24}>24 por página</option>
+                          <option value={48}>48 por página</option>
+                        </select>
+                      </div>
+                    )}
+                  </>
+                )}
               </CardContent>
             </Card>
 
