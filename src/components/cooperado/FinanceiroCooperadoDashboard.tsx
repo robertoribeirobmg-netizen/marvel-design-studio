@@ -150,46 +150,6 @@ export function FinanceiroCooperadoDashboard({ userId }: FinanceiroCooperadoDash
         <p className="text-muted-foreground">Acompanhe seus investimentos e contratos</p>
       </div>
 
-      {/* Dados Cadastrais */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <User className="h-5 w-5" />
-            Dados Cadastrais
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Nome Completo</p>
-              <p className="font-medium">{profile?.nome_completo}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Email</p>
-              <p className="font-medium">{profile?.email}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">CPF</p>
-              <p className="font-medium">{profile?.cpf || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Telefone</p>
-              <p className="font-medium">{profile?.telefone || '-'}</p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Quadra / Lote</p>
-              <p className="font-medium">
-                {profile?.quadra && profile?.lote ? `${profile.quadra} / ${profile.lote}` : '-'}
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Fase</p>
-              <p className="font-medium">{profile?.fase || '-'}</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Comprador Vinculado */}
       {comprador && (
         <Card>
