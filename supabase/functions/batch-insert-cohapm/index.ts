@@ -97,7 +97,7 @@ serve(async (req) => {
                 .eq("id", profileId);
             } else {
               // Criar novo usuário e profile
-              const senha = compradorData.cpf_cnpj.replace(/\D/g, '').substring(0, 5);
+              const senha = compradorData.cpf_cnpj.replace(/\D/g, '').substring(0, 4);
               
               try {
                 const { data: authData, error: authError } = await supabase.auth.admin.createUser({

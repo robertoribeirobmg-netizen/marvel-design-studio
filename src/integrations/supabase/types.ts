@@ -57,6 +57,7 @@ export type Database = {
           total_contratos: number | null
           total_parcelas: number | null
           updated_at: string | null
+          valor_lote: number | null
           valor_pago: number | null
           valor_pendente: number | null
           valor_total_contratos: number | null
@@ -103,6 +104,7 @@ export type Database = {
           total_contratos?: number | null
           total_parcelas?: number | null
           updated_at?: string | null
+          valor_lote?: number | null
           valor_pago?: number | null
           valor_pendente?: number | null
           valor_total_contratos?: number | null
@@ -149,6 +151,7 @@ export type Database = {
           total_contratos?: number | null
           total_parcelas?: number | null
           updated_at?: string | null
+          valor_lote?: number | null
           valor_pago?: number | null
           valor_pendente?: number | null
           valor_total_contratos?: number | null
@@ -977,6 +980,16 @@ export type Database = {
     }
     Functions: {
       cleanup_old_rate_limits: { Args: never; Returns: undefined }
+      create_profile_with_temp_password: {
+        Args: {
+          p_cpf: string
+          p_email: string
+          p_lote?: string
+          p_nome: string
+          p_quadra?: string
+        }
+        Returns: string
+      }
       criar_chave_vinculacao: {
         Args: { lote?: string; nome: string; quadra?: string }
         Returns: string
