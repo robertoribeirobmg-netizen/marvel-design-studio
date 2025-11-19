@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { DashboardCooperados } from '@/components/DashboardCooperados';
 import { AdminObras } from '@/components/AdminObras';
 import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
-import { TimelineObras } from '@/components/TimelineObras';
+
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { AdminGaleria } from '@/components/AdminGaleria';
 
@@ -1400,7 +1400,6 @@ export default function Admin() {
 
             <TabsContent value="obras">
               <div className="space-y-6">
-                <TimelineObras />
                 <DashboardComparativoObras showVariacoes={true} />
                 <HistoricoGeralObras />
                 <AdminObras />
