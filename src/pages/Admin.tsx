@@ -23,7 +23,7 @@ import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
 import { TimelineObras } from '@/components/TimelineObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { AdminGaleria } from '@/components/AdminGaleria';
-import { ValidationErrorsAnalytics } from '@/components/ValidationErrorsAnalytics';
+
 import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { ImportacaoCOHAPM } from '@/components/admin/ImportacaoCOHAPM';
 import { DashboardVisualCOHAPM } from '@/components/admin/DashboardVisualCOHAPM';
@@ -1187,12 +1187,6 @@ export default function Admin() {
                 <Camera className="h-4 w-4" />
                 Galeria
               </TabsTrigger>
-              {isAdmin && (
-                <TabsTrigger value="validation" className="flex items-center gap-2">
-                  <Shield className="h-4 w-4" />
-                  Validação
-                </TabsTrigger>
-              )}
             </TabsList>
 
             {isAdmin && (
@@ -1417,11 +1411,6 @@ export default function Admin() {
               <AdminGaleria />
             </TabsContent>
 
-            {isAdmin && (
-              <TabsContent value="validation">
-                <ValidationErrorsAnalytics />
-              </TabsContent>
-            )}
           </Tabs>
         </div>
       </main>
