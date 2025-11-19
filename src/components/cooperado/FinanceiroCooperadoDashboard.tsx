@@ -131,11 +131,45 @@ export function FinanceiroCooperadoDashboard({ userId }: FinanceiroCooperadoDash
     }
   };
 
+  const hoje = new Date();
+  hoje.setHours(0, 0, 0, 0);
+
   const stats = {
     totalParcelas: parcelas.length,
     valorTotal: parcelas.reduce((sum, p) => sum + (p.valor_parcela || 0), 0),
     valorPago: parcelas.reduce((sum, p) => sum + (p.valor_pago || 0), 0),
-    valorPendente: parcelas.reduce((sum, p) => sum + ((p.valor_pago ? 0 : p.valor_parcela) || 0), 0),
+    
+    parcelasPagas: parcelas.filter(p => p.situacao === 'PAGO').length,
+    pagamentosRealizados: parcelas.reduce((sum, p) => 
+      p.situacao === 'PAGO' ? sum + (p.valor_pago || 0) : sum, 0
+    ),
+    
+    parcelasAVencer: parcelas.filter(p => {
+      if (p.situacao === 'PAGO') return false;
+      const vencimento = new Date(p.vencimento_parcela);
+      return vencimento >= hoje;
+    }).length,
+    valorAVencer: parcelas.reduce((sum, p) => {
+      if (p.situacao === 'PAGO') return sum;
+      const vencimento = new Date(p.vencimento_parcela);
+      return vencimento >= hoje ? sum + (p.valor_parcela || 0) : sum;
+    }, 0),
+    
+    parcelasVencidas: parcelas.filter(p => {
+      if (p.situacao === 'PAGO') return false;
+      const vencimento = new Date(p.vencimento_parcela);
+      return vencimento < hoje;
+    }).length,
+    valorVencido: parcelas.reduce((sum, p) => {
+      if (p.situacao === 'PAGO') return sum;
+      const vencimento = new Date(p.vencimento_parcela);
+      return vencimento < hoje ? sum + (p.valor_parcela || 0) : sum;
+    }, 0),
+    
+    saldoDevedor: parcelas.reduce((sum, p) => {
+      if (p.situacao === 'PAGO') return sum;
+      return sum + (p.valor_parcela || 0);
+    }, 0),
   };
 
   const formatCurrency = (value: number) => {
@@ -183,44 +217,86 @@ export function FinanceiroCooperadoDashboard({ userId }: FinanceiroCooperadoDash
         </p>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
+      <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Parcelas</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{stats.totalParcelas}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valor Total</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.valorTotal)}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valor Pago</CardTitle>
+            <CardTitle className="text-sm font-medium">Pagamentos Realizados</CardTitle>
             <DollarSign className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.valorPago)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.pagamentosRealizados)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.parcelasPagas} parcelas pagas
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Valor Pendente</CardTitle>
+            <CardTitle className="text-sm font-medium">A Vencer</CardTitle>
+            <DollarSign className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.valorAVencer)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.parcelasAVencer} parcelas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Vencidas</CardTitle>
+            <DollarSign className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.valorVencido)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.parcelasVencidas} parcelas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Saldo Devedor</CardTitle>
             <DollarSign className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.valorPendente)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(stats.saldoDevedor)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Total pendente
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Geral</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.valorTotal)}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {stats.totalParcelas} parcelas
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Taxa de Pagamento</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {stats.totalParcelas > 0 
+                ? ((stats.parcelasPagas / stats.totalParcelas) * 100).toFixed(1)
+                : 0}%
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">
+              Do total
+            </p>
           </CardContent>
         </Card>
       </div>
