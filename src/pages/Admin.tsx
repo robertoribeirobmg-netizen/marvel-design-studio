@@ -48,6 +48,7 @@ export default function Admin() {
   const [newLote, setNewLote] = useState('');
   const [newFase, setNewFase] = useState('');
   const [newDataCompra, setNewDataCompra] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'cooperado' | 'admin' | 'admin_obras'>('cooperado');
   const [isCreating, setIsCreating] = useState(false);
   
   // Generated password state
@@ -225,6 +226,7 @@ export default function Admin() {
           lote: newLote || null,
           fase: newFase || null,
           data_compra: newDataCompra || null,
+          role: newUserRole,
         },
       });
 
@@ -242,7 +244,7 @@ export default function Admin() {
       setGeneratedUserName(newNome);
       setShowPasswordDialog(true);
 
-      toast.success('Cooperado criado com sucesso!');
+      toast.success(`${newUserRole === 'cooperado' ? 'Cooperado' : newUserRole === 'admin' ? 'Admin Geral' : 'Admin Obras'} criado com sucesso!`);
       setNewEmail('');
       setNewNome('');
       setNewCpf('');
@@ -251,6 +253,7 @@ export default function Admin() {
       setNewLote('');
       setNewFase('');
       setNewDataCompra('');
+      setNewUserRole('cooperado');
       loadCooperados();
     } catch (error: any) {
       if (error.message?.includes('unique_quadra_lote')) {
@@ -1187,15 +1190,34 @@ export default function Admin() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <UserPlus className="h-5 w-5 text-primary" />
-                Criar Novo Cooperado
+                Criar Novo Usuário
               </CardTitle>
               <CardDescription>
-                Adicione um novo cooperado ao sistema
+                Adicione um novo cooperado ou admin ao sistema
               </CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleCreateCooperado} className="space-y-4">
                 <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="tipo-usuario">Tipo de Usuário *</Label>
+                    <select
+                      id="tipo-usuario"
+                      value={newUserRole}
+                      onChange={(e) => setNewUserRole(e.target.value as 'cooperado' | 'admin' | 'admin_obras')}
+                      className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      required
+                    >
+                      <option value="cooperado">Cooperado/Comprador</option>
+                      <option value="admin">Admin Geral</option>
+                      <option value="admin_obras">Admin Obras</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      {newUserRole === 'cooperado' && 'Acesso à área do cooperado'}
+                      {newUserRole === 'admin' && 'Acesso total ao sistema'}
+                      {newUserRole === 'admin_obras' && 'Acesso apenas a Obras e Galeria'}
+                    </p>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="nome">Nome Completo *</Label>
                     <Input

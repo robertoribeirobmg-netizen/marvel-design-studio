@@ -24,6 +24,7 @@ const createUserSchema = z.object({
     .min(1, 'Nome completo é obrigatório')
     .max(200, 'Nome completo deve ter no máximo 200 caracteres')
     .regex(/^[a-zA-ZÀ-ÿ\s]+$/, 'Nome deve conter apenas letras e espaços'),
+  role: z.enum(['cooperado', 'admin', 'admin_obras']).default('cooperado'),
   cpf: z.union([
     z.string().regex(/^\d{11}$/, 'CPF deve conter exatamente 11 dígitos'),
     z.null(),
@@ -289,7 +290,7 @@ serve(async (req) => {
       )
     }
     
-    const { email, password, nome_completo, cpf, telefone, quadra, lote, fase, data_compra } = validationResult.data
+    const { email, password, nome_completo, role, cpf, telefone, quadra, lote, fase, data_compra } = validationResult.data
     
     console.log('Received data_compra:', data_compra, 'Type:', typeof data_compra)
 
@@ -376,6 +377,16 @@ serve(async (req) => {
       console.error('Error updating profile:', profileError)
     } else {
       console.log('Profile updated successfully with data_compra:', data_compra)
+    }
+
+    // Update user role
+    const { error: roleError } = await supabaseAdmin
+      .from('user_roles')
+      .update({ role: role })
+      .eq('user_id', newUser.user.id)
+
+    if (roleError) {
+      console.error('Error updating user role:', roleError)
     }
 
     if (createError) throw createError
