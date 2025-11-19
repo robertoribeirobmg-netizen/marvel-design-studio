@@ -24,7 +24,11 @@ interface GaleriaItem {
   data_upload: string;
 }
 
-export function AdminGaleria() {
+interface AdminGaleriaProps {
+  readOnly?: boolean;
+}
+
+export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
   const [items, setItems] = useState<GaleriaItem[]>([]);
   const [uploading, setUploading] = useState(false);
   const [tipo, setTipo] = useState<'foto' | 'video'>('foto');
@@ -220,10 +224,11 @@ export function AdminGaleria() {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Upload Form */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Adicionar à Galeria</CardTitle>
-          </CardHeader>
+        {!readOnly && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Adicionar à Galeria</CardTitle>
+            </CardHeader>
           <CardContent className="space-y-4">
             <div>
               <Label>Tipo de Conteúdo</Label>
@@ -334,6 +339,7 @@ export function AdminGaleria() {
             </Button>
           </CardContent>
         </Card>
+        )}
 
         {/* Date Filters */}
         <Card>
@@ -575,13 +581,15 @@ export function AdminGaleria() {
                           year: 'numeric'
                         })}
                       </span>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(item.id, item.foto_url)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
+                      {!readOnly && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDelete(item.id, item.foto_url)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>

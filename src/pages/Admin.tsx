@@ -33,7 +33,7 @@ import { CheckCircle2, XCircle, Download } from 'lucide-react';
 import { downloadFinancialTemplate, downloadCooperadosTemplate } from '@/lib/excelTemplateGenerator';
 
 export default function Admin() {
-  const { signOut, isAdmin, isAdminObras } = useAuth();
+  const { signOut, user, isAdmin, isAdminObras, isExecutivoVendas } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [cooperados, setCooperados] = useState<any[]>([]);
@@ -48,7 +48,7 @@ export default function Admin() {
   const [newLote, setNewLote] = useState('');
   const [newFase, setNewFase] = useState('');
   const [newDataCompra, setNewDataCompra] = useState('');
-  const [newUserRole, setNewUserRole] = useState<'cooperado' | 'admin' | 'admin_obras'>('cooperado');
+  const [newUserRole, setNewUserRole] = useState<'cooperado' | 'admin' | 'admin_obras' | 'executivo_vendas'>('cooperado');
   const [isCreating, setIsCreating] = useState(false);
   
   // Generated password state
@@ -244,7 +244,12 @@ export default function Admin() {
       setGeneratedUserName(newNome);
       setShowPasswordDialog(true);
 
-      toast.success(`${newUserRole === 'cooperado' ? 'Cooperado' : newUserRole === 'admin' ? 'Admin Geral' : 'Admin Obras'} criado com sucesso!`);
+      toast.success(`${
+        newUserRole === 'cooperado' ? 'Cooperado' : 
+        newUserRole === 'admin' ? 'Admin Geral' : 
+        newUserRole === 'admin_obras' ? 'Admin Obras' :
+        'Executivo de Vendas'
+      } criado com sucesso!`);
       setNewEmail('');
       setNewNome('');
       setNewCpf('');
@@ -1155,8 +1160,8 @@ export default function Admin() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
-          <Tabs defaultValue={isAdminObras && !isAdmin ? "obras" : "cooperados"} className="space-y-6">
-            <TabsList className={`grid w-full ${isAdminObras && !isAdmin ? 'grid-cols-2' : 'grid-cols-6'}`}>
+          <Tabs defaultValue={(isAdminObras || isExecutivoVendas) && !isAdmin ? "obras" : "cooperados"} className="space-y-6">
+            <TabsList className={`grid w-full ${(isAdminObras || isExecutivoVendas) && !isAdmin ? 'grid-cols-2' : 'grid-cols-6'}`}>
               {isAdmin && (
                 <>
                   <TabsTrigger value="cooperados" className="flex items-center gap-2">
@@ -1204,18 +1209,20 @@ export default function Admin() {
                     <select
                       id="tipo-usuario"
                       value={newUserRole}
-                      onChange={(e) => setNewUserRole(e.target.value as 'cooperado' | 'admin' | 'admin_obras')}
+                      onChange={(e) => setNewUserRole(e.target.value as 'cooperado' | 'admin' | 'admin_obras' | 'executivo_vendas')}
                       className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                       required
                     >
                       <option value="cooperado">Cooperado/Comprador</option>
                       <option value="admin">Admin Geral</option>
                       <option value="admin_obras">Admin Obras</option>
+                      <option value="executivo_vendas">Executivo de Vendas</option>
                     </select>
                     <p className="text-xs text-muted-foreground">
                       {newUserRole === 'cooperado' && 'Acesso à área do cooperado'}
                       {newUserRole === 'admin' && 'Acesso total ao sistema'}
-                      {newUserRole === 'admin_obras' && 'Acesso apenas a Obras e Galeria'}
+                      {newUserRole === 'admin_obras' && 'Acesso para editar Obras e Galeria'}
+                      {newUserRole === 'executivo_vendas' && 'Acesso apenas para visualizar Obras e Galeria'}
                     </p>
                   </div>
                   <div className="space-y-2">
@@ -1402,12 +1409,12 @@ export default function Admin() {
               <div className="space-y-6">
                 <DashboardComparativoObras showVariacoes={true} />
                 <HistoricoGeralObras />
-                <AdminObras />
+                <AdminObras readOnly={isExecutivoVendas && !isAdmin && !isAdminObras} />
               </div>
             </TabsContent>
 
             <TabsContent value="fotos">
-              <AdminGaleria />
+              <AdminGaleria readOnly={isExecutivoVendas && !isAdmin && !isAdminObras} />
             </TabsContent>
 
           </Tabs>

@@ -6,10 +6,11 @@ interface ProtectedRouteProps {
   children: ReactNode;
   adminOnly?: boolean;
   adminObrasOnly?: boolean;
+  executivoVendasOnly?: boolean;
 }
 
-export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = false }: ProtectedRouteProps) {
-  const { user, isAdmin, isAdminObras, isLoading } = useAuth();
+export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = false, executivoVendasOnly = false }: ProtectedRouteProps) {
+  const { user, isAdmin, isAdminObras, isExecutivoVendas, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,11 +19,13 @@ export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = f
         navigate('/login');
       } else if (adminOnly && !isAdmin) {
         navigate('/area-cooperado');
-      } else if (adminObrasOnly && !isAdminObras && !isAdmin) {
+      } else if (adminObrasOnly && !isAdminObras && !isAdmin && !isExecutivoVendas) {
+        navigate('/area-cooperado');
+      } else if (executivoVendasOnly && !isExecutivoVendas && !isAdmin) {
         navigate('/area-cooperado');
       }
     }
-  }, [user, isAdmin, isAdminObras, isLoading, adminOnly, adminObrasOnly, navigate]);
+  }, [user, isAdmin, isAdminObras, isExecutivoVendas, isLoading, adminOnly, adminObrasOnly, executivoVendasOnly, navigate]);
 
   if (isLoading) {
     return (
@@ -32,7 +35,7 @@ export function ProtectedRoute({ children, adminOnly = false, adminObrasOnly = f
     );
   }
 
-  if (!user || (adminOnly && !isAdmin) || (adminObrasOnly && !isAdminObras && !isAdmin)) {
+  if (!user || (adminOnly && !isAdmin) || (adminObrasOnly && !isAdminObras && !isAdmin && !isExecutivoVendas) || (executivoVendasOnly && !isExecutivoVendas && !isAdmin)) {
     return null;
   }
 
