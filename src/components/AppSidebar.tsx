@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, User, Shield, LogOut, Settings, Upload } from "lucide-react";
+import { Home, User, Shield, LogOut, Settings, Upload } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useAuth } from "@/hooks/useAuth";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -59,19 +59,6 @@ export function AppSidebar() {
                   >
                     <Home className="h-4 w-4" />
                     {!collapsed && <span>Início</span>}
-                  </NavLink>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <NavLink
-                    to="/dashboard"
-                    className="hover:bg-muted/50"
-                    activeClassName="bg-muted text-primary font-medium"
-                  >
-                    <LayoutDashboard className="h-4 w-4" />
-                    {!collapsed && <span>Dashboard</span>}
                   </NavLink>
                 </SidebarMenuButton>
               </SidebarMenuItem>
