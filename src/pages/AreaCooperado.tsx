@@ -350,6 +350,57 @@ export default function AreaCooperado() {
 
           {/* Seção de Obra */}
           <div id="dashboard-obra" className="space-y-6">
+            {/* Photo and Video Gallery */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Camera className="h-5 w-5 text-primary" />
+                  Galeria de Fotos e Vídeos da Obra
+                </CardTitle>
+                <CardDescription>
+                  Acompanhe o andamento da construção através de fotos e vídeos
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {/* Filters Header */}
+                <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                  <h4 className="text-sm font-medium">Filtros e Ordenação</h4>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
+                    >
+                      {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
+                    </Button>
+                    <div className="flex border rounded-md">
+                      <Button
+                        variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('grid')}
+                        className="rounded-r-none"
+                      >
+                        <Grid3x3 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant={viewMode === 'list' ? 'default' : 'ghost'}
+                        size="sm"
+                        onClick={() => setViewMode('list')}
+                        className="rounded-l-none"
+                      >
+                        <List className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Category Filters */}
+...
+                {/* Photos/Videos Grid or List */}
+...
+              </CardContent>
+            </Card>
+
             {/* Acompanhamento de Obras */}
             <Card>
               <CardHeader>
@@ -387,389 +438,6 @@ export default function AreaCooperado() {
           <div id="dashboard-financeiro">
             {user && <FinanceiroCooperadoDashboard userId={user.id} />}
           </div>
-
-          {/* Photo and Video Gallery */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5 text-primary" />
-                Galeria de Fotos e Vídeos da Obra
-              </CardTitle>
-              <CardDescription>
-                Acompanhe o andamento da construção através de fotos e vídeos
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Filters Header */}
-              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
-                <h4 className="text-sm font-medium">Filtros e Ordenação</h4>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setOrdenacao(ordenacao === 'desc' ? 'asc' : 'desc')}
-                  >
-                    {ordenacao === 'desc' ? '↓ Mais Recentes' : '↑ Mais Antigas'}
-                  </Button>
-                  <div className="flex border rounded-md">
-                    <Button
-                      variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('grid')}
-                      className="rounded-r-none"
-                    >
-                      <Grid3x3 className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant={viewMode === 'list' ? 'default' : 'ghost'}
-                      size="sm"
-                      onClick={() => setViewMode('list')}
-                      className="rounded-l-none"
-                    >
-                      <List className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Category Filters */}
-              <div className="mb-4">
-                <h4 className="text-xs text-muted-foreground mb-2">Categoria</h4>
-                <div className="flex flex-wrap gap-2">
-                <Button
-                  variant={filtroCategoria === 'todas' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('todas')}
-                  className="flex items-center gap-2"
-                >
-                  <Filter className="h-4 w-4" />
-                  Todas
-                </Button>
-                <Button
-                  variant={filtroCategoria === '1ª Fase do Muro' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('1ª Fase do Muro')}
-                >
-                  1ª Fase do Muro
-                </Button>
-                <Button
-                  variant={filtroCategoria === '2ª Fase do Muro' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('2ª Fase do Muro')}
-                >
-                  2ª Fase do Muro
-                </Button>
-                <Button
-                  variant={filtroCategoria === '3ª Fase do Muro' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('3ª Fase do Muro')}
-                >
-                  3ª Fase do Muro
-                </Button>
-                <Button
-                  variant={filtroCategoria === 'Supressão Vegetal' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('Supressão Vegetal')}
-                >
-                  Supressão Vegetal
-                </Button>
-                <Button
-                  variant={filtroCategoria === 'Terraplanagem' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('Terraplanagem')}
-                >
-                  Terraplanagem
-                </Button>
-                <Button
-                  variant={filtroCategoria === 'Infraestrutura' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('Infraestrutura')}
-                >
-                  Infraestrutura
-                </Button>
-                <Button
-                  variant={filtroCategoria === 'Pavimentação' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('Pavimentação')}
-                >
-                  Pavimentação
-                </Button>
-                <Button
-                  variant={filtroCategoria === 'Portaria e Clube' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('Portaria e Clube')}
-                >
-                  Portaria e Clube
-                </Button>
-                <Button
-                  variant={filtroCategoria === 'Paisagismo' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setFiltroCategoria('Paisagismo')}
-                >
-                  Paisagismo
-                </Button>
-                </div>
-              </div>
-
-              {/* Date Filters */}
-              <div className="mb-6 p-4 bg-muted/50 rounded-lg">
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <CalendarIcon className="h-4 w-4" />
-                  Filtrar por Data
-                </h4>
-                <div className="flex flex-wrap gap-3 items-end">
-                  <div className="space-y-2">
-                    <label className="text-xs text-muted-foreground">Data Início</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={cn(
-                            "w-[160px] justify-start text-left font-normal",
-                            !dateFrom && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-3 w-3" />
-                          {dateFrom ? format(dateFrom, "dd/MM/yyyy") : "Selecione"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComp
-                          mode="single"
-                          selected={dateFrom}
-                          onSelect={setDateFrom}
-                          initialFocus
-                          className={cn("p-3 pointer-events-auto")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs text-muted-foreground">Data Fim</label>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className={cn(
-                            "w-[160px] justify-start text-left font-normal",
-                            !dateTo && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-3 w-3" />
-                          {dateTo ? format(dateTo, "dd/MM/yyyy") : "Selecione"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <CalendarComp
-                          mode="single"
-                          selected={dateTo}
-                          onSelect={setDateTo}
-                          initialFocus
-                          disabled={(date) => dateFrom ? date < dateFrom : false}
-                          className={cn("p-3 pointer-events-auto")}
-                        />
-                      </PopoverContent>
-                    </Popover>
-                  </div>
-
-                  {(dateFrom || dateTo) && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={clearDateFilters}
-                      title="Limpar filtros de data"
-                    >
-                      <X className="h-3 w-3 mr-1" />
-                      Limpar
-                    </Button>
-                  )}
-                </div>
-
-                {(dateFrom || dateTo) && (
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    Mostrando {dateFrom && `de ${format(dateFrom, "dd/MM/yyyy")}`} {dateTo && `até ${format(dateTo, "dd/MM/yyyy")}`}
-                  </div>
-                )}
-              </div>
-
-              {fotos.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
-                  Nenhuma foto disponível ainda
-                </p>
-              ) : (
-                <>
-                  {viewMode === 'grid' ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {paginatedFotos.map((foto, index) => (
-                        <div key={foto.id} className="group">
-                          {foto.foto_url ? (
-                            <div 
-                              className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer"
-                              onClick={() => openLightbox(startIndex + index)}
-                            >
-                              <img
-                                src={foto.foto_url}
-                                alt={foto.titulo}
-                                className="w-full h-64 object-cover transition-transform duration-300 group-hover:scale-105"
-                              />
-                            </div>
-                          ) : foto.video_url ? (
-                            <div className="relative overflow-hidden rounded-lg shadow-md hover:shadow-xl transition-shadow">
-                              <iframe
-                                src={foto.video_url}
-                                title={foto.titulo}
-                                className="w-full h-64"
-                                allowFullScreen
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              />
-                            </div>
-                          ) : null}
-                          <div className="mt-3 space-y-1">
-                            <div className="flex items-center justify-between">
-                              <h3 className="font-semibold">{foto.titulo}</h3>
-                              <Badge variant="secondary" className="text-xs">
-                                {foto.categoria}
-                              </Badge>
-                            </div>
-                            {foto.descricao && (
-                              <p className="text-sm text-muted-foreground">{foto.descricao}</p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(foto.data_upload).toLocaleDateString('pt-BR')}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      {paginatedFotos.map((foto, index) => (
-                        <div 
-                          key={foto.id} 
-                          className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
-                        >
-                          {foto.foto_url ? (
-                            <div 
-                              className="shrink-0 w-24 h-24 rounded-md overflow-hidden cursor-pointer"
-                              onClick={() => openLightbox(startIndex + index)}
-                            >
-                              <img
-                                src={foto.foto_url}
-                                alt={foto.titulo}
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : foto.video_url ? (
-                            <div className="shrink-0 w-24 h-24 rounded-md overflow-hidden relative">
-                              <iframe
-                                src={foto.video_url}
-                                title={foto.titulo}
-                                className="w-full h-full"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              />
-                            </div>
-                          ) : null}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-2 mb-1">
-                              <h3 className="font-semibold truncate">{foto.titulo}</h3>
-                              <Badge variant="secondary" className="text-xs shrink-0">
-                                {foto.categoria}
-                              </Badge>
-                            </div>
-                            {foto.descricao && (
-                              <p className="text-sm text-muted-foreground line-clamp-2 mb-1">
-                                {foto.descricao}
-                              </p>
-                            )}
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(foto.data_upload).toLocaleDateString('pt-BR', {
-                                day: '2-digit',
-                                month: 'short',
-                                year: 'numeric'
-                              })}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Pagination Controls */}
-                  {totalPages > 1 && (
-                    <div className="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t">
-                      <div className="text-sm text-muted-foreground">
-                        Mostrando {startIndex + 1}-{Math.min(endIndex, fotos.length)} de {fotos.length} itens
-                      </div>
-                      
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        
-                        <div className="flex items-center gap-1">
-                          {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                            let pageNum;
-                            if (totalPages <= 5) {
-                              pageNum = i + 1;
-                            } else if (currentPage <= 3) {
-                              pageNum = i + 1;
-                            } else if (currentPage >= totalPages - 2) {
-                              pageNum = totalPages - 4 + i;
-                            } else {
-                              pageNum = currentPage - 2 + i;
-                            }
-                            
-                            return (
-                              <Button
-                                key={pageNum}
-                                variant={currentPage === pageNum ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => handlePageChange(pageNum)}
-                                className="w-9"
-                              >
-                                {pageNum}
-                              </Button>
-                            );
-                          })}
-                        </div>
-                        
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage === totalPages}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-
-                      <select
-                        value={itemsPerPage}
-                        onChange={(e) => {
-                          setItemsPerPage(Number(e.target.value));
-                          setCurrentPage(1);
-                        }}
-                        className="text-sm border rounded-md px-2 py-1 bg-background"
-                      >
-                        <option value={6}>6 por página</option>
-                        <option value={12}>12 por página</option>
-                        <option value={24}>24 por página</option>
-                        <option value={48}>48 por página</option>
-                      </select>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
 
         </div>
       </main>
