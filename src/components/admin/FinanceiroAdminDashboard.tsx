@@ -4,26 +4,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, DollarSign, FileText, Download } from 'lucide-react';
+import { Search, DollarSign, FileText, Download, ChevronDown, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
-interface ParcelaFinanceira {
-  comprador_id: string;
-  comprador_nome: string;
-  comprador_telefone: string;
-  comprador_email: string;
-  comprador_quadra: string;
-  comprador_lote: string;
-  comprador_grupo: string;
-  comprador_empreendimento: string;
-  comprador_tipo_classificado: string;
-  contrato_id: number;
-  contrato_data: string;
-  contrato_area_m2: number;
-  contrato_valor_total: number;
+interface Parcela {
   parcela_id: number;
   tipo_parcela: string;
   numero_parcela: number;
@@ -34,12 +22,30 @@ interface ParcelaFinanceira {
   desconto: number;
   juros: number;
   valor_pago: number | null;
+  contrato_id: number;
+  contrato_data: string;
+  contrato_area_m2: number;
+  contrato_valor_total: number;
+}
+
+interface CooperadoFinanceiro {
+  comprador_id: string;
+  comprador_nome: string;
+  comprador_telefone: string;
+  comprador_email: string;
+  comprador_quadra: string;
+  comprador_lote: string;
+  comprador_grupo: string;
+  comprador_empreendimento: string;
+  comprador_tipo_classificado: string;
+  parcelas: Parcela[];
 }
 
 export function FinanceiroAdminDashboard() {
-  const [parcelas, setParcelas] = useState<ParcelaFinanceira[]>([]);
+  const [cooperados, setCooperados] = useState<CooperadoFinanceiro[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadData();
@@ -70,7 +76,7 @@ export function FinanceiroAdminDashboard() {
       if (parcelasError) throw parcelasError;
 
       if (!parcelasData || parcelasData.length === 0) {
-        setParcelas([]);
+        setCooperados([]);
         setIsLoading(false);
         return;
       }
@@ -91,24 +97,33 @@ export function FinanceiroAdminDashboard() {
 
       if (contratosError) throw contratosError;
 
-      const parcelasCompletas = parcelasData.map(parcela => {
+      // Agrupar parcelas por cooperado
+      const cooperadosMap = new Map<string, CooperadoFinanceiro>();
+
+      parcelasData.forEach(parcela => {
         const comprador = compradoresData?.find(c => c.id === parcela.comprador_id);
         const contrato = contratosData?.find(c => c.id === parcela.contrato_id);
 
-        return {
-          comprador_id: parcela.comprador_id || '',
-          comprador_nome: comprador?.nome || 'N/A',
-          comprador_telefone: comprador?.telefone || 'N/A',
-          comprador_email: comprador?.email || 'N/A',
-          comprador_quadra: comprador?.quadra || 'N/A',
-          comprador_lote: comprador?.lote || 'N/A',
-          comprador_grupo: comprador?.grupo || 'N/A',
-          comprador_empreendimento: comprador?.empreendimento || 'N/A',
-          comprador_tipo_classificado: comprador?.tipo_classificado || 'N/A',
-          contrato_id: parcela.contrato_id || 0,
-          contrato_data: contrato?.data_contrato || 'N/A',
-          contrato_area_m2: contrato?.area_m2 || 0,
-          contrato_valor_total: contrato?.valor_total || 0,
+        if (!comprador) return;
+
+        const compradorId = parcela.comprador_id || '';
+
+        if (!cooperadosMap.has(compradorId)) {
+          cooperadosMap.set(compradorId, {
+            comprador_id: compradorId,
+            comprador_nome: comprador.nome || 'N/A',
+            comprador_telefone: comprador.telefone || 'N/A',
+            comprador_email: comprador.email || 'N/A',
+            comprador_quadra: comprador.quadra || 'N/A',
+            comprador_lote: comprador.lote || 'N/A',
+            comprador_grupo: comprador.grupo || 'N/A',
+            comprador_empreendimento: comprador.empreendimento || 'N/A',
+            comprador_tipo_classificado: comprador.tipo_classificado || 'N/A',
+            parcelas: [],
+          });
+        }
+
+        cooperadosMap.get(compradorId)!.parcelas.push({
           parcela_id: parcela.id,
           tipo_parcela: parcela.tipo_parcela || 'N/A',
           numero_parcela: parcela.numero_parcela || 0,
@@ -119,10 +134,14 @@ export function FinanceiroAdminDashboard() {
           desconto: parcela.valor_desconto || 0,
           juros: parcela.valor_juros || 0,
           valor_pago: parcela.valor_pago || null,
-        };
+          contrato_id: parcela.contrato_id || 0,
+          contrato_data: contrato?.data_contrato || 'N/A',
+          contrato_area_m2: contrato?.area_m2 || 0,
+          contrato_valor_total: contrato?.valor_total || 0,
+        });
       });
 
-      setParcelas(parcelasCompletas);
+      setCooperados(Array.from(cooperadosMap.values()));
     } catch (error: any) {
       console.error('Erro ao carregar dados:', error);
       toast.error('Erro ao carregar dados financeiros');
@@ -131,53 +150,68 @@ export function FinanceiroAdminDashboard() {
     }
   };
 
-  const parcelasFiltradas = parcelas.filter(p => {
+  const cooperadosFiltrados = cooperados.filter(cooperado => {
     const searchLower = searchTerm.toLowerCase();
     return (
-      p.comprador_nome?.toLowerCase().includes(searchLower) ||
-      p.comprador_email?.toLowerCase().includes(searchLower) ||
-      p.comprador_telefone?.toLowerCase().includes(searchLower) ||
-      p.comprador_quadra?.toLowerCase().includes(searchLower) ||
-      p.comprador_lote?.toLowerCase().includes(searchLower)
+      cooperado.comprador_nome.toLowerCase().includes(searchLower) ||
+      cooperado.comprador_email.toLowerCase().includes(searchLower) ||
+      cooperado.comprador_telefone.toLowerCase().includes(searchLower) ||
+      cooperado.comprador_quadra.toLowerCase().includes(searchLower) ||
+      cooperado.comprador_lote.toLowerCase().includes(searchLower)
     );
   });
+
+  const toggleRow = (compradorId: string) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(compradorId)) {
+        newSet.delete(compradorId);
+      } else {
+        newSet.add(compradorId);
+      }
+      return newSet;
+    });
+  };
 
   const hoje = new Date();
   hoje.setHours(0, 0, 0, 0);
 
+  // Calcular estatísticas de todas as parcelas
+  const todasParcelas = cooperados.flatMap(c => c.parcelas);
+
   const stats = {
-    totalParcelas: parcelas.length,
-    valorTotal: parcelas.reduce((sum, p) => sum + (p.valor_parcela || 0), 0),
-    valorPago: parcelas.reduce((sum, p) => sum + (p.valor_pago || 0), 0),
+    totalParcelas: todasParcelas.length,
+    valorTotal: todasParcelas.reduce((sum, p) => sum + (p.valor_parcela || 0), 0),
+    valorPago: todasParcelas.reduce((sum, p) => sum + (p.valor_pago || 0), 0),
     
-    parcelasPagas: parcelas.filter(p => p.situacao === 'PAGO').length,
-    pagamentosRealizados: parcelas.reduce((sum, p) => 
+    parcelasPagas: todasParcelas.filter(p => p.situacao === 'PAGO').length,
+    pagamentosRealizados: todasParcelas.reduce((sum, p) => 
       p.situacao === 'PAGO' ? sum + (p.valor_pago || 0) : sum, 0
     ),
     
-    parcelasAVencer: parcelas.filter(p => {
+    parcelasAVencer: todasParcelas.filter(p => {
       if (p.situacao === 'PAGO') return false;
       const vencimento = new Date(p.vencimento_parcela);
       return vencimento >= hoje;
     }).length,
-    valorAVencer: parcelas.reduce((sum, p) => {
+    valorAVencer: todasParcelas.reduce((sum, p) => {
       if (p.situacao === 'PAGO') return sum;
       const vencimento = new Date(p.vencimento_parcela);
       return vencimento >= hoje ? sum + (p.valor_parcela || 0) : sum;
     }, 0),
     
-    parcelasVencidas: parcelas.filter(p => {
+    parcelasVencidas: todasParcelas.filter(p => {
       if (p.situacao === 'PAGO') return false;
       const vencimento = new Date(p.vencimento_parcela);
       return vencimento < hoje;
     }).length,
-    valorVencido: parcelas.reduce((sum, p) => {
+    valorVencido: todasParcelas.reduce((sum, p) => {
       if (p.situacao === 'PAGO') return sum;
       const vencimento = new Date(p.vencimento_parcela);
       return vencimento < hoje ? sum + (p.valor_parcela || 0) : sum;
     }, 0),
     
-    saldoDevedor: parcelas.reduce((sum, p) => {
+    saldoDevedor: todasParcelas.reduce((sum, p) => {
       if (p.situacao === 'PAGO') return sum;
       return sum + (p.valor_parcela || 0);
     }, 0),
@@ -200,28 +234,34 @@ export function FinanceiroAdminDashboard() {
   };
 
   const handleExportar = () => {
-    const dados = parcelasFiltradas.map(p => ({
-      'Nome': p.comprador_nome,
-      'Telefone': p.comprador_telefone,
-      'Email': p.comprador_email,
-      'Quadra': p.comprador_quadra,
-      'Lote': p.comprador_lote,
-      'Grupo': p.comprador_grupo,
-      'Empreendimento': p.comprador_empreendimento,
-      'Tipo': p.comprador_tipo_classificado,
-      'Data Contrato': formatDate(p.contrato_data),
-      'Área (m²)': p.contrato_area_m2,
-      'Valor Contrato': p.contrato_valor_total,
-      'Tipo Parcela': p.tipo_parcela,
-      'Nº Parcela': p.numero_parcela,
-      'Vencimento': formatDate(p.vencimento_parcela),
-      'Valor': p.valor_parcela,
-      'Situação': p.situacao,
-      'Data Recebimento': formatDate(p.data_recebimento),
-      'Desconto': p.desconto,
-      'Juros': p.juros,
-      'Valor Pago': p.valor_pago || 0,
-    }));
+    const dados: any[] = [];
+    
+    cooperadosFiltrados.forEach(cooperado => {
+      cooperado.parcelas.forEach(parcela => {
+        dados.push({
+          'Nome': cooperado.comprador_nome,
+          'Telefone': cooperado.comprador_telefone,
+          'Email': cooperado.comprador_email,
+          'Quadra': cooperado.comprador_quadra,
+          'Lote': cooperado.comprador_lote,
+          'Grupo': cooperado.comprador_grupo,
+          'Empreendimento': cooperado.comprador_empreendimento,
+          'Tipo': cooperado.comprador_tipo_classificado,
+          'Data Contrato': formatDate(parcela.contrato_data),
+          'Área (m²)': parcela.contrato_area_m2,
+          'Valor Contrato': parcela.contrato_valor_total,
+          'Tipo Parcela': parcela.tipo_parcela,
+          'Nº Parcela': parcela.numero_parcela,
+          'Vencimento': formatDate(parcela.vencimento_parcela),
+          'Valor': parcela.valor_parcela,
+          'Situação': parcela.situacao,
+          'Data Recebimento': formatDate(parcela.data_recebimento),
+          'Desconto': parcela.desconto,
+          'Juros': parcela.juros,
+          'Valor Pago': parcela.valor_pago || 0,
+        });
+      });
+    });
 
     const ws = XLSX.utils.json_to_sheet(dados);
     const wb = XLSX.utils.book_new();
@@ -335,34 +375,32 @@ export function FinanceiroAdminDashboard() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Parcelas Financeiras</CardTitle>
+              <CardTitle>Financeiro do Cooperado</CardTitle>
               <CardDescription>
-                Visualize e gerencie todas as parcelas dos contratos
+                Detalhamento completo de contratos e parcelas por cooperado
               </CardDescription>
             </div>
-            <Button onClick={handleExportar} variant="outline">
+            <Button onClick={handleExportar} variant="outline" size="sm">
               <Download className="h-4 w-4 mr-2" />
               Exportar
             </Button>
           </div>
+          <div className="relative mt-4">
+            <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome, email, telefone, quadra ou lote..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
-            <div className="relative">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nome, email, telefone, quadra ou lote..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
-            </div>
-          </div>
-
           <div className="rounded-md border overflow-auto">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-10"></TableHead>
                   <TableHead>Nome</TableHead>
                   <TableHead>Telefone</TableHead>
                   <TableHead>Email</TableHead>
@@ -371,58 +409,95 @@ export function FinanceiroAdminDashboard() {
                   <TableHead>Grupo</TableHead>
                   <TableHead>Empreendimento</TableHead>
                   <TableHead>Tipo</TableHead>
-                  <TableHead>Data Contrato</TableHead>
-                  <TableHead>Área (m²)</TableHead>
-                  <TableHead>Valor Contrato</TableHead>
-                  <TableHead>Tipo Parcela</TableHead>
-                  <TableHead>Nº</TableHead>
-                  <TableHead>Vencimento</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Situação</TableHead>
-                  <TableHead>Data Receb.</TableHead>
-                  <TableHead>Desconto</TableHead>
-                  <TableHead>Juros</TableHead>
-                  <TableHead>Honorários</TableHead>
-                  <TableHead>Valor Pago</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {parcelasFiltradas.length === 0 ? (
+                {cooperadosFiltrados.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={21} className="text-center py-8 text-muted-foreground">
-                      Nenhuma parcela encontrada
+                    <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+                      {searchTerm ? 'Nenhum cooperado encontrado com os critérios de busca.' : 'Nenhum cooperado registrado.'}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  parcelasFiltradas.map((parcela) => (
-                    <TableRow key={`${parcela.parcela_id}`}>
-                      <TableCell className="font-medium">{parcela.comprador_nome}</TableCell>
-                      <TableCell>{parcela.comprador_telefone}</TableCell>
-                      <TableCell>{parcela.comprador_email}</TableCell>
-                      <TableCell>{parcela.comprador_quadra}</TableCell>
-                      <TableCell>{parcela.comprador_lote}</TableCell>
-                      <TableCell>{parcela.comprador_grupo}</TableCell>
-                      <TableCell>{parcela.comprador_empreendimento}</TableCell>
-                      <TableCell>{parcela.comprador_tipo_classificado}</TableCell>
-                      <TableCell>{formatDate(parcela.contrato_data)}</TableCell>
-                      <TableCell>{parcela.contrato_area_m2}</TableCell>
-                      <TableCell>{formatCurrency(parcela.contrato_valor_total)}</TableCell>
-                      <TableCell>{parcela.tipo_parcela}</TableCell>
-                      <TableCell>{parcela.numero_parcela}</TableCell>
-                      <TableCell>{formatDate(parcela.vencimento_parcela)}</TableCell>
-                      <TableCell>{formatCurrency(parcela.valor_parcela)}</TableCell>
-                      <TableCell>
-                        <Badge variant={parcela.situacao === 'PAGO' ? 'default' : 'secondary'}>
-                          {parcela.situacao}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(parcela.data_recebimento)}</TableCell>
-                      <TableCell>{formatCurrency(parcela.desconto)}</TableCell>
-                      <TableCell>{formatCurrency(parcela.juros)}</TableCell>
-                      <TableCell>-</TableCell>
-                      <TableCell>{formatCurrency(parcela.valor_pago || 0)}</TableCell>
-                    </TableRow>
-                  ))
+                  cooperadosFiltrados.map((cooperado) => {
+                    const isExpanded = expandedRows.has(cooperado.comprador_id);
+                    return (
+                      <Collapsible key={cooperado.comprador_id} open={isExpanded} asChild>
+                        <>
+                          <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => toggleRow(cooperado.comprador_id)}>
+                            <TableCell>
+                              <CollapsibleTrigger asChild>
+                                <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
+                                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                </Button>
+                              </CollapsibleTrigger>
+                            </TableCell>
+                            <TableCell className="font-medium">{cooperado.comprador_nome}</TableCell>
+                            <TableCell>{cooperado.comprador_telefone}</TableCell>
+                            <TableCell>{cooperado.comprador_email}</TableCell>
+                            <TableCell>{cooperado.comprador_quadra}</TableCell>
+                            <TableCell>{cooperado.comprador_lote}</TableCell>
+                            <TableCell>{cooperado.comprador_grupo}</TableCell>
+                            <TableCell>{cooperado.comprador_empreendimento}</TableCell>
+                            <TableCell>{cooperado.comprador_tipo_classificado}</TableCell>
+                          </TableRow>
+                          <CollapsibleContent asChild>
+                            <TableRow>
+                              <TableCell colSpan={9} className="p-0 bg-muted/30">
+                                <div className="p-4">
+                                  <h4 className="font-semibold mb-3 text-sm">Parcelas e Contratos</h4>
+                                  <div className="rounded-md border overflow-auto">
+                                    <Table>
+                                      <TableHeader>
+                                        <TableRow>
+                                          <TableHead className="text-xs">Data Contrato</TableHead>
+                                          <TableHead className="text-xs">Área (m²)</TableHead>
+                                          <TableHead className="text-xs">Valor Contrato</TableHead>
+                                          <TableHead className="text-xs">Tipo Parcela</TableHead>
+                                          <TableHead className="text-xs">Nº</TableHead>
+                                          <TableHead className="text-xs">Vencimento</TableHead>
+                                          <TableHead className="text-xs">Valor</TableHead>
+                                          <TableHead className="text-xs">Situação</TableHead>
+                                          <TableHead className="text-xs">Data Receb.</TableHead>
+                                          <TableHead className="text-xs">Desconto</TableHead>
+                                          <TableHead className="text-xs">Juros</TableHead>
+                                          <TableHead className="text-xs">Honorários</TableHead>
+                                          <TableHead className="text-xs">Valor Pago</TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {cooperado.parcelas.map((parcela) => (
+                                          <TableRow key={parcela.parcela_id}>
+                                            <TableCell className="text-xs">{formatDate(parcela.contrato_data)}</TableCell>
+                                            <TableCell className="text-xs">{parcela.contrato_area_m2}</TableCell>
+                                            <TableCell className="text-xs">{formatCurrency(parcela.contrato_valor_total)}</TableCell>
+                                            <TableCell className="text-xs">{parcela.tipo_parcela}</TableCell>
+                                            <TableCell className="text-xs">{parcela.numero_parcela}</TableCell>
+                                            <TableCell className="text-xs">{formatDate(parcela.vencimento_parcela)}</TableCell>
+                                            <TableCell className="text-xs">{formatCurrency(parcela.valor_parcela)}</TableCell>
+                                            <TableCell className="text-xs">
+                                              <Badge variant={parcela.situacao === 'PAGO' ? 'default' : 'secondary'} className="text-xs">
+                                                {parcela.situacao}
+                                              </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-xs">{formatDate(parcela.data_recebimento)}</TableCell>
+                                            <TableCell className="text-xs">{formatCurrency(parcela.desconto)}</TableCell>
+                                            <TableCell className="text-xs">{formatCurrency(parcela.juros)}</TableCell>
+                                            <TableCell className="text-xs">-</TableCell>
+                                            <TableCell className="text-xs">{formatCurrency(parcela.valor_pago || 0)}</TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </div>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          </CollapsibleContent>
+                        </>
+                      </Collapsible>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
