@@ -344,23 +344,6 @@ export default function AreaCooperado() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-5 w-5 text-primary" />
-                  Documentos
-                </CardTitle>
-                <CardDescription>
-                  Acesse contratos e documentação
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button variant="outline" className="w-full" disabled>
-                  Em Breve
-                </Button>
-              </CardContent>
-            </Card>
-
           </div>
 
           {/* Dashboard Financeiro */}
