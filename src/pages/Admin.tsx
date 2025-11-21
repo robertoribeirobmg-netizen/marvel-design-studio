@@ -25,6 +25,7 @@ import { AdminGaleria } from '@/components/AdminGaleria';
 
 import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { ImportacaoCOHAPM } from '@/components/admin/ImportacaoCOHAPM';
+import { UploadCooperadosLote } from '@/components/admin/UploadCooperadosLote';
 
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -1313,6 +1314,9 @@ export default function Admin() {
               </form>
             </CardContent>
           </Card>
+
+          {/* Upload em Lote */}
+          <UploadCooperadosLote />
 
           {/* Lista de Cooperadores */}
           <Card>
