@@ -11,8 +11,8 @@ import { Calendar as CalendarComp } from '@/components/ui/calendar';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
-import { FinanceiroCooperadoDashboard } from '@/components/cooperado/FinanceiroCooperadoDashboard';
-import { useParcelasData } from '@/hooks/useParcelasData';
+// import { FinanceiroCooperadoDashboard } from '@/components/cooperado/FinanceiroCooperadoDashboard';
+// import { useParcelasData } from '@/hooks/useParcelasData';
 import { format, differenceInDays, parseISO, isBefore, isAfter, addDays } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -34,7 +34,7 @@ export default function AreaCooperado() {
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [showAlterarSenha, setShowAlterarSenha] = useState(false);
 
-  const { parcelas, isLoading: isLoadingParcelas } = useParcelasData(user?.id);
+  // const { parcelas, isLoading: isLoadingParcelas } = useParcelasData(user?.id);
 
   useEffect(() => {
     if (user) {
@@ -124,24 +124,24 @@ export default function AreaCooperado() {
     setLightboxOpen(true);
   };
 
-  // Calcular notificações de parcelas
-  const hoje = new Date();
-  const parcelasVencendo = parcelas.filter(p => {
-    if (p.situacao === 'PAGO') return false;
-    const vencimento = parseISO(p.vencimento);
-    const diasRestantes = differenceInDays(vencimento, hoje);
-    return diasRestantes >= 0 && diasRestantes <= 7;
-  });
+  // Calcular notificações de parcelas (ocultado)
+  // const hoje = new Date();
+  // const parcelasVencendo = parcelas.filter(p => {
+  //   if (p.situacao === 'PAGO') return false;
+  //   const vencimento = parseISO(p.vencimento);
+  //   const diasRestantes = differenceInDays(vencimento, hoje);
+  //   return diasRestantes >= 0 && diasRestantes <= 7;
+  // });
 
-  const parcelasAtrasadas = parcelas.filter(p => {
-    if (p.situacao === 'PAGO') return false;
-    const vencimento = parseISO(p.vencimento);
-    return isBefore(vencimento, hoje);
-  });
+  // const parcelasAtrasadas = parcelas.filter(p => {
+  //   if (p.situacao === 'PAGO') return false;
+  //   const vencimento = parseISO(p.vencimento);
+  //   return isBefore(vencimento, hoje);
+  // });
 
-  const totalEmAberto = parcelas
-    .filter(p => p.situacao !== 'PAGO')
-    .reduce((sum, p) => sum + p.valor, 0);
+  // const totalEmAberto = parcelas
+  //   .filter(p => p.situacao !== 'PAGO')
+  //   .reduce((sum, p) => sum + p.valor, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
@@ -191,115 +191,7 @@ export default function AreaCooperado() {
             </p>
           </div>
 
-          {/* Notificações Financeiras */}
-          {!isLoadingParcelas && (parcelasAtrasadas.length > 0 || parcelasVencendo.length > 0) && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 mb-2">
-                <Bell className="h-5 w-5 text-primary" />
-                <h3 className="text-lg font-semibold">Notificações</h3>
-              </div>
-              
-              {parcelasAtrasadas.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Parcelas em Atraso</AlertTitle>
-                  <AlertDescription className="mt-2 space-y-2">
-                    <p className="font-semibold">
-                      Você possui {parcelasAtrasadas.length} parcela(s) em atraso
-                    </p>
-                    <div className="space-y-1">
-                      {parcelasAtrasadas.slice(0, 3).map(parcela => {
-                        const diasAtraso = Math.abs(differenceInDays(parseISO(parcela.vencimento), hoje));
-                        return (
-                          <div key={parcela.id} className="flex justify-between items-center text-sm bg-destructive/10 p-2 rounded">
-                            <span>{parcela.descricao}</span>
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parcela.valor)}
-                              </p>
-                              <p className="text-xs opacity-80">{diasAtraso} dia(s) de atraso</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {parcelasAtrasadas.length > 3 && (
-                        <p className="text-sm opacity-80 pt-1">
-                          + {parcelasAtrasadas.length - 3} parcela(s) atrasada(s)
-                        </p>
-                      )}
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2 bg-background hover:bg-background/90"
-                      onClick={() => document.getElementById('dashboard-financeiro')?.scrollIntoView({ behavior: 'smooth' })}
-                    >
-                      Ver Detalhes
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {parcelasVencendo.length > 0 && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>Parcelas Próximas do Vencimento</AlertTitle>
-                  <AlertDescription className="mt-2 space-y-2">
-                    <p className="font-semibold">
-                      {parcelasVencendo.length} parcela(s) vencem nos próximos 7 dias
-                    </p>
-                    <div className="space-y-1">
-                      {parcelasVencendo.slice(0, 3).map(parcela => {
-                        const diasRestantes = differenceInDays(parseISO(parcela.vencimento), hoje);
-                        return (
-                          <div key={parcela.id} className="flex justify-between items-center text-sm bg-muted/50 p-2 rounded">
-                            <span>{parcela.descricao}</span>
-                            <div className="text-right">
-                              <p className="font-semibold">
-                                {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(parcela.valor)}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                Vence em {diasRestantes} dia(s)
-                              </p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {parcelasVencendo.length > 3 && (
-                        <p className="text-sm text-muted-foreground pt-1">
-                          + {parcelasVencendo.length - 3} parcela(s) a vencer
-                        </p>
-                      )}
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      className="mt-2"
-                      onClick={() => document.getElementById('dashboard-financeiro')?.scrollIntoView({ behavior: 'smooth' })}
-                    >
-                      Ver Detalhes
-                    </Button>
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              {totalEmAberto > 0 && (
-                <Card className="border-l-4 border-l-primary">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Valor Total em Aberto</p>
-                        <p className="text-2xl font-bold text-primary">
-                          {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(totalEmAberto)}
-                        </p>
-                      </div>
-                      <TrendingUp className="h-8 w-8 text-primary opacity-50" />
-                    </div>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
+          {/* Notificações Financeiras - Ocultadas */}
 
 
           {/* Quick Links */}
@@ -325,23 +217,23 @@ export default function AreaCooperado() {
               </CardContent>
             </Card>
 
-            <Card className="hover:shadow-lg transition-shadow cursor-pointer">
+            <Card className="hover:shadow-lg transition-shadow cursor-pointer opacity-60">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <TrendingUp className="h-5 w-5 text-primary" />
                   Financeiro
                 </CardTitle>
                 <CardDescription>
-                  Visualize suas parcelas e pagamentos
+                  Em breve você poderá visualizar suas parcelas e pagamentos
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <Button 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => document.getElementById('dashboard-financeiro')?.scrollIntoView({ behavior: 'smooth' })}
+                  disabled
                 >
-                  Ver Detalhes
+                  Em Breve
                 </Button>
               </CardContent>
             </Card>
@@ -740,9 +632,28 @@ export default function AreaCooperado() {
             </Card>
           </div>
 
-          {/* Dashboard Financeiro */}
+          {/* Dashboard Financeiro - Em Breve */}
           <div id="dashboard-financeiro">
-            {user && <FinanceiroCooperadoDashboard userId={user.id} />}
+            <Card className="opacity-60">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  Dashboard Financeiro
+                </CardTitle>
+                <CardDescription>
+                  Este módulo estará disponível em breve
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-col items-center justify-center py-12 text-center">
+                  <TrendingUp className="h-16 w-16 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Em Breve</h3>
+                  <p className="text-muted-foreground max-w-md">
+                    Estamos preparando seu dashboard financeiro com informações detalhadas sobre parcelas, pagamentos e muito mais.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
         </div>
