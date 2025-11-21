@@ -11,9 +11,10 @@ interface ColumnMappingSelectorProps {
 }
 
 const fieldLabels: { [key: string]: { label: string; required: boolean; description: string } } = {
+  tipo_usuario: { label: 'Tipo de Usuário', required: true, description: 'Tipo do usuário (cooperado, admin, admin_obras, executivo_vendas)' },
   nome_completo: { label: 'Nome Completo', required: true, description: 'Nome completo do cooperado' },
   email: { label: 'Email', required: true, description: 'Endereço de email' },
-  cpf: { label: 'CPF', required: false, description: 'Documento CPF (11 dígitos)' },
+  cpf: { label: 'CPF', required: true, description: 'Documento CPF (11 dígitos)' },
   telefone: { label: 'Telefone', required: false, description: 'Número de telefone/celular' },
   quadra: { label: 'Quadra', required: false, description: 'Identificação da quadra' },
   lote: { label: 'Lote', required: false, description: 'Número do lote' },
