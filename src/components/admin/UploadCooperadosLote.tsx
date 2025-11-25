@@ -90,6 +90,81 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     }));
   };
 
+  const validateData = (data: any[]) => {
+    const errors: Array<{ row: number; field: string; message: string; value: any }> = [];
+    const tiposUsuarioValidos = ['admin', 'cooperado', 'admin_obras', 'executivo_vendas'];
+
+    data.forEach((row, index) => {
+      const rowNumber = index + 2; // +2 porque Excel começa em 1 e pulamos header
+
+      // Validar email se fornecido
+      if (row.email && typeof row.email === 'string' && row.email.trim()) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(row.email.trim())) {
+          errors.push({
+            row: rowNumber,
+            field: 'email',
+            message: 'Email com formato inválido',
+            value: row.email
+          });
+        }
+      }
+
+      // Validar CPF se fornecido
+      if (row.cpf && typeof row.cpf === 'string' && row.cpf.trim()) {
+        const cpfLimpo = row.cpf.replace(/\D/g, '');
+        if (cpfLimpo.length !== 11 && cpfLimpo.length !== 14) {
+          errors.push({
+            row: rowNumber,
+            field: 'cpf',
+            message: 'CPF deve ter 11 dígitos (ou 14 para CNPJ)',
+            value: row.cpf
+          });
+        }
+      }
+
+      // Validar telefone se fornecido
+      if (row.telefone && typeof row.telefone === 'string' && row.telefone.trim()) {
+        const telefoneLimpo = row.telefone.replace(/\D/g, '');
+        if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
+          errors.push({
+            row: rowNumber,
+            field: 'telefone',
+            message: 'Telefone deve ter 10 ou 11 dígitos',
+            value: row.telefone
+          });
+        }
+      }
+
+      // Validar tipo de usuário se fornecido
+      if (row.tipo_usuario && typeof row.tipo_usuario === 'string') {
+        const tipoNormalizado = row.tipo_usuario.toLowerCase().trim();
+        if (!tiposUsuarioValidos.includes(tipoNormalizado)) {
+          errors.push({
+            row: rowNumber,
+            field: 'tipo_usuario',
+            message: `Tipo de usuário inválido. Deve ser: ${tiposUsuarioValidos.join(', ')}`,
+            value: row.tipo_usuario
+          });
+        }
+      }
+
+      // Validar campos obrigatórios básicos
+      if (row.nome_completo && typeof row.nome_completo === 'string') {
+        if (row.nome_completo.trim().length < 3) {
+          errors.push({
+            row: rowNumber,
+            field: 'nome_completo',
+            message: 'Nome deve ter pelo menos 3 caracteres',
+            value: row.nome_completo
+          });
+        }
+      }
+    });
+
+    return errors;
+  };
+
   const handleProcessar = async () => {
 
     setShowMapping(false);
@@ -109,6 +184,45 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
 
         return mapped;
       });
+
+      // Validar dados antes de processar
+      const validationErrors = validateData(mappedData);
+      
+      if (validationErrors.length > 0) {
+        setIsProcessing(false);
+        setProgress(0);
+        
+        // Mostrar erros de validação
+        const errorMessages = validationErrors.slice(0, 5).map(err => 
+          `Linha ${err.row} - ${err.field}: ${err.message} (valor: "${err.value}")`
+        ).join('\n');
+        
+        const totalErrors = validationErrors.length;
+        const moreErrors = totalErrors > 5 ? `\n... e mais ${totalErrors - 5} erro(s)` : '';
+        
+        toast.error(
+          `${totalErrors} erro(s) de validação encontrado(s):\n${errorMessages}${moreErrors}`,
+          { 
+            duration: 10000,
+            style: { whiteSpace: 'pre-line' }
+          }
+        );
+        
+        // Criar resultado de validação para exibição
+        setResult({
+          success: 0,
+          errors: totalErrors,
+          duplicates: 0,
+          associated: 0,
+          details: validationErrors.map(err => ({
+            row: err.row,
+            status: 'error' as const,
+            message: `${err.field}: ${err.message} (valor: "${err.value}")`
+          }))
+        });
+        
+        return;
+      }
 
       console.log('Enviando dados:', mappedData);
 
