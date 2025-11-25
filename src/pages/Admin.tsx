@@ -1355,7 +1355,7 @@ export default function Admin() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {cooperados.map((cooperado) => (
+                      {paginatedCooperados.map((cooperado) => (
                         <TableRow key={cooperado.id}>
                           <TableCell className="font-medium">{cooperado.nome_completo}</TableCell>
                           <TableCell>{cooperado.email || '-'}</TableCell>
@@ -1387,6 +1387,53 @@ export default function Admin() {
                       ))}
                     </TableBody>
                   </Table>
+                  
+                  {/* Controles de Paginação */}
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-muted-foreground">Registros por página:</span>
+                      <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+                        <SelectTrigger className="w-[120px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="25">25</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                          <SelectItem value="500">500</SelectItem>
+                          <SelectItem value="1000">1000</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <span className="text-sm text-muted-foreground">
+                        Mostrando {startIndex + 1} a {Math.min(endIndex, filteredCooperados.length)} de {filteredCooperados.length} cooperados
+                      </span>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                        >
+                          <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <span className="px-3 py-1 text-sm">
+                          Página {currentPage} de {totalPages || 1}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage >= totalPages}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </CardContent>
