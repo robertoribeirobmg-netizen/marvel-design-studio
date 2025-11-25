@@ -118,37 +118,25 @@ serve(async (req) => {
         const cpfNormalizado = normalizarCPF(coop.cpf);
         const emailLower = coop.email.toLowerCase().trim();
 
-        // Verificar duplicidade por email
-        const { data: existingByEmail } = await supabaseClient
+        // Verificar duplicidade por TODOS os campos
+        const { data: existingProfile } = await supabaseClient
           .from('profiles')
           .select('id, nome_completo')
+          .eq('nome_completo', coop.nome_completo)
           .eq('email', emailLower)
-          .maybeSingle();
-
-        if (existingByEmail) {
-          result.duplicates++;
-          result.details.push({
-            row,
-            status: 'duplicate',
-            message: `Email já cadastrado para ${existingByEmail.nome_completo}`,
-            nome: coop.nome_completo
-          });
-          continue;
-        }
-
-        // Verificar duplicidade por CPF
-        const { data: existingByCPF } = await supabaseClient
-          .from('profiles')
-          .select('id, nome_completo')
           .eq('cpf', cpfNormalizado)
+          .eq('telefone', coop.telefone || null)
+          .eq('quadra', coop.quadra || null)
+          .eq('lote', coop.lote || null)
+          .eq('fase', coop.fase || null)
           .maybeSingle();
 
-        if (existingByCPF) {
+        if (existingProfile) {
           result.duplicates++;
           result.details.push({
             row,
             status: 'duplicate',
-            message: `CPF já cadastrado para ${existingByCPF.nome_completo}`,
+            message: `Cooperado com dados idênticos já cadastrado`,
             nome: coop.nome_completo
           });
           continue;
