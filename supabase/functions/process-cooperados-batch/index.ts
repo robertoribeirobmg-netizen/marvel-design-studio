@@ -32,15 +32,19 @@ interface ProcessResult {
 }
 
 // Função para normalizar CPF
-function normalizarCPF(cpf: string): string {
+function normalizarCPF(cpf: string | null | undefined): string {
   if (!cpf) return '';
-  return cpf.replace(/[^\d]/g, '');
+  // Converter para string se não for
+  const cpfStr = String(cpf);
+  return cpfStr.replace(/[^\d]/g, '');
 }
 
 // Função para normalizar texto
-function normalizarTexto(texto: string): string {
+function normalizarTexto(texto: string | null | undefined): string {
   if (!texto) return '';
-  return texto
+  // Converter para string se não for
+  const textoStr = String(texto);
+  return textoStr
     .toUpperCase()
     .trim()
     .normalize('NFD')

@@ -118,31 +118,56 @@ export function UploadCooperadosLote() {
 
       console.log('Enviando dados:', mappedData);
 
+      // Simular progresso enquanto processa
+      const progressInterval = setInterval(() => {
+        setProgress(prev => {
+          if (prev >= 90) return prev;
+          return prev + 10;
+        });
+      }, 500);
+
       // Chamar edge function para processar
       const { data, error } = await supabase.functions.invoke('process-cooperados-batch', {
         body: { cooperados: mappedData }
       });
 
-      if (error) throw error;
+      clearInterval(progressInterval);
+      setProgress(100);
+
+      if (error) {
+        console.error('Erro da edge function:', error);
+        throw error;
+      }
 
       setResult(data);
       
-      if (data.success > 0) {
-        toast.success(`${data.success} cooperado(s) cadastrado(s) com sucesso!`);
+      // Notificações detalhadas
+      const total = mappedData.length;
+      const processed = data.success + data.duplicates + data.errors;
+      
+      toast.success(
+        `Importação concluída! ${data.success} de ${total} cooperado(s) cadastrado(s) com sucesso`,
+        { duration: 5000 }
+      );
+      
+      if (data.associated > 0) {
+        toast.info(`${data.associated} cooperado(s) vinculado(s) aos dados financeiros COHAPM`);
       }
+      
       if (data.duplicates > 0) {
-        toast.warning(`${data.duplicates} cooperado(s) já existente(s)`);
+        toast.warning(`${data.duplicates} cooperado(s) já cadastrado(s) anteriormente`);
       }
+      
       if (data.errors > 0) {
-        toast.error(`${data.errors} erro(s) encontrado(s)`);
+        toast.error(`${data.errors} erro(s) encontrado(s). Verifique os detalhes abaixo.`);
       }
 
     } catch (error) {
       console.error('Erro ao processar:', error);
-      toast.error('Erro ao processar arquivo');
+      toast.error('Erro ao processar arquivo. Tente novamente.');
+      setProgress(0);
     } finally {
       setIsProcessing(false);
-      setProgress(100);
     }
   };
 
