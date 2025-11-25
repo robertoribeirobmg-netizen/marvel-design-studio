@@ -25,7 +25,11 @@ interface ProcessResult {
 
 const requiredFields = ['tipo_usuario', 'nome_completo', 'email', 'cpf'];
 
-export function UploadCooperadosLote() {
+interface UploadCooperadosLoteProps {
+  onImportComplete?: () => void;
+}
+
+export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteProps = {}) {
   const [file, setFile] = useState<File | null>(null);
   const [parsedData, setParsedData] = useState<any[][]>([]);
   const [excelHeaders, setExcelHeaders] = useState<string[]>([]);
@@ -140,6 +144,11 @@ export function UploadCooperadosLote() {
       }
 
       setResult(data);
+      
+      // Notificar que a importação foi concluída para atualizar a lista
+      if (onImportComplete && data.success > 0) {
+        onImportComplete();
+      }
       
       // Notificações detalhadas
       const total = mappedData.length;

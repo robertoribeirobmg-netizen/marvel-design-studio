@@ -1316,7 +1316,7 @@ export default function Admin() {
           </Card>
 
           {/* Upload em Lote */}
-          <UploadCooperadosLote />
+          <UploadCooperadosLote onImportComplete={loadCooperados} />
 
           {/* Lista de Cooperadores */}
           <Card>
