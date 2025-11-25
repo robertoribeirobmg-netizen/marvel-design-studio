@@ -26,6 +26,7 @@ import { AdminGaleria } from '@/components/AdminGaleria';
 import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { ImportacaoCOHAPM } from '@/components/admin/ImportacaoCOHAPM';
 import { UploadCooperadosLote } from '@/components/admin/UploadCooperadosLote';
+import { ClearAllDataButton } from '@/components/admin/ClearAllDataButton';
 
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -1147,6 +1148,7 @@ export default function Admin() {
             </h1>
           </Link>
           <div className="flex items-center gap-4">
+            {isAdmin && <ClearAllDataButton />}
             <Link to="/area-cooperado">
               <Button variant="outline">Área do Cooperado</Button>
             </Link>
