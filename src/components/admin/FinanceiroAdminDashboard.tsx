@@ -4,12 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Search, DollarSign, FileText, Download, ChevronDown, ChevronRight } from 'lucide-react';
+import { Search, DollarSign, FileText, Download, ChevronDown, ChevronRight, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import * as XLSX from 'xlsx';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 interface Parcela {
   parcela_id: number;
@@ -46,6 +47,8 @@ export function FinanceiroAdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(50);
 
   useEffect(() => {
     loadData();
@@ -160,6 +163,22 @@ export function FinanceiroAdminDashboard() {
       cooperado.comprador_lote.toLowerCase().includes(searchLower)
     );
   });
+
+  // Paginação
+  const totalPages = Math.ceil(cooperadosFiltrados.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedCooperados = cooperadosFiltrados.slice(startIndex, endIndex);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleItemsPerPageChange = (value: string) => {
+    setItemsPerPage(Number(value));
+    setCurrentPage(1);
+  };
 
   const toggleRow = (compradorId: string) => {
     setExpandedRows(prev => {
@@ -412,14 +431,14 @@ export function FinanceiroAdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {cooperadosFiltrados.length === 0 ? (
+                {paginatedCooperados.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                       {searchTerm ? 'Nenhum cooperado encontrado com os critérios de busca.' : 'Nenhum cooperado registrado.'}
                     </TableCell>
                   </TableRow>
                 ) : (
-                  cooperadosFiltrados.map((cooperado) => {
+                  paginatedCooperados.map((cooperado) => {
                     const isExpanded = expandedRows.has(cooperado.comprador_id);
                     return (
                       <Collapsible key={cooperado.comprador_id} open={isExpanded} asChild>
@@ -501,6 +520,53 @@ export function FinanceiroAdminDashboard() {
                 )}
               </TableBody>
             </Table>
+          </div>
+          
+          {/* Controles de Paginação */}
+          <div className="flex items-center justify-between mt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Registros por página:</span>
+              <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                  <SelectItem value="500">500</SelectItem>
+                  <SelectItem value="1000">1000</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">
+                Mostrando {startIndex + 1} a {Math.min(endIndex, cooperadosFiltrados.length)} de {cooperadosFiltrados.length} cooperados
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+              <span className="text-sm text-muted-foreground">
+                Página {currentPage} de {totalPages || 1}
+              </span>
+            </div>
           </div>
         </CardContent>
       </Card>
