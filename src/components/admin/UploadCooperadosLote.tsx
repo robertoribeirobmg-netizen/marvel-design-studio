@@ -47,6 +47,8 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState<ProcessResult | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<any[]>([]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -165,12 +167,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     return errors;
   };
 
-  const handleProcessar = async () => {
-
-    setShowMapping(false);
-    setIsProcessing(true);
-    setProgress(0);
-
+  const handleShowPreview = () => {
     try {
       // Preparar dados mapeados
       const mappedData = parsedData.map((row, index) => {
@@ -224,7 +221,23 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         return;
       }
 
-      console.log('Enviando dados:', mappedData);
+      // Mostrar preview
+      setPreviewData(mappedData);
+      setShowMapping(false);
+      setShowPreview(true);
+    } catch (error) {
+      console.error('Erro ao preparar preview:', error);
+      toast.error('Erro ao preparar visualização dos dados');
+    }
+  };
+
+  const handleProcessar = async () => {
+    setShowPreview(false);
+    setIsProcessing(true);
+    setProgress(0);
+
+    try {
+      console.log('Enviando dados:', previewData);
 
       // Simular progresso enquanto processa
       const progressInterval = setInterval(() => {
@@ -236,7 +249,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
 
       // Chamar edge function para processar
       const { data, error } = await supabase.functions.invoke('process-cooperados-batch', {
-        body: { cooperados: mappedData }
+        body: { cooperados: previewData }
       });
 
       clearInterval(progressInterval);
@@ -255,7 +268,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
       }
       
       // Notificações detalhadas
-      const total = mappedData.length;
+      const total = previewData.length;
       const processed = data.success + data.duplicates + data.errors;
       
       toast.success(
@@ -289,6 +302,8 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     setParsedData([]);
     setExcelHeaders([]);
     setShowMapping(false);
+    setShowPreview(false);
+    setPreviewData([]);
     setResult(null);
     setProgress(0);
     setColumnMapping({
@@ -373,8 +388,68 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
             />
 
             <div className="flex gap-2">
+              <Button onClick={handleShowPreview} className="flex-1">
+                Visualizar Dados
+              </Button>
+              <Button onClick={resetUpload} variant="outline">
+                Cancelar
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Preview */}
+        {showPreview && (
+          <div className="space-y-4">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Visualizando as primeiras 10 linhas de {previewData.length} cooperado(s) a serem processados.
+                Verifique se os dados estão corretos antes de prosseguir.
+              </AlertDescription>
+            </Alert>
+
+            <div className="border rounded-lg overflow-hidden">
+              <div className="overflow-x-auto max-h-96">
+                <table className="w-full text-sm">
+                  <thead className="bg-muted sticky top-0">
+                    <tr>
+                      <th className="px-4 py-2 text-left font-semibold">Linha</th>
+                      <th className="px-4 py-2 text-left font-semibold">Tipo Usuário</th>
+                      <th className="px-4 py-2 text-left font-semibold">Nome Completo</th>
+                      <th className="px-4 py-2 text-left font-semibold">Email</th>
+                      <th className="px-4 py-2 text-left font-semibold">CPF</th>
+                      <th className="px-4 py-2 text-left font-semibold">Telefone</th>
+                      <th className="px-4 py-2 text-left font-semibold">Quadra</th>
+                      <th className="px-4 py-2 text-left font-semibold">Lote</th>
+                      <th className="px-4 py-2 text-left font-semibold">Fase</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {previewData.slice(0, 10).map((row, index) => (
+                      <tr key={index} className="border-t hover:bg-muted/50">
+                        <td className="px-4 py-2 font-mono text-xs">{row.row_number}</td>
+                        <td className="px-4 py-2">{row.tipo_usuario || '-'}</td>
+                        <td className="px-4 py-2">{row.nome_completo || '-'}</td>
+                        <td className="px-4 py-2">{row.email || '-'}</td>
+                        <td className="px-4 py-2 font-mono text-xs">{row.cpf || '-'}</td>
+                        <td className="px-4 py-2">{row.telefone || '-'}</td>
+                        <td className="px-4 py-2">{row.quadra || '-'}</td>
+                        <td className="px-4 py-2">{row.lote || '-'}</td>
+                        <td className="px-4 py-2">{row.fase || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div className="flex gap-2">
               <Button onClick={handleProcessar} className="flex-1">
-                Processar Dados
+                Confirmar e Processar
+              </Button>
+              <Button onClick={() => { setShowPreview(false); setShowMapping(true); }} variant="outline">
+                Voltar ao Mapeamento
               </Button>
               <Button onClick={resetUpload} variant="outline">
                 Cancelar
