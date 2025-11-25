@@ -14,10 +14,11 @@ interface ProcessResult {
   success: number;
   errors: number;
   duplicates: number;
+  updated: number;
   associated: number;
   details: Array<{
     row: number;
-    status: 'success' | 'error' | 'duplicate';
+    status: 'success' | 'error' | 'duplicate' | 'updated';
     message: string;
     nome?: string;
   }>;
@@ -210,6 +211,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
           success: 0,
           errors: totalErrors,
           duplicates: 0,
+          updated: 0,
           associated: 0,
           details: validationErrors.map(err => ({
             row: err.row,
@@ -276,12 +278,16 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         { duration: 5000 }
       );
       
+      if (data.updated > 0) {
+        toast.info(`${data.updated} cooperado(s) atualizado(s) com sucesso`);
+      }
+      
       if (data.associated > 0) {
         toast.info(`${data.associated} cooperado(s) vinculado(s) aos dados financeiros COHAPM`);
       }
       
       if (data.duplicates > 0) {
-        toast.warning(`${data.duplicates} cooperado(s) já cadastrado(s) anteriormente`);
+        toast.warning(`${data.duplicates} cooperado(s) ignorado(s) por dados duplicados`);
       }
       
       if (data.errors > 0) {
@@ -474,7 +480,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         {/* Results */}
         {result && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 text-green-600">
@@ -482,6 +488,18 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
                     <div>
                       <p className="text-2xl font-bold">{result.success}</p>
                       <p className="text-xs text-muted-foreground">Cadastrados</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-cyan-600">
+                    <CheckCircle2 className="h-5 w-5" />
+                    <div>
+                      <p className="text-2xl font-bold">{result.updated}</p>
+                      <p className="text-xs text-muted-foreground">Atualizados</p>
                     </div>
                   </div>
                 </CardContent>
@@ -535,6 +553,8 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
                       className={`flex items-start gap-2 p-2 rounded text-sm ${
                         detail.status === 'success'
                           ? 'bg-green-50 text-green-800'
+                          : detail.status === 'updated'
+                          ? 'bg-cyan-50 text-cyan-800'
                           : detail.status === 'duplicate'
                           ? 'bg-yellow-50 text-yellow-800'
                           : 'bg-red-50 text-red-800'
