@@ -90,17 +90,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     }));
   };
 
-  const validateMapping = () => {
-    const missingFields = requiredFields.filter(field => columnMapping[field] === null);
-    if (missingFields.length > 0) {
-      toast.error(`Campos obrigatórios não mapeados: ${missingFields.join(', ')}`);
-      return false;
-    }
-    return true;
-  };
-
   const handleProcessar = async () => {
-    if (!validateMapping()) return;
 
     setShowMapping(false);
     setIsProcessing(true);
