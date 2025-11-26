@@ -17,7 +17,6 @@ import * as XLSX from 'xlsx';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AdminObras } from '@/components/AdminObras';
 import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
 
@@ -27,7 +26,6 @@ import { AdminGaleria } from '@/components/AdminGaleria';
 import { FinanceiroAdminDashboard } from '@/components/admin/FinanceiroAdminDashboard';
 import { ImportacaoCOHAPM } from '@/components/admin/ImportacaoCOHAPM';
 import { UploadCooperadosLote } from '@/components/admin/UploadCooperadosLote';
-import { ClearAllDataButton } from '@/components/admin/ClearAllDataButton';
 
 import { generateCooperadosReport } from '@/lib/pdfGenerator';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -1149,7 +1147,6 @@ export default function Admin() {
             </h1>
           </Link>
           <div className="flex items-center gap-4">
-            {isAdmin && <ClearAllDataButton />}
             <Link to="/area-cooperado">
               <Button variant="outline">Área do Cooperado</Button>
             </Link>
@@ -1335,107 +1332,58 @@ export default function Admin() {
             <CardContent>
               {isLoading ? (
                 <div className="text-center py-8">Carregando...</div>
-              ) : filteredCooperados.length === 0 ? (
+              ) : cooperados.length === 0 ? (
                 <div className="text-center py-8 text-muted-foreground">
                   Nenhum cooperado cadastrado ainda
                 </div>
               ) : (
-                <div className="space-y-4">
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Nome</TableHead>
-                          <TableHead>Email</TableHead>
-                          <TableHead>CPF</TableHead>
-                          <TableHead>Telefone</TableHead>
-                          <TableHead>Quadra</TableHead>
-                          <TableHead>Lote</TableHead>
-                          <TableHead>Fase</TableHead>
-                          <TableHead>Ações</TableHead>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nome</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>CPF</TableHead>
+                        <TableHead>Telefone</TableHead>
+                        <TableHead>Quadra</TableHead>
+                        <TableHead>Lote</TableHead>
+                        <TableHead>Fase</TableHead>
+                        <TableHead>Ações</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {cooperados.map((cooperado) => (
+                        <TableRow key={cooperado.id}>
+                          <TableCell className="font-medium">{cooperado.nome_completo}</TableCell>
+                          <TableCell>{cooperado.email || '-'}</TableCell>
+                          <TableCell>{cooperado.cpf || '-'}</TableCell>
+                          <TableCell>{cooperado.telefone || '-'}</TableCell>
+                          <TableCell>{cooperado.quadra || '-'}</TableCell>
+                          <TableCell>{cooperado.lote || '-'}</TableCell>
+                          <TableCell>{cooperado.fase || '-'}</TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setEditingCooperado(cooperado);
+                                setEditNome(cooperado.nome_completo);
+                                setEditTelefone(cooperado.telefone || '');
+                                setEditCpf(cooperado.cpf || '');
+                                setEditQuadra(cooperado.quadra || '');
+                                setEditLote(cooperado.lote || '');
+                                setEditFase(cooperado.fase || '');
+                                setEditDataCompra(cooperado.data_compra || '');
+                              }}
+                            >
+                              <Edit className="h-4 w-4 mr-1" />
+                              Editar
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedCooperados.map((cooperado) => (
-                          <TableRow key={cooperado.id}>
-                            <TableCell className="font-medium">{cooperado.nome_completo}</TableCell>
-                            <TableCell>{cooperado.email || '-'}</TableCell>
-                            <TableCell>{cooperado.cpf || '-'}</TableCell>
-                            <TableCell>{cooperado.telefone || '-'}</TableCell>
-                            <TableCell>{cooperado.quadra || '-'}</TableCell>
-                            <TableCell>{cooperado.lote || '-'}</TableCell>
-                            <TableCell>{cooperado.fase || '-'}</TableCell>
-                            <TableCell>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => {
-                                  setEditingCooperado(cooperado);
-                                  setEditNome(cooperado.nome_completo);
-                                  setEditTelefone(cooperado.telefone || '');
-                                  setEditCpf(cooperado.cpf || '');
-                                  setEditQuadra(cooperado.quadra || '');
-                                  setEditLote(cooperado.lote || '');
-                                  setEditFase(cooperado.fase || '');
-                                  setEditDataCompra(cooperado.data_compra || '');
-                                }}
-                              >
-                                <Edit className="h-4 w-4 mr-1" />
-                                Editar
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                  
-                  {/* Controles de Paginação */}
-                  <div className="flex items-center justify-between pt-4 border-t">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-muted-foreground">Registros por página:</span>
-                      <Select value={String(itemsPerPage)} onValueChange={handleItemsPerPageChange}>
-                        <SelectTrigger className="w-[120px]">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="10">10</SelectItem>
-                          <SelectItem value="25">25</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                          <SelectItem value="100">100</SelectItem>
-                          <SelectItem value="500">500</SelectItem>
-                          <SelectItem value="1000">1000</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="flex items-center gap-4">
-                      <span className="text-sm text-muted-foreground">
-                        Mostrando {startIndex + 1} a {Math.min(endIndex, filteredCooperados.length)} de {filteredCooperados.length} cooperados
-                      </span>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePageChange(currentPage - 1)}
-                          disabled={currentPage === 1}
-                        >
-                          <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span className="px-3 py-1 text-sm">
-                          Página {currentPage} de {totalPages || 1}
-                        </span>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handlePageChange(currentPage + 1)}
-                          disabled={currentPage >= totalPages}
-                        >
-                          <ChevronRight className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               )}
             </CardContent>

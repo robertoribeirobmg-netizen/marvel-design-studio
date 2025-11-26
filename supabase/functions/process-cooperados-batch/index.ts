@@ -22,11 +22,10 @@ interface ProcessResult {
   success: number;
   errors: number;
   duplicates: number;
-  updated: number;
   associated: number;
   details: Array<{
     row: number;
-    status: 'success' | 'error' | 'duplicate' | 'updated';
+    status: 'success' | 'error' | 'duplicate';
     message: string;
     nome?: string;
   }>;
@@ -80,14 +79,13 @@ serve(async (req) => {
       throw new Error('Dados inválidos');
     }
 
-  const result: ProcessResult = {
-    success: 0,
-    errors: 0,
-    duplicates: 0,
-    updated: 0,
-    associated: 0,
-    details: []
-  };
+    const result: ProcessResult = {
+      success: 0,
+      errors: 0,
+      duplicates: 0,
+      associated: 0,
+      details: []
+    };
 
     console.log(`Processando ${cooperados.length} cooperados...`);
 
@@ -120,125 +118,28 @@ serve(async (req) => {
         const cpfNormalizado = normalizarCPF(coop.cpf);
         const emailLower = coop.email.toLowerCase().trim();
 
-        // Verificar se já existe usuário com este email
-        const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
-        const userWithEmail = existingUsers?.users.find(u => u.email === emailLower);
+        // Verificar duplicidade por TODOS os campos
+        const { data: existingProfile } = await supabaseClient
+          .from('profiles')
+          .select('id, nome_completo')
+          .eq('nome_completo', coop.nome_completo)
+          .eq('email', emailLower)
+          .eq('cpf', cpfNormalizado)
+          .eq('telefone', coop.telefone || null)
+          .eq('quadra', coop.quadra || null)
+          .eq('lote', coop.lote || null)
+          .eq('fase', coop.fase || null)
+          .maybeSingle();
 
-        if (userWithEmail) {
-          // Usuário já existe - vamos atualizar os dados
-          try {
-            // Atualizar profile
-            const { error: updateProfileError } = await supabaseClient
-              .from('profiles')
-              .update({
-                nome_completo: coop.nome_completo,
-                cpf: cpfNormalizado,
-                telefone: coop.telefone || null,
-                quadra: coop.quadra || null,
-                lote: coop.lote || null,
-                fase: coop.fase || null,
-                updated_at: new Date().toISOString()
-              })
-              .eq('id', userWithEmail.id);
-
-            if (updateProfileError) {
-              throw updateProfileError;
-            }
-
-            // Validar tipo de usuário
-            const validRoles = ['cooperado', 'admin', 'admin_obras', 'executivo_vendas'];
-            const role = coop.tipo_usuario?.toLowerCase() || 'cooperado';
-            
-            if (!validRoles.includes(role)) {
-              result.errors++;
-              result.details.push({
-                row,
-                status: 'error',
-                message: `Tipo de usuário inválido: ${coop.tipo_usuario}`,
-                nome: coop.nome_completo
-              });
-              continue;
-            }
-
-            // Verificar se tem role correta
-            const { data: existingRole } = await supabaseClient
-              .from('user_roles')
-              .select('role')
-              .eq('user_id', userWithEmail.id)
-              .maybeSingle();
-
-            // Atualizar ou criar role
-            if (!existingRole) {
-              await supabaseClient
-                .from('user_roles')
-                .insert({ 
-                  user_id: userWithEmail.id, 
-                  role: role as 'cooperado' | 'admin' | 'admin_obras' | 'executivo_vendas'
-                });
-            } else if (existingRole.role !== role) {
-              await supabaseClient
-                .from('user_roles')
-                .update({ role: role as 'cooperado' | 'admin' | 'admin_obras' | 'executivo_vendas' })
-                .eq('user_id', userWithEmail.id);
-            }
-
-            // Criar chave de vinculação para tentar match com COHAPM
-            const chaveVinculacao = criarChaveVinculacao(
-              coop.nome_completo,
-              cpfNormalizado,
-              coop.quadra,
-              coop.lote
-            );
-
-            // Tentar encontrar comprador COHAPM correspondente
-            let compradorMatch = null;
-            if (compradores) {
-              compradorMatch = compradores.find(comp => {
-                if (comp.profile_id) return false; // Já vinculado
-                
-                const compChave = criarChaveVinculacao(
-                  comp.nome || '',
-                  comp.cpf_cnpj || '',
-                  comp.quadra,
-                  comp.lote
-                );
-                
-                return compChave === chaveVinculacao;
-              });
-            }
-
-            // Vincular ao COHAPM se houver match
-            if (compradorMatch) {
-              await supabaseClient
-                .from('compradores_cohapm')
-                .update({ profile_id: userWithEmail.id })
-                .eq('id', compradorMatch.id);
-              
-              result.associated++;
-            }
-
-            result.updated++;
-            result.details.push({
-              row,
-              status: 'updated',
-              message: compradorMatch 
-                ? 'Dados atualizados e vinculado ao COHAPM'
-                : 'Dados do cooperado atualizados com sucesso',
-              nome: coop.nome_completo
-            });
-            
-            continue;
-          } catch (error) {
-            console.error('Erro ao atualizar cooperado:', error);
-            result.errors++;
-            result.details.push({
-              row,
-              status: 'error',
-              message: `Erro ao atualizar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`,
-              nome: coop.nome_completo
-            });
-            continue;
-          }
+        if (existingProfile) {
+          result.duplicates++;
+          result.details.push({
+            row,
+            status: 'duplicate',
+            message: `Cooperado com dados idênticos já cadastrado`,
+            nome: coop.nome_completo
+          });
+          continue;
         }
 
         // Validar tipo de usuário
