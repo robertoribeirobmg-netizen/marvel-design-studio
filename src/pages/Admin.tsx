@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminObras } from '@/components/AdminObras';
 import { HistoricoGeralObras } from '@/components/HistoricoGeralObras';
+import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 import { AdminGaleria } from '@/components/AdminGaleria';
@@ -1411,6 +1412,7 @@ export default function Admin() {
 
             <TabsContent value="obras">
               <div className="space-y-6">
+                <AcompanhamentoObras />
                 <DashboardComparativoObras showVariacoes={true} />
                 <HistoricoGeralObras />
                 <AdminObras readOnly={isExecutivoVendas && !isAdmin && !isAdminObras} />
