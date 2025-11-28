@@ -183,7 +183,7 @@ export default function Home() {
         <div className="container mx-auto px-4 h-16 md:h-20 flex items-center justify-between">
           <Link to="/">
             <div className="flex items-center gap-2 md:gap-3 cursor-pointer group">
-              <img src={logo} alt="La Felicità" className="h-8 md:h-12 w-auto group-hover:scale-105 transition-transform" />
+              <img src={logo} alt="La Felicità" className="h-10 md:h-16 w-auto group-hover:scale-105 transition-transform" />
               <div className="flex flex-col leading-tight">
                 <span className="font-bold text-sm md:text-xl text-foreground whitespace-nowrap">La Felicità</span>
                 <p className="text-[10px] md:text-xs text-primary font-medium">Residencial</p>
@@ -245,33 +245,33 @@ export default function Home() {
               <span className="text-sm font-medium text-secondary drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Empreendimento Exclusivo</span>
             </div>
             
-            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 text-secondary drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.5)' }}>
+            <h1 className="font-display text-4xl md:text-6xl font-semibold mb-6 text-secondary" style={{ textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)' }}>
               Residencial La Felicità
             </h1>
             
-            <p className="text-xl md:text-2xl text-white mb-8 leading-relaxed font-bold drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 4px 20px rgba(0,0,0,0.85), 0 0 30px rgba(255,255,255,0.2)' }}>
-              Seu sonho de ter uma casa de praia em <span className="text-primary font-bold">Praia do Forte</span> está mais próximo do que você imagina
+            <p className="text-xl md:text-2xl text-white mb-8 leading-relaxed font-normal" style={{ textShadow: '0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.3)' }}>
+              Seu sonho de ter uma casa de praia em <span className="text-secondary font-semibold">Praia do Forte</span> está mais próximo do que você imagina
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 max-w-2xl mx-auto mb-12">
               <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-pulse">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 animate-pulse">
                   {counts.cooperados}+
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Cooperados</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold">Cooperados</div>
               </div>
               <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-pulse">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words animate-pulse">
                   {counts.area.toLocaleString()}m²
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Área Total</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold">Área Total</div>
               </div>
               <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-pulse">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 animate-pulse">
                   {counts.unidades}
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Unidades</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold">Unidades</div>
               </div>
             </div>
 
