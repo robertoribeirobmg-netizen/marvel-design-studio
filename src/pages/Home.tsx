@@ -238,11 +238,6 @@ export default function Home() {
             backgroundSize: 'cover',
           }}
         />
-        {/* Dark Overlay for text readability - Contraste aumentado */}
-        <div className="absolute inset-0 bg-gradient-to-b from-background/70 via-background/60 to-background/80" />
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-transparent to-accent/15 animate-gradient-x" />
-        
         <div className="container mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto animate-fade-in-up">
             <div className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-bounce-subtle">
@@ -250,33 +245,33 @@ export default function Home() {
               <span className="text-sm font-medium text-primary">Empreendimento Exclusivo</span>
             </div>
             
-            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 text-primary">
+            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 text-primary drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.8), 0 0 40px rgba(255,255,255,0.3)' }}>
               Residencial La Felicità
             </h1>
             
-            <p className="text-xl md:text-2xl text-foreground mb-8 leading-relaxed font-medium drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)]">
-              Seu sonho de ter uma casa de praia em <span className="text-primary font-bold drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)]">Praia do Forte</span> está mais próximo do que você imagina
+            <p className="text-xl md:text-2xl text-white mb-8 leading-relaxed font-bold drop-shadow-[0_4px_16px_rgba(0,0,0,0.95)]" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 4px 20px rgba(0,0,0,0.85), 0 0 30px rgba(255,255,255,0.2)' }}>
+              Seu sonho de ter uma casa de praia em <span className="text-primary font-bold">Praia do Forte</span> está mais próximo do que você imagina
             </p>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 max-w-2xl mx-auto mb-12">
-              <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)] animate-pulse">
+              <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-pulse">
                   {counts.cooperados}+
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Cooperados</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Cooperados</div>
               </div>
-              <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)] animate-pulse">
+              <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-pulse">
                   {counts.area.toLocaleString()}m²
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Área Total</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Área Total</div>
               </div>
-              <div className="bg-card/50 backdrop-blur-sm p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-[0_2px_8px_rgba(255,255,255,0.9)] animate-pulse">
+              <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)] animate-pulse">
                   {counts.unidades}
                 </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-medium">Unidades</div>
+                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Unidades</div>
               </div>
             </div>
 
