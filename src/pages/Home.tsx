@@ -32,7 +32,7 @@ import {
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import logo from "@/assets/logo.png";
-import heroBackground from "@/assets/hero-background-new.png";
+import heroBackground from "@/assets/hero-background.png";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import campoFutebol from "@/assets/lazer/campo-futebol.jpg";
@@ -231,10 +231,11 @@ export default function Home() {
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
         {/* Background Image with Parallax */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-100 ease-out"
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-100 ease-out md:animate-none animate-pan-slow"
           style={{ 
             backgroundImage: `url(${heroBackground})`,
-            transform: `translateY(${parallaxOffset}px)`
+            transform: `translateY(${parallaxOffset}px)`,
+            backgroundSize: 'cover',
           }}
         />
         {/* Dark Overlay for text readability - Contraste aumentado */}
