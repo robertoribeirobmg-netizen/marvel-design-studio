@@ -240,12 +240,12 @@ export default function Home() {
         />
         <div className="container mx-auto relative z-10">
           <div className="text-center max-w-4xl mx-auto animate-fade-in-up">
-            <div className="inline-flex items-center gap-2 bg-primary/10 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-bounce-subtle">
-              <Sparkles className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium text-primary">Empreendimento Exclusivo</span>
+            <div className="inline-flex items-center gap-2 bg-secondary/20 backdrop-blur-sm px-4 py-2 rounded-full mb-6 animate-bounce-subtle border border-secondary/40">
+              <Sparkles className="h-4 w-4 text-secondary" />
+              <span className="text-sm font-medium text-secondary drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Empreendimento Exclusivo</span>
             </div>
             
-            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 text-primary drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.8), 0 0 40px rgba(255,255,255,0.3)' }}>
+            <h1 className="font-display text-4xl md:text-6xl font-bold mb-6 text-secondary drop-shadow-[0_4px_20px_rgba(0,0,0,0.95)]" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.9), 0 4px 20px rgba(0,0,0,0.8), 0 0 40px rgba(0,0,0,0.5)' }}>
               Residencial La Felicità
             </h1>
             
