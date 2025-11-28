@@ -70,8 +70,8 @@ export default function Home() {
       const scrollPosition = window.scrollY;
       setScrolled(scrollPosition > 50);
       
-      // Efeito parallax - move a imagem mais devagar que o scroll
-      setParallaxOffset(scrollPosition * 0.5);
+      // Efeito parallax suave - move a imagem mais devagar que o scroll
+      setParallaxOffset(scrollPosition * 0.3);
       
       // Detectar seção ativa
       const sections = ['sobre', 'beneficios', 'lazer', 'diferenciais', 'localizacao', 'contato'];
