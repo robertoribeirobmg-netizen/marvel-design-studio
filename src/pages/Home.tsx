@@ -245,11 +245,11 @@ export default function Home() {
               <span className="text-sm font-medium text-secondary drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">Empreendimento Exclusivo</span>
             </div>
             
-            <h1 className="font-display text-4xl md:text-6xl font-semibold mb-6 text-secondary" style={{ textShadow: '0 0 20px rgba(255,255,255,0.8), 0 0 40px rgba(255,255,255,0.4)' }}>
+            <h1 className="font-display text-4xl md:text-6xl font-semibold mb-6 text-secondary" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.2)' }}>
               Residencial La Felicità
             </h1>
             
-            <p className="text-xl md:text-2xl text-white mb-8 leading-relaxed font-normal" style={{ textShadow: '0 0 20px rgba(255,255,255,0.6), 0 0 30px rgba(255,255,255,0.3)' }}>
+            <p className="text-xl md:text-2xl text-white mb-8 leading-relaxed font-normal" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.4), 0 4px 12px rgba(0,0,0,0.2)' }}>
               Seu sonho de ter uma casa de praia em <span className="text-secondary font-semibold">Praia do Forte</span> está mais próximo do que você imagina
             </p>
 
