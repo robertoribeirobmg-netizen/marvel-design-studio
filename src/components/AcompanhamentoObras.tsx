@@ -3,9 +3,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, CheckCircle2, Clock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Calendar, CheckCircle2, Clock, Edit2, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 interface EtapaObra {
   id: string;
@@ -20,6 +24,11 @@ interface EtapaObra {
 export function AcompanhamentoObras() {
   const [etapas, setEtapas] = useState<EtapaObra[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<number>(0);
+  const { isAdmin, isAdminObras } = useAuth();
+
+  const canEdit = isAdmin || isAdminObras;
 
   useEffect(() => {
     loadEtapas();
@@ -38,6 +47,36 @@ export function AcompanhamentoObras() {
       console.error('Erro ao carregar etapas:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEdit = (etapa: EtapaObra) => {
+    setEditingId(etapa.id);
+    setEditValue(etapa.percentual_concluido);
+  };
+
+  const handleCancel = () => {
+    setEditingId(null);
+    setEditValue(0);
+  };
+
+  const handleSave = async (etapaId: string) => {
+    try {
+      const { error } = await supabase
+        .from('etapas_obra')
+        .update({ percentual_concluido: editValue })
+        .eq('id', etapaId);
+
+      if (error) throw error;
+
+      setEtapas(prev => prev.map(e => 
+        e.id === etapaId ? { ...e, percentual_concluido: editValue } : e
+      ));
+      toast.success('Progresso atualizado com sucesso!');
+      setEditingId(null);
+    } catch (error) {
+      console.error('Erro ao atualizar progresso:', error);
+      toast.error('Erro ao atualizar progresso');
     }
   };
 
@@ -64,9 +103,9 @@ export function AcompanhamentoObras() {
     );
   }
 
-  const totalPercentual = Math.round(
-    etapas.reduce((acc, etapa) => acc + etapa.percentual_concluido, 0) / etapas.length
-  );
+  const totalPercentual = etapas.length > 0 
+    ? Math.round(etapas.reduce((acc, etapa) => acc + etapa.percentual_concluido, 0) / etapas.length)
+    : 0;
 
   return (
     <div className="space-y-6">
@@ -104,9 +143,36 @@ export function AcompanhamentoObras() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
+                <div className="flex justify-between items-center text-sm">
                   <span>Progresso</span>
-                  <span className="font-bold">{etapa.percentual_concluido}%</span>
+                  {editingId === etapa.id ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="number"
+                        min={0}
+                        max={100}
+                        value={editValue}
+                        onChange={(e) => setEditValue(Math.min(100, Math.max(0, Number(e.target.value))))}
+                        className="w-20 h-8 text-right"
+                      />
+                      <span>%</span>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleSave(etapa.id)}>
+                        <Save className="h-4 w-4 text-green-600" />
+                      </Button>
+                      <Button size="icon" variant="ghost" className="h-8 w-8" onClick={handleCancel}>
+                        <X className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold">{etapa.percentual_concluido}%</span>
+                      {canEdit && (
+                        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => handleEdit(etapa)}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <Progress value={etapa.percentual_concluido} className="h-3" />
               </div>
