@@ -286,17 +286,22 @@ export default function Admin() {
         return;
       }
 
+      // Check if user was recovered (orphan user)
+      if (data?.recovered) {
+        toast.success(`Usuário ${newEmail} recuperado com sucesso!`);
+      } else {
+        toast.success(`${
+          newUserRole === 'cooperado' ? 'Cooperado' : 
+          newUserRole === 'admin' ? 'Admin Geral' : 
+          newUserRole === 'admin_obras' ? 'Admin Obras' :
+          'Executivo de Vendas'
+        } criado com sucesso!`);
+      }
+
       // Mostrar senha gerada
       setGeneratedPassword(autoPassword);
       setGeneratedUserName(newNome);
       setShowPasswordDialog(true);
-
-      toast.success(`${
-        newUserRole === 'cooperado' ? 'Cooperado' : 
-        newUserRole === 'admin' ? 'Admin Geral' : 
-        newUserRole === 'admin_obras' ? 'Admin Obras' :
-        'Executivo de Vendas'
-      } criado com sucesso!`);
       setNewEmail('');
       setNewNome('');
       setNewCpf('');
