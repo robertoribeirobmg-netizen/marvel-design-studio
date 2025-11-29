@@ -51,7 +51,7 @@ import restaurante from "@/assets/lazer/restaurante.jpg";
 export default function Home() {
   const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState("");
-  const [counts, setCounts] = useState({ cooperados: 0, area: 0, unidades: 0 });
+  
   const [parallaxOffset, setParallaxOffset] = useState(0);
   const [selectedArea, setSelectedArea] = useState<number | null>(null);
 
@@ -90,28 +90,6 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Contador animado
-  useEffect(() => {
-    const duration = 2000;
-    const steps = 60;
-    const interval = duration / steps;
-    
-    const targets = { cooperados: 150, area: 42000, unidades: 96 };
-    let step = 0;
-
-    const timer = setInterval(() => {
-      step++;
-      setCounts({
-        cooperados: Math.floor((targets.cooperados / steps) * step),
-        area: Math.floor((targets.area / steps) * step),
-        unidades: Math.floor((targets.unidades / steps) * step),
-      });
-
-      if (step >= steps) clearInterval(timer);
-    }, interval);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const testimonials = [
     {
@@ -253,27 +231,6 @@ export default function Home() {
               Seu sonho de ter uma casa de praia em <span className="text-secondary font-semibold">Praia do Forte</span> está mais próximo do que você imagina
             </p>
 
-            {/* Stats */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-4 md:gap-8 max-w-2xl mx-auto mb-12">
-              <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 animate-pulse">
-                  {counts.cooperados}+
-                </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold">Cooperados</div>
-              </div>
-              <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-accent mb-1 break-words animate-pulse">
-                  {counts.area.toLocaleString()}m²
-                </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold">Área Total</div>
-              </div>
-              <div className="bg-card/80 backdrop-blur-md p-3 sm:p-4 md:p-6 rounded-xl md:rounded-2xl border border-border shadow-2xl">
-                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-1 animate-pulse">
-                  {counts.unidades}
-                </div>
-                <div className="text-[10px] sm:text-xs md:text-sm text-foreground font-semibold">Unidades</div>
-              </div>
-            </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="bg-yellow-400 hover:bg-yellow-500 shadow-lg shadow-yellow-400/30 group text-green-700 font-semibold">
