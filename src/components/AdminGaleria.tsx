@@ -9,11 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
-
 interface GaleriaItem {
   id: string;
   titulo: string;
@@ -45,6 +45,7 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [selectedVideo, setSelectedVideo] = useState<GaleriaItem | null>(null);
 
   useEffect(() => {
     loadItems();
@@ -471,7 +472,13 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                   <CardContent className="p-4">
                     <div className="space-y-3">
                       {/* Thumbnail */}
-                      <div className="relative aspect-video rounded-lg overflow-hidden bg-muted">
+                      <div 
+                        className={cn(
+                          "relative aspect-video rounded-lg overflow-hidden bg-muted",
+                          item.video_url && "cursor-pointer group"
+                        )}
+                        onClick={() => item.video_url && setSelectedVideo(item)}
+                      >
                         {item.foto_url ? (
                           <img
                             src={item.foto_url}
@@ -483,11 +490,11 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                             <img
                               src={getYouTubeThumbnail(item.video_url)}
                               alt={item.titulo}
-                              className="w-full h-full object-cover"
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                             />
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <div className="bg-red-600 rounded-full p-3">
-                                <Video className="h-6 w-6 text-white" />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                              <div className="bg-red-600 rounded-full p-3 group-hover:scale-110 transition-transform">
+                                <Play className="h-6 w-6 text-white fill-white" />
                               </div>
                             </div>
                           </div>
@@ -535,7 +542,13 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                   className="flex gap-4 p-4 border rounded-lg hover:bg-muted/50 transition-colors"
                 >
                   {/* Thumbnail */}
-                  <div className="shrink-0 w-24 h-24 rounded-md overflow-hidden bg-muted">
+                  <div 
+                    className={cn(
+                      "shrink-0 w-24 h-24 rounded-md overflow-hidden bg-muted",
+                      item.video_url && "cursor-pointer group"
+                    )}
+                    onClick={() => item.video_url && setSelectedVideo(item)}
+                  >
                     {item.foto_url ? (
                       <img
                         src={item.foto_url}
@@ -547,11 +560,11 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                         <img
                           src={getYouTubeThumbnail(item.video_url)}
                           alt={item.titulo}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                         />
-                        <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="bg-red-600 rounded-full p-2">
-                            <Video className="h-4 w-4 text-white" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                          <div className="bg-red-600 rounded-full p-2 group-hover:scale-110 transition-transform">
+                            <Play className="h-4 w-4 text-white fill-white" />
                           </div>
                         </div>
                       </div>
@@ -669,6 +682,37 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
             </>
           )}
         </div>
+
+        {/* Video Dialog */}
+        <Dialog open={!!selectedVideo} onOpenChange={(open) => !open && setSelectedVideo(null)}>
+          <DialogContent className="max-w-4xl w-full p-0">
+            <DialogHeader className="p-4 pb-0">
+              <DialogTitle>{selectedVideo?.titulo}</DialogTitle>
+            </DialogHeader>
+            <div className="p-4">
+              <div className="aspect-video w-full">
+                {selectedVideo?.video_url && (
+                  <iframe
+                    src={`${selectedVideo.video_url}?autoplay=1`}
+                    title={selectedVideo.titulo}
+                    className="w-full h-full rounded-lg"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                )}
+              </div>
+              {selectedVideo?.descricao && (
+                <p className="text-muted-foreground mt-3">{selectedVideo.descricao}</p>
+              )}
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="secondary">{selectedVideo?.categoria}</Badge>
+                <span className="text-xs text-muted-foreground">
+                  {selectedVideo && new Date(selectedVideo.data_upload).toLocaleDateString('pt-BR')}
+                </span>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
