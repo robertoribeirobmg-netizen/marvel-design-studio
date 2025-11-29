@@ -755,6 +755,30 @@ export type Database = {
         }
         Relationships: []
       }
+      progresso_geral_obra: {
+        Row: {
+          id: string
+          observacoes: string | null
+          percentual: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          id?: string
+          observacoes?: string | null
+          percentual?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          id?: string
+          observacoes?: string | null
+          percentual?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       rate_limits: {
         Row: {
           created_at: string

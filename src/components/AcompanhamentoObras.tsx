@@ -27,14 +27,17 @@ export function AcompanhamentoObras() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
-  const [showBulkEdit, setShowBulkEdit] = useState(false);
-  const [bulkEditValues, setBulkEditValues] = useState<Record<string, number>>({});
-  const { isAdmin, isAdminObras } = useAuth();
+  const [progressoGeral, setProgressoGeral] = useState<number>(0);
+  const [progressoGeralId, setProgressoGeralId] = useState<string | null>(null);
+  const [showEditProgressoGeral, setShowEditProgressoGeral] = useState(false);
+  const [editProgressoGeralValue, setEditProgressoGeralValue] = useState<number>(0);
+  const { isAdmin, isAdminObras, user } = useAuth();
 
   const canEdit = isAdmin || isAdminObras;
 
   useEffect(() => {
     loadEtapas();
+    loadProgressoGeral();
   }, []);
 
   const loadEtapas = async () => {
@@ -50,6 +53,24 @@ export function AcompanhamentoObras() {
       console.error('Erro ao carregar etapas:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const loadProgressoGeral = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('progresso_geral_obra')
+        .select('*')
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setProgressoGeral(data.percentual);
+        setProgressoGeralId(data.id);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar progresso geral:', error);
     }
   };
 
@@ -83,36 +104,43 @@ export function AcompanhamentoObras() {
     }
   };
 
-  const openBulkEdit = () => {
-    const values: Record<string, number> = {};
-    etapas.forEach(e => {
-      values[e.id] = e.percentual_concluido;
-    });
-    setBulkEditValues(values);
-    setShowBulkEdit(true);
+  const openEditProgressoGeral = () => {
+    setEditProgressoGeralValue(progressoGeral);
+    setShowEditProgressoGeral(true);
   };
 
-  const handleBulkSave = async () => {
+  const handleSaveProgressoGeral = async () => {
     try {
-      const updates = Object.entries(bulkEditValues).map(([id, percentual]) => 
-        supabase
-          .from('etapas_obra')
-          .update({ percentual_concluido: percentual })
-          .eq('id', id)
-      );
+      if (progressoGeralId) {
+        const { error } = await supabase
+          .from('progresso_geral_obra')
+          .update({ 
+            percentual: editProgressoGeralValue,
+            updated_by: user?.id 
+          })
+          .eq('id', progressoGeralId);
 
-      await Promise.all(updates);
+        if (error) throw error;
+      } else {
+        const { data, error } = await supabase
+          .from('progresso_geral_obra')
+          .insert({ 
+            percentual: editProgressoGeralValue,
+            updated_by: user?.id 
+          })
+          .select()
+          .single();
 
-      setEtapas(prev => prev.map(e => ({
-        ...e,
-        percentual_concluido: bulkEditValues[e.id] ?? e.percentual_concluido
-      })));
+        if (error) throw error;
+        if (data) setProgressoGeralId(data.id);
+      }
 
-      toast.success('Progresso de todas as etapas atualizado!');
-      setShowBulkEdit(false);
+      setProgressoGeral(editProgressoGeralValue);
+      toast.success('Progresso geral atualizado!');
+      setShowEditProgressoGeral(false);
     } catch (error) {
-      console.error('Erro ao atualizar progresso:', error);
-      toast.error('Erro ao atualizar progresso');
+      console.error('Erro ao atualizar progresso geral:', error);
+      toast.error('Erro ao atualizar progresso geral');
     }
   };
 
@@ -139,17 +167,6 @@ export function AcompanhamentoObras() {
     );
   }
 
-  // Cada etapa contribui proporcionalmente para os 100% (soma ponderada)
-  const pesoEtapa = etapas.length > 0 ? 100 / etapas.length : 0;
-  
-  const totalPercentual = etapas.length > 0 
-    ? Math.round(etapas.reduce((acc, etapa) => acc + (etapa.percentual_concluido * pesoEtapa / 100), 0))
-    : 0;
-
-  const bulkTotalPercentual = etapas.length > 0
-    ? Math.round(Object.values(bulkEditValues).reduce((acc, val) => acc + (val * pesoEtapa / 100), 0))
-    : 0;
-
   return (
     <div className="space-y-6">
       <Card>
@@ -160,7 +177,7 @@ export function AcompanhamentoObras() {
               Progresso Geral da Obra
             </CardTitle>
             {canEdit && (
-              <Button variant="outline" size="sm" onClick={openBulkEdit}>
+              <Button variant="outline" size="sm" onClick={openEditProgressoGeral}>
                 <Edit2 className="h-4 w-4 mr-2" />
                 Editar Progresso
               </Button>
@@ -171,59 +188,45 @@ export function AcompanhamentoObras() {
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Progresso Total</span>
-              <span className="font-bold">{totalPercentual}%</span>
+              <span className="font-bold">{progressoGeral}%</span>
             </div>
-            <Progress value={totalPercentual} className="h-4" />
+            <Progress value={progressoGeral} className="h-4" />
           </div>
         </CardContent>
       </Card>
 
-      {/* Dialog para edição em massa */}
-      <Dialog open={showBulkEdit} onOpenChange={setShowBulkEdit}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      {/* Dialog para edição do progresso geral */}
+      <Dialog open={showEditProgressoGeral} onOpenChange={setShowEditProgressoGeral}>
+        <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Editar Progresso das Etapas</DialogTitle>
+            <DialogTitle>Editar Progresso Geral da Obra</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="bg-muted p-4 rounded-lg">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="font-medium">Progresso Total Calculado</span>
-                <span className="font-bold text-primary">{bulkTotalPercentual}%</span>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Percentual de Conclusão</label>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={editProgressoGeralValue}
+                  onChange={(e) => setEditProgressoGeralValue(Math.min(100, Math.max(0, Number(e.target.value))))}
+                  className="text-right text-lg"
+                />
+                <span className="text-lg font-medium">%</span>
               </div>
-              <Progress value={bulkTotalPercentual} className="h-3" />
             </div>
-            
-            <div className="space-y-3">
-              {etapas.map((etapa) => (
-                <div key={etapa.id} className="flex items-center justify-between gap-4 p-3 bg-card border rounded-lg">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium truncate">{etapa.nome}</p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={bulkEditValues[etapa.id] ?? 0}
-                      onChange={(e) => setBulkEditValues(prev => ({
-                        ...prev,
-                        [etapa.id]: Math.min(100, Math.max(0, Number(e.target.value)))
-                      }))}
-                      className="w-20 text-right"
-                    />
-                    <span className="text-sm text-muted-foreground">%</span>
-                  </div>
-                </div>
-              ))}
+            <div className="bg-muted p-3 rounded-lg">
+              <Progress value={editProgressoGeralValue} className="h-3" />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowBulkEdit(false)}>
+            <Button variant="outline" onClick={() => setShowEditProgressoGeral(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleBulkSave}>
+            <Button onClick={handleSaveProgressoGeral}>
               <Save className="h-4 w-4 mr-2" />
-              Salvar Alterações
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
