@@ -235,9 +235,14 @@ serve(async (req) => {
     console.log('Dados recebidos:', JSON.stringify(requestData, null, 2))
     
     // Pre-process data: convert empty strings to null for optional fields
+    // Strip CPF formatting (dots and dashes) before validation
+    const cleanCpf = requestData.cpf 
+      ? requestData.cpf.replace(/[.\-]/g, '').trim() 
+      : null;
+    
     const preprocessedData = {
       ...requestData,
-      cpf: requestData.cpf && requestData.cpf.trim() !== '' ? requestData.cpf : null,
+      cpf: cleanCpf && cleanCpf !== '' ? cleanCpf : null,
       telefone: requestData.telefone && requestData.telefone.trim() !== '' ? requestData.telefone : null,
       quadra: requestData.quadra && requestData.quadra.trim() !== '' ? requestData.quadra : null,
       lote: requestData.lote && requestData.lote.trim() !== '' ? requestData.lote : null,
