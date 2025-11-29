@@ -299,26 +299,88 @@ serve(async (req) => {
     
     console.log('Received data_compra:', data_compra, 'Type:', typeof data_compra)
 
-    // Check if user already exists with same nome + email + lote
-    const { data: existingProfiles } = await supabaseAdmin
-      .from('profiles')
-      .select('id, user_id')
-      .eq('nome_completo', nome_completo)
-      .eq('lote', lote || null)
-    
-    // Also check email in auth users
+    // Check email in auth users first
     const { data: existingUsers } = await supabaseAdmin.auth.admin.listUsers()
     const emailMatch = existingUsers?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase())
     
-    // If we find a profile with same nome + lote AND the email matches, it's a duplicate
-    if (emailMatch && existingProfiles && existingProfiles.length > 0) {
-      const isDuplicate = existingProfiles.some(p => p.user_id === emailMatch.id)
+    // If user exists in auth, check if they have a profile
+    if (emailMatch) {
+      const { data: existingProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('id, nome_completo')
+        .eq('id', emailMatch.id)
+        .maybeSingle()
       
-      if (isDuplicate) {
+      // User exists in auth but NO profile - recover/reactivate the orphan user
+      if (!existingProfile) {
+        console.log('Recovering orphan user:', emailMatch.id, email)
+        
+        // Create profile for orphan user
+        const { error: profileCreateError } = await supabaseAdmin
+          .from('profiles')
+          .insert({
+            id: emailMatch.id,
+            nome_completo,
+            email,
+            cpf: cpf || null,
+            telefone: telefone || null,
+            quadra: quadra || null,
+            lote: lote || null,
+            fase: fase || null,
+            data_compra: data_compra || null,
+            primeira_senha_alterada: false
+          })
+        
+        if (profileCreateError) {
+          console.error('Error creating profile for orphan user:', profileCreateError)
+          throw new Error(`Erro ao criar perfil: ${profileCreateError.message}`)
+        }
+        
+        // Ensure user has a role
+        const { data: existingRole } = await supabaseAdmin
+          .from('user_roles')
+          .select('id')
+          .eq('user_id', emailMatch.id)
+          .maybeSingle()
+        
+        if (!existingRole) {
+          await supabaseAdmin
+            .from('user_roles')
+            .insert({ user_id: emailMatch.id, role: role })
+        } else {
+          await supabaseAdmin
+            .from('user_roles')
+            .update({ role: role })
+            .eq('user_id', emailMatch.id)
+        }
+        
+        // Update password for the recovered user
+        await supabaseAdmin.auth.admin.updateUserById(emailMatch.id, {
+          password,
+          email_confirm: true,
+          user_metadata: {
+            nome_completo,
+            cpf,
+            telefone,
+            quadra,
+            lote,
+            fase,
+            data_compra
+          }
+        })
+        
+        // Log recovery
+        await logSecurityEvent(supabaseAdmin, 'user_recovered', req, user.id, {
+          recovered_user_id: emailMatch.id,
+          email: email
+        })
+        
         return new Response(
           JSON.stringify({ 
-            duplicate: true,
-            message: `Usuário com nome ${nome_completo}, email ${email} e lote ${lote || 'não informado'} já existe` 
+            user: { user: emailMatch },
+            userId: emailMatch.id,
+            recovered: true,
+            message: `Usuário ${email} recuperado com sucesso!`
           }),
           { 
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -326,9 +388,21 @@ serve(async (req) => {
           }
         )
       }
+      
+      // User exists WITH profile - it's a true duplicate
+      return new Response(
+        JSON.stringify({ 
+          duplicate: true,
+          message: `Usuário com email ${email} já existe e está ativo` 
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200 
+        }
+      )
     }
 
-    // Create the user
+    // Create the user (email doesn't exist at all)
     const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
       email,
       password,
@@ -346,21 +420,6 @@ serve(async (req) => {
 
     if (createError) {
       console.error('Error creating user:', createError)
-      
-      // Check if it's a duplicate email error from Supabase
-      if (createError.message?.includes('already been registered')) {
-        return new Response(
-          JSON.stringify({ 
-            duplicate: true,
-            message: `Usuário com email ${email} já existe` 
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 
-          }
-        )
-      }
-      
       throw new Error(`Erro ao criar usuário: ${createError.message}`)
     }
 
