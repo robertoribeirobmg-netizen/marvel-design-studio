@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Download, Upload, FileText, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
+import { Download, Upload, FileText, CheckCircle2, XCircle, AlertCircle, FileDown } from 'lucide-react';
 import { downloadCooperadosTemplate } from '@/lib/cooperadosTemplateGenerator';
 import ColumnMappingSelector from '@/components/ColumnMappingSelector';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +20,8 @@ interface ProcessResult {
     status: 'success' | 'error' | 'duplicate';
     message: string;
     nome?: string;
+    email?: string;
+    senha?: string;
   }>;
 }
 
@@ -303,6 +305,52 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     });
   };
 
+  const exportCredentials = () => {
+    if (!result || result.success === 0) {
+      toast.error('Nenhuma credencial para exportar');
+      return;
+    }
+
+    const successfulImports = result.details.filter(
+      detail => detail.status === 'success' && detail.email && detail.senha
+    );
+
+    if (successfulImports.length === 0) {
+      toast.error('Nenhuma credencial disponível para exportar');
+      return;
+    }
+
+    // Criar dados para Excel
+    const exportData = successfulImports.map((detail, index) => ({
+      '#': index + 1,
+      'Nome': detail.nome || '',
+      'Email': detail.email || '',
+      'Senha Temporária': detail.senha || '',
+      'Observação': 'Senha deve ser alterada no primeiro acesso'
+    }));
+
+    // Criar workbook
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(exportData);
+
+    // Ajustar largura das colunas
+    ws['!cols'] = [
+      { wch: 5 },   // #
+      { wch: 40 },  // Nome
+      { wch: 35 },  // Email
+      { wch: 20 },  // Senha
+      { wch: 40 }   // Observação
+    ];
+
+    XLSX.utils.book_append_sheet(wb, ws, 'Credenciais');
+
+    // Gerar arquivo
+    const fileName = `credenciais_cooperados_${new Date().toISOString().split('T')[0]}.xlsx`;
+    XLSX.writeFile(wb, fileName);
+
+    toast.success(`${successfulImports.length} credenciais exportadas com sucesso!`);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -484,6 +532,12 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
             )}
 
             <div className="flex gap-2">
+              {result.success > 0 && (
+                <Button onClick={exportCredentials} variant="outline" className="flex-1">
+                  <FileDown className="h-4 w-4 mr-2" />
+                  Exportar Credenciais ({result.success})
+                </Button>
+              )}
               <Button onClick={resetUpload} className="flex-1">
                 Novo Upload
               </Button>
