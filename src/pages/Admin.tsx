@@ -1565,7 +1565,7 @@ export default function Admin() {
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto">
           <Tabs defaultValue={(isAdminObras || isExecutivoVendas) && !isAdmin ? "obras" : "cooperados"} className="space-y-6">
-            <TabsList className={`grid w-full ${(isAdminObras || isExecutivoVendas) && !isAdmin ? 'grid-cols-2' : 'grid-cols-6'}`}>
+            <TabsList className={`grid w-full ${(isAdminObras || isExecutivoVendas) && !isAdmin ? 'grid-cols-2' : 'grid-cols-5'}`}>
               {isAdmin && (
                 <>
                   <TabsTrigger value="cooperados" className="flex items-center gap-2">
