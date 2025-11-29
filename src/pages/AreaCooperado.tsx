@@ -52,7 +52,7 @@ export default function AreaCooperado() {
   useEffect(() => {
     if (user) {
       loadProfile();
-      loadFotos();
+      loadFotos(filtroCategoria, dateFrom, dateTo, ordenacao);
     }
   }, [user]);
 
@@ -78,28 +78,28 @@ export default function AreaCooperado() {
     }
   };
 
-  const loadFotos = async () => {
+  const loadFotos = async (categoria: typeof filtroCategoria, fromDate?: Date, toDate?: Date, ordem: 'desc' | 'asc' = 'desc') => {
     try {
       let query = supabase
         .from('obra_fotos')
         .select('*');
 
-      if (filtroCategoria !== 'todas') {
-        query = query.eq('categoria', filtroCategoria);
+      if (categoria !== 'todas') {
+        query = query.eq('categoria', categoria as any);
       }
 
       // Aplicar filtros de data
-      if (dateFrom) {
-        const dateFromStr = format(dateFrom, 'yyyy-MM-dd');
+      if (fromDate) {
+        const dateFromStr = format(fromDate, 'yyyy-MM-dd');
         query = query.gte('data_upload', dateFromStr);
       }
       
-      if (dateTo) {
-        const dateToStr = format(new Date(dateTo.getTime() + 86400000), 'yyyy-MM-dd'); // +1 dia para incluir o dia todo
+      if (toDate) {
+        const dateToStr = format(new Date(toDate.getTime() + 86400000), 'yyyy-MM-dd'); // +1 dia para incluir o dia todo
         query = query.lt('data_upload', dateToStr);
       }
 
-      query = query.order('data_upload', { ascending: ordenacao === 'asc' });
+      query = query.order('data_upload', { ascending: ordem === 'asc' });
 
       const { error, data } = await query;
 
@@ -117,7 +117,7 @@ export default function AreaCooperado() {
   };
 
   useEffect(() => {
-    loadFotos();
+    loadFotos(filtroCategoria, dateFrom, dateTo, ordenacao);
     setCurrentPage(1); // Reset to first page when filters change
   }, [filtroCategoria, dateFrom, dateTo, ordenacao]);
 
