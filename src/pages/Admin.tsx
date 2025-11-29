@@ -136,6 +136,7 @@ export default function Admin() {
   const [authSummary, setAuthSummary] = useState<any>(null);
   const [isLoadingAuthUsers, setIsLoadingAuthUsers] = useState(false);
   const [showAuthUsersDialog, setShowAuthUsersDialog] = useState(false);
+  const [selectedAuthUsers, setSelectedAuthUsers] = useState<Set<string>>(new Set());
   
 
 
@@ -523,6 +524,7 @@ export default function Admin() {
   // Load auth users to check for orphans
   const loadAuthUsers = async () => {
     setIsLoadingAuthUsers(true);
+    setSelectedAuthUsers(new Set());
     try {
       const { data, error } = await supabase.functions.invoke('list-auth-users');
       
@@ -535,6 +537,84 @@ export default function Admin() {
       toast.error(error.message || 'Erro ao carregar usuários');
     } finally {
       setIsLoadingAuthUsers(false);
+    }
+  };
+
+  // Toggle auth user selection
+  const toggleAuthUserSelection = (userId: string) => {
+    setSelectedAuthUsers(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  // Select all orphan auth users
+  const selectAllOrphanAuthUsers = () => {
+    const orphanIds = authUsers.filter(u => u.is_orphan).map(u => u.id);
+    setSelectedAuthUsers(new Set(orphanIds));
+  };
+
+  // Select all auth users
+  const selectAllAuthUsers = () => {
+    const allIds = authUsers.map(u => u.id);
+    setSelectedAuthUsers(new Set(allIds));
+  };
+
+  // Clear auth user selection
+  const clearAuthUserSelection = () => {
+    setSelectedAuthUsers(new Set());
+  };
+
+  // Delete selected auth users
+  const handleDeleteSelectedAuthUsers = async () => {
+    const selectedUsers = authUsers.filter(u => selectedAuthUsers.has(u.id));
+    const orphanSelected = selectedUsers.filter(u => u.is_orphan);
+    
+    if (orphanSelected.length === 0) {
+      toast.error('Selecione ao menos um usuário órfão para deletar');
+      return;
+    }
+    
+    if (!confirm(`Tem certeza que deseja deletar ${orphanSelected.length} usuário(s) órfão(s) selecionado(s)? Esta ação não pode ser desfeita.`)) return;
+    
+    let deleted = 0;
+    let errors = 0;
+    
+    for (const user of orphanSelected) {
+      try {
+        const { error } = await supabase.functions.invoke('delete-orphan-user', {
+          body: { userId: user.id }
+        });
+        
+        if (error) {
+          errors++;
+        } else {
+          deleted++;
+        }
+      } catch {
+        errors++;
+      }
+    }
+    
+    if (deleted > 0) {
+      toast.success(`${deleted} usuário(s) órfão(s) deletado(s) com sucesso!`);
+      const deletedIds = new Set(orphanSelected.map(u => u.id));
+      setAuthUsers(prev => prev.filter(u => !deletedIds.has(u.id)));
+      setAuthSummary(prev => prev ? {
+        ...prev,
+        total_auth_users: prev.total_auth_users - deleted,
+        orphan_users: prev.orphan_users - deleted
+      } : null);
+      setSelectedAuthUsers(new Set());
+    }
+    
+    if (errors > 0) {
+      toast.error(`${errors} usuário(s) não puderam ser deletados`);
     }
   };
 
@@ -1997,10 +2077,57 @@ export default function Admin() {
             </div>
           )}
 
-          <ScrollArea className="h-[400px] border rounded-md">
+          {/* Selection Controls */}
+          <div className="flex items-center justify-between gap-2 py-2">
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selectAllAuthUsers}
+              >
+                Selecionar Todos
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={selectAllOrphanAuthUsers}
+              >
+                Selecionar Órfãos
+              </Button>
+              {selectedAuthUsers.size > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAuthUserSelection}
+                >
+                  <X className="h-4 w-4 mr-1" />
+                  Limpar
+                </Button>
+              )}
+            </div>
+            {selectedAuthUsers.size > 0 && (
+              <span className="text-sm text-muted-foreground">
+                {selectedAuthUsers.size} selecionado(s)
+              </span>
+            )}
+          </div>
+
+          <ScrollArea className="h-[350px] border rounded-md">
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={authUsers.length > 0 && selectedAuthUsers.size === authUsers.length}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          selectAllAuthUsers();
+                        } else {
+                          clearAuthUserSelection();
+                        }
+                      }}
+                    />
+                  </TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Email</TableHead>
                   <TableHead>Nome (Profile)</TableHead>
@@ -2012,6 +2139,12 @@ export default function Admin() {
               <TableBody>
                 {authUsers.map((user) => (
                   <TableRow key={user.id} className={user.is_orphan ? 'bg-destructive/5' : ''}>
+                    <TableCell>
+                      <Checkbox
+                        checked={selectedAuthUsers.has(user.id)}
+                        onCheckedChange={() => toggleAuthUserSelection(user.id)}
+                      />
+                    </TableCell>
                     <TableCell>
                       <Badge variant={user.is_orphan ? 'destructive' : 'default'}>
                         {user.is_orphan ? 'Órfão' : 'Ativo'}
@@ -2042,23 +2175,37 @@ export default function Admin() {
             </Table>
           </ScrollArea>
 
-          {authSummary?.orphan_users > 0 && (
-            <div className="space-y-3">
-              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                <p className="text-sm text-amber-800 dark:text-amber-200">
-                  💡 <strong>Dica:</strong> Usuários órfãos podem ser recuperados ao tentar cadastrá-los novamente com o mesmo email. O sistema irá detectar e criar o profile automaticamente.
-                </p>
-              </div>
+          {/* Actions Section */}
+          <div className="space-y-3">
+            {selectedAuthUsers.size > 0 && (
               <Button
                 variant="destructive"
-                onClick={handleDeleteAllOrphans}
+                onClick={handleDeleteSelectedAuthUsers}
                 className="w-full"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Deletar Todos os {authSummary.orphan_users} Usuário(s) Órfão(s)
+                Deletar {authUsers.filter(u => selectedAuthUsers.has(u.id) && u.is_orphan).length} Usuário(s) Órfão(s) Selecionado(s)
               </Button>
-            </div>
-          )}
+            )}
+            
+            {authSummary?.orphan_users > 0 && (
+              <>
+                <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                  <p className="text-sm text-amber-800 dark:text-amber-200">
+                    💡 <strong>Dica:</strong> Usuários órfãos podem ser recuperados ao tentar cadastrá-los novamente com o mesmo email. O sistema irá detectar e criar o profile automaticamente.
+                  </p>
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={handleDeleteAllOrphans}
+                  className="w-full border-destructive text-destructive hover:bg-destructive hover:text-destructive-foreground"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Deletar Todos os {authSummary.orphan_users} Usuário(s) Órfão(s)
+                </Button>
+              </>
+            )}
+          </div>
         </DialogContent>
       </Dialog>
 
