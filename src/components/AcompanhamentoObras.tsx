@@ -139,12 +139,15 @@ export function AcompanhamentoObras() {
     );
   }
 
+  // Cada etapa contribui proporcionalmente para os 100% (soma ponderada)
+  const pesoEtapa = etapas.length > 0 ? 100 / etapas.length : 0;
+  
   const totalPercentual = etapas.length > 0 
-    ? Math.round(etapas.reduce((acc, etapa) => acc + etapa.percentual_concluido, 0) / etapas.length)
+    ? Math.round(etapas.reduce((acc, etapa) => acc + (etapa.percentual_concluido * pesoEtapa / 100), 0))
     : 0;
 
   const bulkTotalPercentual = etapas.length > 0
-    ? Math.round(Object.values(bulkEditValues).reduce((acc, val) => acc + val, 0) / etapas.length)
+    ? Math.round(Object.values(bulkEditValues).reduce((acc, val) => acc + (val * pesoEtapa / 100), 0))
     : 0;
 
   return (
