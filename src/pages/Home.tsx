@@ -237,10 +237,6 @@ export default function Home() {
                 Quero Participar
                 <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
               </Button>
-              <Button size="lg" variant="outline" className="border-primary text-primary hover:bg-primary/10">
-                <MapPin className="mr-2 h-4 w-4" />
-                Ver Localização
-              </Button>
             </div>
           </div>
 
