@@ -174,16 +174,53 @@ export default function Admin() {
 
       if (rolesError) throw rolesError;
 
-      // Juntar os dados com roles
+      // Buscar compradores_cohapm que não estão vinculados a um profile
+      const { data: compradoresCohapm, error: cohapmError } = await supabase
+        .from('compradores_cohapm')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (cohapmError) throw cohapmError;
+
+      // Juntar os dados de profiles com roles
       const profilesWithRoles = profiles?.map(profile => {
         return {
           ...profile,
           email: profile.email || '-',
-          user_roles: userRoles?.filter(role => role.user_id === profile.id) || []
+          user_roles: userRoles?.filter(role => role.user_id === profile.id) || [],
+          fonte: 'profile' as const
         };
       }) || [];
 
-      setCooperados(profilesWithRoles);
+      // Processar compradores_cohapm que não têm profile_id (não vinculados)
+      // ou todos para mostrar a lista completa
+      const cohapmRecords = compradoresCohapm?.map(comprador => {
+        // Verificar se já existe um profile vinculado
+        const hasProfile = profiles?.some(p => p.id === comprador.profile_id);
+        
+        return {
+          id: comprador.id,
+          nome_completo: comprador.nome,
+          email: comprador.email || '-',
+          cpf: comprador.cpf_cnpj,
+          telefone: comprador.telefone,
+          quadra: comprador.quadra,
+          lote: comprador.lote,
+          fase: null,
+          data_compra: comprador.data_venda,
+          data_cadastro: comprador.created_at,
+          user_roles: [],
+          fonte: 'cohapm' as const,
+          profile_vinculado: hasProfile,
+          situacao_financeira: comprador.situacao_financeira,
+          empreendimento: comprador.empreendimento
+        };
+      }).filter(c => !c.profile_vinculado) || []; // Apenas os não vinculados a profiles
+
+      // Combinar as duas listas
+      const todosCooperados = [...profilesWithRoles, ...cohapmRecords];
+
+      setCooperados(todosCooperados);
     } catch (error) {
       console.error('Erro ao carregar cooperados:', error);
       toast.error('Erro ao carregar lista de cooperados');
@@ -1339,9 +1376,21 @@ export default function Admin() {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
+                  <div className="flex gap-2 mb-4">
+                    <Badge variant="outline" className="bg-primary/10">
+                      Profiles: {cooperados.filter(c => c.fonte === 'profile').length}
+                    </Badge>
+                    <Badge variant="outline" className="bg-amber-500/10 text-amber-700">
+                      COHAPM: {cooperados.filter(c => c.fonte === 'cohapm').length}
+                    </Badge>
+                    <Badge variant="secondary">
+                      Total: {cooperados.length}
+                    </Badge>
+                  </div>
                   <Table>
                     <TableHeader>
                       <TableRow>
+                        <TableHead>Fonte</TableHead>
                         <TableHead>Nome</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>CPF</TableHead>
@@ -1354,7 +1403,15 @@ export default function Admin() {
                     </TableHeader>
                     <TableBody>
                       {cooperados.map((cooperado) => (
-                        <TableRow key={cooperado.id}>
+                        <TableRow key={`${cooperado.fonte}-${cooperado.id}`}>
+                          <TableCell>
+                            <Badge 
+                              variant={cooperado.fonte === 'profile' ? 'default' : 'outline'}
+                              className={cooperado.fonte === 'cohapm' ? 'bg-amber-500/10 text-amber-700 border-amber-300' : ''}
+                            >
+                              {cooperado.fonte === 'profile' ? 'Profile' : 'COHAPM'}
+                            </Badge>
+                          </TableCell>
                           <TableCell className="font-medium">{cooperado.nome_completo}</TableCell>
                           <TableCell>{cooperado.email || '-'}</TableCell>
                           <TableCell>{cooperado.cpf || '-'}</TableCell>
@@ -1363,23 +1420,29 @@ export default function Admin() {
                           <TableCell>{cooperado.lote || '-'}</TableCell>
                           <TableCell>{cooperado.fase || '-'}</TableCell>
                           <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setEditingCooperado(cooperado);
-                                setEditNome(cooperado.nome_completo);
-                                setEditTelefone(cooperado.telefone || '');
-                                setEditCpf(cooperado.cpf || '');
-                                setEditQuadra(cooperado.quadra || '');
-                                setEditLote(cooperado.lote || '');
-                                setEditFase(cooperado.fase || '');
-                                setEditDataCompra(cooperado.data_compra || '');
-                              }}
-                            >
-                              <Edit className="h-4 w-4 mr-1" />
-                              Editar
-                            </Button>
+                            {cooperado.fonte === 'profile' ? (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  setEditingCooperado(cooperado);
+                                  setEditNome(cooperado.nome_completo);
+                                  setEditTelefone(cooperado.telefone || '');
+                                  setEditCpf(cooperado.cpf || '');
+                                  setEditQuadra(cooperado.quadra || '');
+                                  setEditLote(cooperado.lote || '');
+                                  setEditFase(cooperado.fase || '');
+                                  setEditDataCompra(cooperado.data_compra || '');
+                                }}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Editar
+                              </Button>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs">
+                                {cooperado.situacao_financeira || 'Sem login'}
+                              </Badge>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
