@@ -39,7 +39,15 @@ export function AlterarSenhaPrimeiroAcesso({ open, onSuccess }: AlterarSenhaPrim
         password: novaSenha
       });
 
-      if (passwordError) throw passwordError;
+      if (passwordError) {
+        // Tratar erro específico de mesma senha
+        if (passwordError.message?.includes('same password') || 
+            (passwordError as any).code === 'same_password') {
+          toast.error('A nova senha deve ser diferente da senha atual');
+          return;
+        }
+        throw passwordError;
+      }
 
       // Atualizar flag no profile
       const { data: { user } } = await supabase.auth.getUser();
@@ -49,14 +57,30 @@ export function AlterarSenhaPrimeiroAcesso({ open, onSuccess }: AlterarSenhaPrim
           .update({ primeira_senha_alterada: true })
           .eq('id', user.id);
 
-        if (profileError) throw profileError;
+        if (profileError) {
+          console.error('Erro ao atualizar perfil:', profileError);
+          // Não bloquear o fluxo se falhar atualização do perfil
+        }
       }
 
       toast.success('Senha alterada com sucesso!');
+      
+      // Limpar campos e fechar dialog
+      setNovaSenha('');
+      setConfirmarSenha('');
       onSuccess();
     } catch (error: any) {
       console.error('Erro ao alterar senha:', error);
-      toast.error(error.message || 'Erro ao alterar senha');
+      
+      // Mensagens de erro amigáveis
+      let errorMessage = 'Erro ao alterar senha';
+      if (error.message?.includes('different')) {
+        errorMessage = 'A nova senha deve ser diferente da senha atual';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
+      toast.error(errorMessage);
     } finally {
       setIsUpdating(false);
     }
