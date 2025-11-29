@@ -89,6 +89,36 @@ serve(async (req) => {
 
     console.log(`Processando ${cooperados.length} cooperados...`);
 
+    // Buscar TODOS os usuários do auth para verificar emails existentes
+    const allAuthUsers = new Set<string>();
+    let page = 1;
+    const perPage = 1000;
+    
+    while (true) {
+      const { data: authUsersPage, error: authListError } = await supabaseClient.auth.admin.listUsers({
+        page,
+        perPage
+      });
+      
+      if (authListError) {
+        console.error('Erro ao listar usuários auth:', authListError);
+        break;
+      }
+      
+      if (!authUsersPage?.users || authUsersPage.users.length === 0) {
+        break;
+      }
+      
+      authUsersPage.users.forEach(u => {
+        if (u.email) allAuthUsers.add(u.email.toLowerCase());
+      });
+      
+      if (authUsersPage.users.length < perPage) break;
+      page++;
+    }
+    
+    console.log(`Total de emails já cadastrados no auth: ${allAuthUsers.size}`);
+
     // Buscar todos os compradores COHAPM para fazer matching
     const { data: compradores, error: compradoresError } = await supabaseClient
       .from('compradores_cohapm')
@@ -98,21 +128,23 @@ serve(async (req) => {
       console.error('Erro ao buscar compradores:', compradoresError);
     }
 
-    // Buscar todos os profiles existentes para verificar duplicatas
+    // Buscar todos os profiles existentes para verificar CPF
     const { data: existingProfiles } = await supabaseClient
       .from('profiles')
       .select('id, email, cpf, nome_completo');
 
-    // Criar mapa de emails e CPFs existentes
-    const existingEmails = new Map<string, { id: string; nome: string }>();
+    // Criar mapa de CPFs existentes
     const existingCPFs = new Map<string, { id: string; nome: string }>();
     
     if (existingProfiles) {
       existingProfiles.forEach(p => {
-        if (p.email) existingEmails.set(p.email.toLowerCase(), { id: p.id, nome: p.nome_completo });
         if (p.cpf) existingCPFs.set(normalizarCPF(p.cpf), { id: p.id, nome: p.nome_completo });
       });
     }
+
+    // Set para controlar duplicatas no mesmo lote de importação
+    const emailsNesteLote = new Set<string>();
+    const cpfsNesteLote = new Set<string>();
 
     // Processar cada cooperado
     for (const coop of cooperados) {
@@ -134,21 +166,45 @@ serve(async (req) => {
         const cpfNormalizado = normalizarCPF(coop.cpf);
         const emailLower = coop.email.toLowerCase().trim();
 
-        // Verificar se email já existe
-        const existingByEmail = existingEmails.get(emailLower);
-        if (existingByEmail) {
+        // Verificar duplicata no mesmo lote de importação
+        if (emailsNesteLote.has(emailLower)) {
           result.duplicates++;
           result.details.push({
             row,
-            status: 'existing',
-            message: `Email já cadastrado para: ${existingByEmail.nome}`,
+            status: 'duplicate',
+            message: `Email duplicado neste lote de importação`,
             nome: coop.nome_completo,
             email: emailLower
           });
           continue;
         }
 
-        // Verificar se CPF já existe
+        if (cpfsNesteLote.has(cpfNormalizado)) {
+          result.duplicates++;
+          result.details.push({
+            row,
+            status: 'duplicate',
+            message: `CPF duplicado neste lote de importação`,
+            nome: coop.nome_completo,
+            email: emailLower
+          });
+          continue;
+        }
+
+        // Verificar se email já existe no auth.users
+        if (allAuthUsers.has(emailLower)) {
+          result.duplicates++;
+          result.details.push({
+            row,
+            status: 'existing',
+            message: `Email já cadastrado no sistema`,
+            nome: coop.nome_completo,
+            email: emailLower
+          });
+          continue;
+        }
+
+        // Verificar se CPF já existe nos profiles
         const existingByCPF = existingCPFs.get(cpfNormalizado);
         if (existingByCPF) {
           result.duplicates++;
@@ -220,6 +276,7 @@ serve(async (req) => {
           
           // Se email já existe, marcar como duplicado
           if (authError.message?.includes('already been registered') || authError.code === 'email_exists') {
+            allAuthUsers.add(emailLower); // Adicionar para não tentar novamente
             result.duplicates++;
             result.details.push({
               row,
@@ -242,10 +299,15 @@ serve(async (req) => {
 
         const userId = authUser.user.id;
 
-        // Criar profile
+        // Marcar como processado neste lote
+        emailsNesteLote.add(emailLower);
+        cpfsNesteLote.add(cpfNormalizado);
+        allAuthUsers.add(emailLower);
+
+        // Usar UPSERT para o profile (o trigger handle_new_user pode já ter criado)
         const { error: profileError } = await supabaseClient
           .from('profiles')
-          .insert({
+          .upsert({
             id: userId,
             nome_completo: coop.nome_completo,
             email: emailLower,
@@ -255,10 +317,12 @@ serve(async (req) => {
             lote: coop.lote || null,
             fase: coop.fase || null,
             primeira_senha_alterada: false
+          }, {
+            onConflict: 'id'
           });
 
         if (profileError) {
-          console.error('Erro ao criar profile:', profileError);
+          console.error('Erro ao criar/atualizar profile:', profileError);
           // Reverter criação do usuário
           await supabaseClient.auth.admin.deleteUser(userId);
           
@@ -272,16 +336,17 @@ serve(async (req) => {
           continue;
         }
 
-        // Adicionar ao mapa de existentes para evitar duplicatas no mesmo lote
-        existingEmails.set(emailLower, { id: userId, nome: coop.nome_completo });
+        // Adicionar ao mapa de CPFs existentes
         existingCPFs.set(cpfNormalizado, { id: userId, nome: coop.nome_completo });
 
-        // Atribuir role
+        // Atribuir role (usar upsert para evitar duplicatas)
         const { error: roleError } = await supabaseClient
           .from('user_roles')
-          .insert({
+          .upsert({
             user_id: userId,
             role: role as 'cooperado' | 'admin' | 'admin_obras' | 'executivo_vendas'
+          }, {
+            onConflict: 'user_id,role'
           });
 
         if (roleError) {
