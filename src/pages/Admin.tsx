@@ -562,6 +562,51 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteAllOrphans = async () => {
+    const orphanUsers = authUsers.filter(u => u.is_orphan);
+    
+    if (orphanUsers.length === 0) {
+      toast.info('Não há usuários órfãos para deletar');
+      return;
+    }
+    
+    if (!confirm(`Tem certeza que deseja deletar TODOS os ${orphanUsers.length} usuário(s) órfão(s)? Esta ação não pode ser desfeita.`)) return;
+    
+    let deleted = 0;
+    let errors = 0;
+    
+    for (const user of orphanUsers) {
+      try {
+        const { error } = await supabase.functions.invoke('delete-orphan-user', {
+          body: { userId: user.id }
+        });
+        
+        if (error) {
+          errors++;
+        } else {
+          deleted++;
+        }
+      } catch {
+        errors++;
+      }
+    }
+    
+    if (deleted > 0) {
+      toast.success(`${deleted} usuário(s) órfão(s) deletado(s) com sucesso!`);
+      // Atualizar lista
+      setAuthUsers(prev => prev.filter(u => !u.is_orphan));
+      setAuthSummary(prev => prev ? {
+        ...prev,
+        total_auth_users: prev.total_auth_users - deleted,
+        orphan_users: 0
+      } : null);
+    }
+    
+    if (errors > 0) {
+      toast.error(`${errors} usuário(s) não puderam ser deletados`);
+    }
+  };
+
   const handleBulkDelete = async () => {
     if (selectedCooperados.length === 0) return;
     
@@ -1998,10 +2043,20 @@ export default function Admin() {
           </ScrollArea>
 
           {authSummary?.orphan_users > 0 && (
-            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-              <p className="text-sm text-amber-800 dark:text-amber-200">
-                💡 <strong>Dica:</strong> Usuários órfãos podem ser recuperados ao tentar cadastrá-los novamente com o mesmo email. O sistema irá detectar e criar o profile automaticamente.
-              </p>
+            <div className="space-y-3">
+              <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <p className="text-sm text-amber-800 dark:text-amber-200">
+                  💡 <strong>Dica:</strong> Usuários órfãos podem ser recuperados ao tentar cadastrá-los novamente com o mesmo email. O sistema irá detectar e criar o profile automaticamente.
+                </p>
+              </div>
+              <Button
+                variant="destructive"
+                onClick={handleDeleteAllOrphans}
+                className="w-full"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Deletar Todos os {authSummary.orphan_users} Usuário(s) Órfão(s)
+              </Button>
             </div>
           )}
         </DialogContent>
