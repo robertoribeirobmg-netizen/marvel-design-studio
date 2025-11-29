@@ -17,7 +17,7 @@ interface ProcessResult {
   associated: number;
   details: Array<{
     row: number;
-    status: 'success' | 'error' | 'duplicate';
+    status: 'success' | 'error' | 'duplicate' | 'existing';
     message: string;
     nome?: string;
     email?: string;
@@ -508,14 +508,14 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
                       className={`flex items-start gap-2 p-2 rounded text-sm ${
                         detail.status === 'success'
                           ? 'bg-green-50 text-green-800'
-                          : detail.status === 'duplicate'
+                          : detail.status === 'duplicate' || detail.status === 'existing'
                           ? 'bg-yellow-50 text-yellow-800'
                           : 'bg-red-50 text-red-800'
                       }`}
                     >
                       {detail.status === 'success' ? (
                         <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      ) : detail.status === 'duplicate' ? (
+                      ) : detail.status === 'duplicate' || detail.status === 'existing' ? (
                         <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
                       ) : (
                         <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />

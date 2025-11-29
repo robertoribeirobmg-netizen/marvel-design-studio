@@ -25,7 +25,7 @@ interface ProcessResult {
   associated: number;
   details: Array<{
     row: number;
-    status: 'success' | 'error' | 'duplicate';
+    status: 'success' | 'error' | 'duplicate' | 'existing';
     message: string;
     nome?: string;
     email?: string;
@@ -36,7 +36,6 @@ interface ProcessResult {
 // Função para normalizar CPF
 function normalizarCPF(cpf: string | null | undefined): string {
   if (!cpf) return '';
-  // Converter para string se não for
   const cpfStr = String(cpf);
   return cpfStr.replace(/[^\d]/g, '');
 }
@@ -44,7 +43,6 @@ function normalizarCPF(cpf: string | null | undefined): string {
 // Função para normalizar texto
 function normalizarTexto(texto: string | null | undefined): string {
   if (!texto) return '';
-  // Converter para string se não for
   const textoStr = String(texto);
   return textoStr
     .toUpperCase()
@@ -100,6 +98,22 @@ serve(async (req) => {
       console.error('Erro ao buscar compradores:', compradoresError);
     }
 
+    // Buscar todos os profiles existentes para verificar duplicatas
+    const { data: existingProfiles } = await supabaseClient
+      .from('profiles')
+      .select('id, email, cpf, nome_completo');
+
+    // Criar mapa de emails e CPFs existentes
+    const existingEmails = new Map<string, { id: string; nome: string }>();
+    const existingCPFs = new Map<string, { id: string; nome: string }>();
+    
+    if (existingProfiles) {
+      existingProfiles.forEach(p => {
+        if (p.email) existingEmails.set(p.email.toLowerCase(), { id: p.id, nome: p.nome_completo });
+        if (p.cpf) existingCPFs.set(normalizarCPF(p.cpf), { id: p.id, nome: p.nome_completo });
+      });
+    }
+
     // Processar cada cooperado
     for (const coop of cooperados) {
       const row = coop.row_number;
@@ -120,26 +134,30 @@ serve(async (req) => {
         const cpfNormalizado = normalizarCPF(coop.cpf);
         const emailLower = coop.email.toLowerCase().trim();
 
-        // Verificar duplicidade por TODOS os campos
-        const { data: existingProfile } = await supabaseClient
-          .from('profiles')
-          .select('id, nome_completo')
-          .eq('nome_completo', coop.nome_completo)
-          .eq('email', emailLower)
-          .eq('cpf', cpfNormalizado)
-          .eq('telefone', coop.telefone || null)
-          .eq('quadra', coop.quadra || null)
-          .eq('lote', coop.lote || null)
-          .eq('fase', coop.fase || null)
-          .maybeSingle();
-
-        if (existingProfile) {
+        // Verificar se email já existe
+        const existingByEmail = existingEmails.get(emailLower);
+        if (existingByEmail) {
           result.duplicates++;
           result.details.push({
             row,
-            status: 'duplicate',
-            message: `Cooperado com dados idênticos já cadastrado`,
-            nome: coop.nome_completo
+            status: 'existing',
+            message: `Email já cadastrado para: ${existingByEmail.nome}`,
+            nome: coop.nome_completo,
+            email: emailLower
+          });
+          continue;
+        }
+
+        // Verificar se CPF já existe
+        const existingByCPF = existingCPFs.get(cpfNormalizado);
+        if (existingByCPF) {
+          result.duplicates++;
+          result.details.push({
+            row,
+            status: 'existing',
+            message: `CPF já cadastrado para: ${existingByCPF.nome}`,
+            nome: coop.nome_completo,
+            email: emailLower
           });
           continue;
         }
@@ -167,8 +185,6 @@ serve(async (req) => {
           coop.lote
         );
 
-        console.log(`Chave de vinculação: ${chaveVinculacao}`);
-
         // Tentar encontrar comprador COHAPM correspondente
         let compradorMatch = null;
         if (compradores) {
@@ -186,8 +202,6 @@ serve(async (req) => {
           });
         }
 
-        console.log(`Match encontrado:`, compradorMatch?.id);
-
         // Gerar senha temporária (4 primeiros dígitos do CPF)
         const senhaTemp = cpfNormalizado.substring(0, 4);
 
@@ -203,13 +217,26 @@ serve(async (req) => {
 
         if (authError) {
           console.error('Erro ao criar usuário:', authError);
-          result.errors++;
-          result.details.push({
-            row,
-            status: 'error',
-            message: `Erro ao criar usuário: ${authError.message}`,
-            nome: coop.nome_completo
-          });
+          
+          // Se email já existe, marcar como duplicado
+          if (authError.message?.includes('already been registered') || authError.code === 'email_exists') {
+            result.duplicates++;
+            result.details.push({
+              row,
+              status: 'existing',
+              message: 'Email já registrado no sistema de autenticação',
+              nome: coop.nome_completo,
+              email: emailLower
+            });
+          } else {
+            result.errors++;
+            result.details.push({
+              row,
+              status: 'error',
+              message: `Erro ao criar usuário: ${authError.message}`,
+              nome: coop.nome_completo
+            });
+          }
           continue;
         }
 
@@ -245,6 +272,10 @@ serve(async (req) => {
           continue;
         }
 
+        // Adicionar ao mapa de existentes para evitar duplicatas no mesmo lote
+        existingEmails.set(emailLower, { id: userId, nome: coop.nome_completo });
+        existingCPFs.set(cpfNormalizado, { id: userId, nome: coop.nome_completo });
+
         // Atribuir role
         const { error: roleError } = await supabaseClient
           .from('user_roles')
@@ -277,8 +308,8 @@ serve(async (req) => {
           row,
           status: 'success',
           message: compradorMatch 
-            ? `Cooperado cadastrado e vinculado aos dados financeiros (COHAPM ID: ${compradorMatch.id})`
-            : 'Cooperado cadastrado com sucesso (sem dados financeiros correspondentes)',
+            ? `Cooperado cadastrado e vinculado aos dados financeiros`
+            : 'Cooperado cadastrado com sucesso',
           nome: coop.nome_completo,
           email: emailLower,
           senha: senhaTemp
@@ -297,7 +328,12 @@ serve(async (req) => {
       }
     }
 
-    console.log('Resultado final:', result);
+    console.log('Resultado final:', JSON.stringify({
+      success: result.success,
+      errors: result.errors,
+      duplicates: result.duplicates,
+      associated: result.associated
+    }));
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
