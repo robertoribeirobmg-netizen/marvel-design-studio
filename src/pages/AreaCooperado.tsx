@@ -10,6 +10,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar as CalendarComp } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
+import { OptimizedImage } from '@/components/OptimizedImage';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
 // import { FinanceiroCooperadoDashboard } from '@/components/cooperado/FinanceiroCooperadoDashboard';
@@ -466,6 +467,7 @@ export default function AreaCooperado() {
                                 <img
                                   src={getYouTubeThumbnail(foto.video_url)}
                                   alt={foto.titulo}
+                                  loading="lazy"
                                   className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${foto.video_url?.split('/').pop()}/hqdefault.jpg`;
@@ -478,15 +480,14 @@ export default function AreaCooperado() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="aspect-video bg-muted">
-                                {foto.foto_url && (
-                                  <img
-                                    src={foto.foto_url}
-                                    alt={foto.titulo}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                                  />
-                                )}
-                              </div>
+                              foto.foto_url && (
+                                <OptimizedImage
+                                  src={foto.foto_url}
+                                  alt={foto.titulo}
+                                  containerClassName="aspect-video"
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                />
+                              )
                             )}
                             <div className="p-4">
                               <h4 className="font-semibold mb-1 line-clamp-1">{foto.titulo}</h4>
@@ -523,6 +524,7 @@ export default function AreaCooperado() {
                                 <img
                                   src={getYouTubeThumbnail(foto.video_url)}
                                   alt={foto.titulo}
+                                  loading="lazy"
                                   className="w-full h-full object-cover"
                                   onError={(e) => {
                                     (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${foto.video_url?.split('/').pop()}/hqdefault.jpg`;
@@ -535,15 +537,14 @@ export default function AreaCooperado() {
                                 </div>
                               </div>
                             ) : (
-                              <div className="w-32 h-32 flex-shrink-0 bg-muted rounded-md overflow-hidden">
-                                {foto.foto_url && (
-                                  <img
-                                    src={foto.foto_url}
-                                    alt={foto.titulo}
-                                    className="w-full h-full object-cover"
-                                  />
-                                )}
-                              </div>
+                              foto.foto_url && (
+                                <OptimizedImage
+                                  src={foto.foto_url}
+                                  alt={foto.titulo}
+                                  containerClassName="w-32 h-32 flex-shrink-0 rounded-md"
+                                  className="w-full h-full object-cover"
+                                />
+                              )
                             )}
                             <div className="flex-1">
                               <h4 className="font-semibold mb-2">{foto.titulo}</h4>

@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { OptimizedImage } from '@/components/OptimizedImage';
 import { toast } from 'sonner';
 import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
@@ -480,9 +481,10 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                         onClick={() => item.video_url && setSelectedVideo(item)}
                       >
                         {item.foto_url ? (
-                          <img
+                          <OptimizedImage
                             src={item.foto_url}
                             alt={item.titulo}
+                            containerClassName="w-full h-full"
                             className="w-full h-full object-cover"
                           />
                         ) : item.video_url ? (
@@ -550,9 +552,10 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                     onClick={() => item.video_url && setSelectedVideo(item)}
                   >
                     {item.foto_url ? (
-                      <img
+                      <OptimizedImage
                         src={item.foto_url}
                         alt={item.titulo}
+                        containerClassName="w-full h-full"
                         className="w-full h-full object-cover"
                       />
                     ) : item.video_url ? (
