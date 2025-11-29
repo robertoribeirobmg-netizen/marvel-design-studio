@@ -131,6 +131,12 @@ export default function Admin() {
   const [searchProfileTerm, setSearchProfileTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   
+  // Auth users state
+  const [authUsers, setAuthUsers] = useState<any[]>([]);
+  const [authSummary, setAuthSummary] = useState<any>(null);
+  const [isLoadingAuthUsers, setIsLoadingAuthUsers] = useState(false);
+  const [showAuthUsersDialog, setShowAuthUsersDialog] = useState(false);
+  
 
 
   useEffect(() => {
@@ -513,6 +519,24 @@ export default function Admin() {
       p.lote?.toLowerCase().includes(term)
     );
   });
+
+  // Load auth users to check for orphans
+  const loadAuthUsers = async () => {
+    setIsLoadingAuthUsers(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('list-auth-users');
+      
+      if (error) throw error;
+      
+      setAuthUsers(data.users || []);
+      setAuthSummary(data.summary || null);
+      setShowAuthUsersDialog(true);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao carregar usuários');
+    } finally {
+      setIsLoadingAuthUsers(false);
+    }
+  };
 
   const handleBulkDelete = async () => {
     if (selectedCooperados.length === 0) return;
@@ -1487,8 +1511,16 @@ export default function Admin() {
                 <Users className="h-5 w-5 text-primary" />
                 Lista de Cooperadores Compradores
               </CardTitle>
-              <CardDescription>
-                Todos os cooperados cadastrados no sistema
+              <CardDescription className="flex items-center justify-between">
+                <span>Todos os cooperados cadastrados no sistema</span>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={loadAuthUsers}
+                  disabled={isLoadingAuthUsers}
+                >
+                  {isLoadingAuthUsers ? 'Carregando...' : 'Ver Usuários Auth'}
+                </Button>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -1857,6 +1889,83 @@ export default function Admin() {
                   </Button>
                 </div>
               )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Auth Users Dialog */}
+      <Dialog open={showAuthUsersDialog} onOpenChange={setShowAuthUsersDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              Usuários no Sistema de Autenticação
+            </DialogTitle>
+            <DialogDescription>
+              Lista de todos os usuários cadastrados no auth.users
+            </DialogDescription>
+          </DialogHeader>
+          
+          {authSummary && (
+            <div className="grid grid-cols-4 gap-3 p-4 bg-muted/50 rounded-lg">
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Total Auth</p>
+                <p className="text-2xl font-bold">{authSummary.total_auth_users}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Com Profile</p>
+                <p className="text-2xl font-bold text-green-600">{authSummary.active_users}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Órfãos</p>
+                <p className="text-2xl font-bold text-destructive">{authSummary.orphan_users}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">Profiles</p>
+                <p className="text-lg font-semibold">{authSummary.total_profiles}</p>
+              </div>
+            </div>
+          )}
+
+          <ScrollArea className="h-[400px] border rounded-md">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Nome (Profile)</TableHead>
+                  <TableHead>Criado em</TableHead>
+                  <TableHead>Último Login</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {authUsers.map((user) => (
+                  <TableRow key={user.id} className={user.is_orphan ? 'bg-destructive/5' : ''}>
+                    <TableCell>
+                      <Badge variant={user.is_orphan ? 'destructive' : 'default'}>
+                        {user.is_orphan ? 'Órfão' : 'Ativo'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="font-medium">{user.email}</TableCell>
+                    <TableCell>{user.profile_name || '-'}</TableCell>
+                    <TableCell className="text-xs">
+                      {user.created_at ? new Date(user.created_at).toLocaleDateString('pt-BR') : '-'}
+                    </TableCell>
+                    <TableCell className="text-xs">
+                      {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('pt-BR') : 'Nunca'}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+
+          {authSummary?.orphan_users > 0 && (
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+              <p className="text-sm text-amber-800 dark:text-amber-200">
+                💡 <strong>Dica:</strong> Usuários órfãos podem ser recuperados ao tentar cadastrá-los novamente com o mesmo email. O sistema irá detectar e criar o profile automaticamente.
+              </p>
             </div>
           )}
         </DialogContent>
