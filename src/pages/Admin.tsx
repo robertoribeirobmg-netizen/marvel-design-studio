@@ -538,6 +538,30 @@ export default function Admin() {
     }
   };
 
+  const handleDeleteOrphanUser = async (userId: string, email: string) => {
+    if (!confirm(`Tem certeza que deseja deletar o usuário órfão ${email}?`)) return;
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('delete-orphan-user', {
+        body: { userId }
+      });
+      
+      if (error) throw error;
+      
+      toast.success(`Usuário órfão ${email} deletado com sucesso!`);
+      
+      // Atualizar lista
+      setAuthUsers(prev => prev.filter(u => u.id !== userId));
+      setAuthSummary(prev => prev ? {
+        ...prev,
+        total_auth_users: prev.total_auth_users - 1,
+        orphan_users: prev.orphan_users - 1
+      } : null);
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao deletar usuário órfão');
+    }
+  };
+
   const handleBulkDelete = async () => {
     if (selectedCooperados.length === 0) return;
     
@@ -1937,6 +1961,7 @@ export default function Admin() {
                   <TableHead>Nome (Profile)</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead>Último Login</TableHead>
+                  <TableHead>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -1954,6 +1979,17 @@ export default function Admin() {
                     </TableCell>
                     <TableCell className="text-xs">
                       {user.last_sign_in_at ? new Date(user.last_sign_in_at).toLocaleDateString('pt-BR') : 'Nunca'}
+                    </TableCell>
+                    <TableCell>
+                      {user.is_orphan && (
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => handleDeleteOrphanUser(user.id, user.email)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </TableCell>
                   </TableRow>
                 ))}
