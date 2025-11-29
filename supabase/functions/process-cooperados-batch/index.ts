@@ -22,10 +22,11 @@ interface ProcessResult {
   success: number;
   errors: number;
   duplicates: number;
+  updated: number;
   associated: number;
   details: Array<{
     row: number;
-    status: 'success' | 'error' | 'duplicate' | 'existing';
+    status: 'success' | 'error' | 'duplicate' | 'existing' | 'updated';
     message: string;
     nome?: string;
     email?: string;
@@ -37,7 +38,7 @@ interface ProcessResult {
 function normalizarCPF(cpf: string | null | undefined): string {
   if (!cpf) return '';
   const cpfStr = String(cpf);
-  return cpfStr.replace(/[^\d]/g, '');
+  return cpfStr.replace(/[^\d]/g, '').padStart(11, '0');
 }
 
 // Função para normalizar texto
@@ -83,6 +84,7 @@ serve(async (req) => {
       success: 0,
       errors: 0,
       duplicates: 0,
+      updated: 0,
       associated: 0,
       details: []
     };
@@ -90,7 +92,7 @@ serve(async (req) => {
     console.log(`Processando ${cooperados.length} cooperados...`);
 
     // Buscar TODOS os usuários do auth para verificar emails existentes
-    const allAuthUsers = new Set<string>();
+    const authUsersMap = new Map<string, { id: string }>();
     let page = 1;
     const perPage = 1000;
     
@@ -110,14 +112,14 @@ serve(async (req) => {
       }
       
       authUsersPage.users.forEach(u => {
-        if (u.email) allAuthUsers.add(u.email.toLowerCase());
+        if (u.email) authUsersMap.set(u.email.toLowerCase(), { id: u.id });
       });
       
       if (authUsersPage.users.length < perPage) break;
       page++;
     }
     
-    console.log(`Total de emails já cadastrados no auth: ${allAuthUsers.size}`);
+    console.log(`Total de emails já cadastrados no auth: ${authUsersMap.size}`);
 
     // Buscar todos os compradores COHAPM para fazer matching
     const { data: compradores, error: compradoresError } = await supabaseClient
@@ -131,20 +133,21 @@ serve(async (req) => {
     // Buscar todos os profiles existentes para verificar CPF
     const { data: existingProfiles } = await supabaseClient
       .from('profiles')
-      .select('id, email, cpf, nome_completo');
+      .select('id, email, cpf, nome_completo, quadra, lote, fase');
 
-    // Criar mapa de CPFs existentes
-    const existingCPFs = new Map<string, { id: string; nome: string }>();
+    // Criar mapas de profiles existentes por email e CPF
+    const profilesByEmail = new Map<string, { id: string; nome: string; cpf: string | null }>();
+    const profilesByCPF = new Map<string, { id: string; nome: string; email: string | null }>();
     
     if (existingProfiles) {
       existingProfiles.forEach(p => {
-        if (p.cpf) existingCPFs.set(normalizarCPF(p.cpf), { id: p.id, nome: p.nome_completo });
+        if (p.email) profilesByEmail.set(p.email.toLowerCase(), { id: p.id, nome: p.nome_completo, cpf: p.cpf });
+        if (p.cpf) profilesByCPF.set(normalizarCPF(p.cpf), { id: p.id, nome: p.nome_completo, email: p.email });
       });
     }
 
     // Set para controlar duplicatas no mesmo lote de importação
     const emailsNesteLote = new Set<string>();
-    const cpfsNesteLote = new Set<string>();
 
     // Processar cada cooperado
     for (const coop of cooperados) {
@@ -179,45 +182,6 @@ serve(async (req) => {
           continue;
         }
 
-        if (cpfsNesteLote.has(cpfNormalizado)) {
-          result.duplicates++;
-          result.details.push({
-            row,
-            status: 'duplicate',
-            message: `CPF duplicado neste lote de importação`,
-            nome: coop.nome_completo,
-            email: emailLower
-          });
-          continue;
-        }
-
-        // Verificar se email já existe no auth.users
-        if (allAuthUsers.has(emailLower)) {
-          result.duplicates++;
-          result.details.push({
-            row,
-            status: 'existing',
-            message: `Email já cadastrado no sistema`,
-            nome: coop.nome_completo,
-            email: emailLower
-          });
-          continue;
-        }
-
-        // Verificar se CPF já existe nos profiles
-        const existingByCPF = existingCPFs.get(cpfNormalizado);
-        if (existingByCPF) {
-          result.duplicates++;
-          result.details.push({
-            row,
-            status: 'existing',
-            message: `CPF já cadastrado para: ${existingByCPF.nome}`,
-            nome: coop.nome_completo,
-            email: emailLower
-          });
-          continue;
-        }
-
         // Validar tipo de usuário
         const validRoles = ['cooperado', 'admin', 'admin_obras', 'executivo_vendas'];
         const role = coop.tipo_usuario?.toLowerCase() || 'cooperado';
@@ -233,111 +197,123 @@ serve(async (req) => {
           continue;
         }
 
-        // Criar chave de vinculação
-        const chaveVinculacao = criarChaveVinculacao(
-          coop.nome_completo,
-          cpfNormalizado,
-          coop.quadra,
-          coop.lote
-        );
-
-        // Tentar encontrar comprador COHAPM correspondente
-        let compradorMatch = null;
-        if (compradores) {
-          compradorMatch = compradores.find(comp => {
-            if (comp.profile_id) return false; // Já vinculado
-            
-            const compChave = criarChaveVinculacao(
-              comp.nome || '',
-              comp.cpf_cnpj || '',
-              comp.quadra,
-              comp.lote
-            );
-            
-            return compChave === chaveVinculacao;
-          });
-        }
-
         // Gerar senha temporária (4 primeiros dígitos do CPF)
         const senhaTemp = cpfNormalizado.substring(0, 4);
 
-        // Criar usuário no auth
-        const { data: authUser, error: authError } = await supabaseClient.auth.admin.createUser({
-          email: emailLower,
-          password: senhaTemp,
-          email_confirm: true,
-          user_metadata: {
-            nome_completo: coop.nome_completo
-          }
-        });
+        // Verificar se email já existe no auth.users
+        const existingAuthUser = authUsersMap.get(emailLower);
+        let userId: string;
+        let isUpdate = false;
 
-        if (authError) {
-          console.error('Erro ao criar usuário:', authError);
+        if (existingAuthUser) {
+          // Usuário já existe - vamos atualizar os dados
+          userId = existingAuthUser.id;
+          isUpdate = true;
+          console.log(`Usuário existente encontrado: ${emailLower} (${userId})`);
+        } else {
+          // Verificar se CPF já existe em profile (mesmo que com outro email)
+          const existingProfileByCPF = profilesByCPF.get(cpfNormalizado);
           
-          // Se email já existe, marcar como duplicado
-          if (authError.message?.includes('already been registered') || authError.code === 'email_exists') {
-            allAuthUsers.add(emailLower); // Adicionar para não tentar novamente
-            result.duplicates++;
-            result.details.push({
-              row,
-              status: 'existing',
-              message: 'Email já registrado no sistema de autenticação',
-              nome: coop.nome_completo,
-              email: emailLower
-            });
+          if (existingProfileByCPF) {
+            // CPF existe com outro email - atualizar esse profile
+            userId = existingProfileByCPF.id;
+            isUpdate = true;
+            console.log(`Profile existente por CPF encontrado: ${cpfNormalizado} (${userId})`);
           } else {
-            result.errors++;
-            result.details.push({
-              row,
-              status: 'error',
-              message: `Erro ao criar usuário: ${authError.message}`,
-              nome: coop.nome_completo
+            // Criar novo usuário no auth
+            const { data: authUser, error: authError } = await supabaseClient.auth.admin.createUser({
+              email: emailLower,
+              password: senhaTemp,
+              email_confirm: true,
+              user_metadata: {
+                nome_completo: coop.nome_completo
+              }
             });
-          }
-          continue;
-        }
 
-        const userId = authUser.user.id;
+            if (authError) {
+              console.error('Erro ao criar usuário:', authError);
+              
+              if (authError.message?.includes('already been registered') || authError.code === 'email_exists') {
+                // Tentar buscar o usuário existente
+                const { data: existingUsers } = await supabaseClient.auth.admin.listUsers();
+                const found = existingUsers?.users?.find(u => u.email?.toLowerCase() === emailLower);
+                
+                if (found) {
+                  userId = found.id;
+                  isUpdate = true;
+                  authUsersMap.set(emailLower, { id: userId });
+                } else {
+                  result.errors++;
+                  result.details.push({
+                    row,
+                    status: 'error',
+                    message: 'Email já registrado mas não foi possível localizar o usuário',
+                    nome: coop.nome_completo,
+                    email: emailLower
+                  });
+                  continue;
+                }
+              } else {
+                result.errors++;
+                result.details.push({
+                  row,
+                  status: 'error',
+                  message: `Erro ao criar usuário: ${authError.message}`,
+                  nome: coop.nome_completo
+                });
+                continue;
+              }
+            } else {
+              userId = authUser.user.id;
+              authUsersMap.set(emailLower, { id: userId });
+            }
+          }
+        }
 
         // Marcar como processado neste lote
         emailsNesteLote.add(emailLower);
-        cpfsNesteLote.add(cpfNormalizado);
-        allAuthUsers.add(emailLower);
 
-        // Usar UPSERT para o profile (o trigger handle_new_user pode já ter criado)
+        // Preparar dados do profile
+        const profileData = {
+          id: userId,
+          nome_completo: coop.nome_completo,
+          email: emailLower,
+          cpf: cpfNormalizado,
+          telefone: coop.telefone || null,
+          quadra: coop.quadra || null,
+          lote: coop.lote || null,
+          fase: coop.fase || null,
+          primeira_senha_alterada: false
+        };
+
+        // Usar UPSERT para o profile
         const { error: profileError } = await supabaseClient
           .from('profiles')
-          .upsert({
-            id: userId,
-            nome_completo: coop.nome_completo,
-            email: emailLower,
-            cpf: cpfNormalizado,
-            telefone: coop.telefone || null,
-            quadra: coop.quadra || null,
-            lote: coop.lote || null,
-            fase: coop.fase || null,
-            primeira_senha_alterada: false
-          }, {
+          .upsert(profileData, {
             onConflict: 'id'
           });
 
         if (profileError) {
           console.error('Erro ao criar/atualizar profile:', profileError);
-          // Reverter criação do usuário
-          await supabaseClient.auth.admin.deleteUser(userId);
+          
+          // Se foi criado um novo usuário e deu erro no profile, reverter
+          if (!isUpdate) {
+            await supabaseClient.auth.admin.deleteUser(userId);
+          }
           
           result.errors++;
           result.details.push({
             row,
             status: 'error',
-            message: `Erro ao criar perfil: ${profileError.message}`,
+            message: `Erro ao criar/atualizar perfil: ${profileError.message}`,
             nome: coop.nome_completo
           });
           continue;
         }
 
-        // Adicionar ao mapa de CPFs existentes
-        existingCPFs.set(cpfNormalizado, { id: userId, nome: coop.nome_completo });
+        // Atualizar mapas
+        profilesByEmail.set(emailLower, { id: userId, nome: coop.nome_completo, cpf: cpfNormalizado });
+        profilesByCPF.set(cpfNormalizado, { id: userId, nome: coop.nome_completo, email: emailLower });
 
         // Atribuir role (usar upsert para evitar duplicatas)
         const { error: roleError } = await supabaseClient
@@ -353,32 +329,85 @@ serve(async (req) => {
           console.error('Erro ao atribuir role:', roleError);
         }
 
-        // Vincular ao comprador COHAPM se encontrado
-        if (compradorMatch) {
-          const { error: linkError } = await supabaseClient
-            .from('compradores_cohapm')
-            .update({ profile_id: userId })
-            .eq('id', compradorMatch.id);
+        // Criar chave de vinculação para buscar comprador COHAPM
+        const chaveVinculacao = criarChaveVinculacao(
+          coop.nome_completo,
+          cpfNormalizado,
+          coop.quadra,
+          coop.lote
+        );
 
-          if (linkError) {
-            console.error('Erro ao vincular COHAPM:', linkError);
-          } else {
-            result.associated++;
-            console.log(`Vinculado ao comprador COHAPM: ${compradorMatch.id}`);
+        // Tentar encontrar TODOS os compradores COHAPM correspondentes (por CPF ou chave)
+        let compradoresVinculados = 0;
+        if (compradores) {
+          // Buscar por CPF normalizado ou por chave de vinculação
+          const matchingCompradores = compradores.filter(comp => {
+            // Já vinculado a outro profile
+            if (comp.profile_id && comp.profile_id !== userId) return false;
+            
+            // Match por CPF
+            const compCPF = normalizarCPF(comp.cpf_cnpj);
+            if (compCPF === cpfNormalizado && cpfNormalizado.length >= 11) {
+              return true;
+            }
+            
+            // Match por chave de vinculação
+            const compChave = criarChaveVinculacao(
+              comp.nome || '',
+              comp.cpf_cnpj || '',
+              comp.quadra,
+              comp.lote
+            );
+            
+            return compChave === chaveVinculacao;
+          });
+
+          // Vincular todos os compradores encontrados
+          for (const comp of matchingCompradores) {
+            const { error: linkError } = await supabaseClient
+              .from('compradores_cohapm')
+              .update({ profile_id: userId })
+              .eq('id', comp.id);
+
+            if (linkError) {
+              console.error(`Erro ao vincular COHAPM ${comp.id}:`, linkError);
+            } else {
+              compradoresVinculados++;
+              console.log(`Vinculado ao comprador COHAPM: ${comp.id} (${comp.nome})`);
+            }
           }
         }
 
-        result.success++;
-        result.details.push({
-          row,
-          status: 'success',
-          message: compradorMatch 
-            ? `Cooperado cadastrado e vinculado aos dados financeiros`
-            : 'Cooperado cadastrado com sucesso',
-          nome: coop.nome_completo,
-          email: emailLower,
-          senha: senhaTemp
-        });
+        if (compradoresVinculados > 0) {
+          result.associated += compradoresVinculados;
+        }
+
+        // Contabilizar resultado
+        if (isUpdate) {
+          result.updated++;
+          result.details.push({
+            row,
+            status: 'updated',
+            message: compradoresVinculados > 0
+              ? `Dados atualizados e vinculado a ${compradoresVinculados} registro(s) financeiro(s)`
+              : 'Dados do cooperado atualizados',
+            nome: coop.nome_completo,
+            email: emailLower,
+            senha: senhaTemp
+          });
+        } else {
+          result.success++;
+          result.details.push({
+            row,
+            status: 'success',
+            message: compradoresVinculados > 0
+              ? `Cooperado cadastrado e vinculado a ${compradoresVinculados} registro(s) financeiro(s)`
+              : 'Cooperado cadastrado com sucesso',
+            nome: coop.nome_completo,
+            email: emailLower,
+            senha: senhaTemp
+          });
+        }
 
       } catch (error) {
         console.error('Erro ao processar cooperado:', error);
@@ -395,6 +424,7 @@ serve(async (req) => {
 
     console.log('Resultado final:', JSON.stringify({
       success: result.success,
+      updated: result.updated,
       errors: result.errors,
       duplicates: result.duplicates,
       associated: result.associated

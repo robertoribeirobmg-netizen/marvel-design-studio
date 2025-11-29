@@ -15,10 +15,11 @@ interface ProcessResult {
   success: number;
   errors: number;
   duplicates: number;
+  updated: number;
   associated: number;
   details: Array<{
     row: number;
-    status: 'success' | 'error' | 'duplicate' | 'existing';
+    status: 'success' | 'error' | 'duplicate' | 'existing' | 'updated';
     message: string;
     nome?: string;
     email?: string;
@@ -178,6 +179,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
           success: 0,
           errors: cooperados.length,
           duplicates: 0,
+          updated: 0,
           associated: 0,
           details: cooperados.map((c, i) => ({
             row: c.row_number,
@@ -198,6 +200,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         success: 0,
         errors: cooperados.length,
         duplicates: 0,
+        updated: 0,
         associated: 0,
         details: cooperados.map((c) => ({
           row: c.row_number,
@@ -253,6 +256,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
           success: 0,
           errors: validationErrors.length,
           duplicates: 0,
+          updated: 0,
           associated: 0,
           details: validationErrors.map(err => ({
             row: err.row,
@@ -278,6 +282,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         success: 0,
         errors: 0,
         duplicates: 0,
+        updated: 0,
         associated: 0,
         details: []
       };
@@ -292,6 +297,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         finalResult.success += batchResult.success;
         finalResult.errors += batchResult.errors;
         finalResult.duplicates += batchResult.duplicates;
+        finalResult.updated += batchResult.updated || 0;
         finalResult.associated += batchResult.associated;
         finalResult.details.push(...batchResult.details);
 
@@ -306,17 +312,19 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
       
       addLog('success', '=== IMPORTAÇÃO CONCLUÍDA ===');
       addLog('info', `Total processados: ${mappedData.length}`);
-      addLog('success', `Cadastrados com sucesso: ${finalResult.success}`);
+      addLog('success', `Novos cadastrados: ${finalResult.success}`);
+      addLog('info', `Atualizados: ${finalResult.updated}`);
       addLog('info', `Vinculados COHAPM: ${finalResult.associated}`);
-      addLog('warning', `Duplicados/Existentes: ${finalResult.duplicates}`);
+      addLog('warning', `Duplicados no lote: ${finalResult.duplicates}`);
       addLog('error', `Erros: ${finalResult.errors}`);
 
       if (onImportComplete && finalResult.success > 0) {
         onImportComplete();
       }
       
+      const totalProcessados = finalResult.success + finalResult.updated;
       toast.success(
-        `Importação concluída! ${finalResult.success} de ${mappedData.length} cooperado(s) cadastrado(s)`,
+        `Importação concluída! ${totalProcessados} cooperado(s) processado(s) (${finalResult.success} novos, ${finalResult.updated} atualizados)`,
         { duration: 5000 }
       );
 
@@ -356,13 +364,13 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
   };
 
   const exportCredentials = () => {
-    if (!result || result.success === 0) {
+    if (!result || (result.success === 0 && result.updated === 0)) {
       toast.error('Nenhuma credencial para exportar');
       return;
     }
 
     const successfulImports = result.details.filter(
-      detail => detail.status === 'success' && detail.email && detail.senha
+      detail => (detail.status === 'success' || detail.status === 'updated') && detail.email && detail.senha
     );
 
     if (successfulImports.length === 0) {
@@ -375,6 +383,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
       'Nome': detail.nome || '',
       'Email': detail.email || '',
       'Senha Temporária': detail.senha || '',
+      'Status': detail.status === 'updated' ? 'Atualizado' : 'Novo',
       'Observação': 'Senha deve ser alterada no primeiro acesso'
     }));
 
@@ -386,6 +395,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
       { wch: 40 },
       { wch: 35 },
       { wch: 20 },
+      { wch: 12 },
       { wch: 40 }
     ];
 
@@ -535,14 +545,26 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         {/* Results */}
         {result && (
           <div className="space-y-4">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 text-green-600">
                     <CheckCircle2 className="h-5 w-5" />
                     <div>
                       <p className="text-2xl font-bold">{result.success}</p>
-                      <p className="text-xs text-muted-foreground">Cadastrados</p>
+                      <p className="text-xs text-muted-foreground">Novos</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-cyan-600">
+                    <RefreshCw className="h-5 w-5" />
+                    <div>
+                      <p className="text-2xl font-bold">{result.updated}</p>
+                      <p className="text-xs text-muted-foreground">Atualizados</p>
                     </div>
                   </div>
                 </CardContent>
@@ -554,7 +576,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
                     <CheckCircle2 className="h-5 w-5" />
                     <div>
                       <p className="text-2xl font-bold">{result.associated}</p>
-                      <p className="text-xs text-muted-foreground">Vinculados COHAPM</p>
+                      <p className="text-xs text-muted-foreground">Vinculados</p>
                     </div>
                   </div>
                 </CardContent>
@@ -597,6 +619,8 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
                         className={`flex items-start gap-2 p-2 rounded text-sm ${
                           detail.status === 'success'
                             ? 'bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200'
+                            : detail.status === 'updated'
+                            ? 'bg-cyan-50 text-cyan-800 dark:bg-cyan-950 dark:text-cyan-200'
                             : detail.status === 'duplicate' || detail.status === 'existing'
                             ? 'bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200'
                             : 'bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200'
@@ -604,6 +628,8 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
                       >
                         {detail.status === 'success' ? (
                           <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        ) : detail.status === 'updated' ? (
+                          <RefreshCw className="h-4 w-4 flex-shrink-0 mt-0.5" />
                         ) : detail.status === 'duplicate' || detail.status === 'existing' ? (
                           <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
                         ) : (
@@ -623,10 +649,10 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
 
             {/* Action Buttons */}
             <div className="flex gap-2 flex-wrap">
-              {result.success > 0 && (
+              {(result.success > 0 || result.updated > 0) && (
                 <Button onClick={exportCredentials} variant="outline" className="flex-1">
                   <FileDown className="h-4 w-4 mr-2" />
-                  Exportar Credenciais ({result.success})
+                  Exportar Credenciais ({result.success + result.updated})
                 </Button>
               )}
               <Button onClick={resetUpload} className="flex-1">
