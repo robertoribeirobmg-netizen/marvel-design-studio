@@ -28,6 +28,8 @@ interface ProcessResult {
     status: 'success' | 'error' | 'duplicate';
     message: string;
     nome?: string;
+    email?: string;
+    senha?: string;
   }>;
 }
 
@@ -277,7 +279,9 @@ serve(async (req) => {
           message: compradorMatch 
             ? `Cooperado cadastrado e vinculado aos dados financeiros (COHAPM ID: ${compradorMatch.id})`
             : 'Cooperado cadastrado com sucesso (sem dados financeiros correspondentes)',
-          nome: coop.nome_completo
+          nome: coop.nome_completo,
+          email: emailLower,
+          senha: senhaTemp
         });
 
       } catch (error) {
