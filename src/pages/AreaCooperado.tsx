@@ -272,22 +272,6 @@ export default function AreaCooperado() {
               </CardContent>
             </Card>
 
-            {/* Dashboard Comparativo */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-primary" />
-                  Análise Comparativa
-                </CardTitle>
-                <CardDescription>
-                  Compare o progresso real com o planejado
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <DashboardComparativoObras />
-              </CardContent>
-            </Card>
-
             {/* Photo and Video Gallery */}
             <Card>
               <CardHeader>
