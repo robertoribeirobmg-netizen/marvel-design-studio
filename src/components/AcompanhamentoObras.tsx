@@ -5,6 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Calendar, CheckCircle2, Clock, Edit2, Save, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,6 +27,8 @@ export function AcompanhamentoObras() {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState<number>(0);
+  const [showBulkEdit, setShowBulkEdit] = useState(false);
+  const [bulkEditValues, setBulkEditValues] = useState<Record<string, number>>({});
   const { isAdmin, isAdminObras } = useAuth();
 
   const canEdit = isAdmin || isAdminObras;
@@ -80,6 +83,39 @@ export function AcompanhamentoObras() {
     }
   };
 
+  const openBulkEdit = () => {
+    const values: Record<string, number> = {};
+    etapas.forEach(e => {
+      values[e.id] = e.percentual_concluido;
+    });
+    setBulkEditValues(values);
+    setShowBulkEdit(true);
+  };
+
+  const handleBulkSave = async () => {
+    try {
+      const updates = Object.entries(bulkEditValues).map(([id, percentual]) => 
+        supabase
+          .from('etapas_obra')
+          .update({ percentual_concluido: percentual })
+          .eq('id', id)
+      );
+
+      await Promise.all(updates);
+
+      setEtapas(prev => prev.map(e => ({
+        ...e,
+        percentual_concluido: bulkEditValues[e.id] ?? e.percentual_concluido
+      })));
+
+      toast.success('Progresso de todas as etapas atualizado!');
+      setShowBulkEdit(false);
+    } catch (error) {
+      console.error('Erro ao atualizar progresso:', error);
+      toast.error('Erro ao atualizar progresso');
+    }
+  };
+
   const getStatusBadge = (percentual: number) => {
     if (percentual === 100) {
       return <Badge className="bg-green-600">Concluída</Badge>;
@@ -107,14 +143,26 @@ export function AcompanhamentoObras() {
     ? Math.round(etapas.reduce((acc, etapa) => acc + etapa.percentual_concluido, 0) / etapas.length)
     : 0;
 
+  const bulkTotalPercentual = etapas.length > 0
+    ? Math.round(Object.values(bulkEditValues).reduce((acc, val) => acc + val, 0) / etapas.length)
+    : 0;
+
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <CheckCircle2 className="h-6 w-6 text-primary" />
-            Progresso Geral da Obra
-          </CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-6 w-6 text-primary" />
+              Progresso Geral da Obra
+            </CardTitle>
+            {canEdit && (
+              <Button variant="outline" size="sm" onClick={openBulkEdit}>
+                <Edit2 className="h-4 w-4 mr-2" />
+                Editar Progresso
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -126,6 +174,57 @@ export function AcompanhamentoObras() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Dialog para edição em massa */}
+      <Dialog open={showBulkEdit} onOpenChange={setShowBulkEdit}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Editar Progresso das Etapas</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="bg-muted p-4 rounded-lg">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="font-medium">Progresso Total Calculado</span>
+                <span className="font-bold text-primary">{bulkTotalPercentual}%</span>
+              </div>
+              <Progress value={bulkTotalPercentual} className="h-3" />
+            </div>
+            
+            <div className="space-y-3">
+              {etapas.map((etapa) => (
+                <div key={etapa.id} className="flex items-center justify-between gap-4 p-3 bg-card border rounded-lg">
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium truncate">{etapa.nome}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={bulkEditValues[etapa.id] ?? 0}
+                      onChange={(e) => setBulkEditValues(prev => ({
+                        ...prev,
+                        [etapa.id]: Math.min(100, Math.max(0, Number(e.target.value)))
+                      }))}
+                      className="w-20 text-right"
+                    />
+                    <span className="text-sm text-muted-foreground">%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkEdit(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleBulkSave}>
+              <Save className="h-4 w-4 mr-2" />
+              Salvar Alterações
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="space-y-4">
         {etapas.map((etapa) => (
