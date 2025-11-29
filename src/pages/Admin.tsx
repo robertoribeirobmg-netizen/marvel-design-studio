@@ -583,39 +583,65 @@ export default function Admin() {
     if (!confirm(`Tem certeza que deseja deletar ${orphanSelected.length} usuário(s) órfão(s) selecionado(s)? Esta ação não pode ser desfeita.`)) return;
     
     let deleted = 0;
+    let alreadyDeleted = 0;
     let errors = 0;
+    const successfullyDeletedIds: string[] = [];
+    
+    toast.info(`Iniciando exclusão de ${orphanSelected.length} usuário(s)...`);
     
     for (const user of orphanSelected) {
       try {
-        const { error } = await supabase.functions.invoke('delete-orphan-user', {
+        const { data, error } = await supabase.functions.invoke('delete-orphan-user', {
           body: { userId: user.id }
         });
         
-        if (error) {
+        // Check if operation was successful (either deleted or already deleted)
+        if (data?.success) {
+          if (data.already_deleted) {
+            alreadyDeleted++;
+          } else {
+            deleted++;
+          }
+          successfullyDeletedIds.push(user.id);
+        } else if (error) {
+          console.error('Erro ao deletar:', user.email, error);
           errors++;
         } else {
+          // Treat as success if no error and no explicit success flag
           deleted++;
+          successfullyDeletedIds.push(user.id);
         }
-      } catch {
+      } catch (e) {
+        console.error('Exceção ao deletar:', user.email, e);
         errors++;
       }
     }
     
-    if (deleted > 0) {
-      toast.success(`${deleted} usuário(s) órfão(s) deletado(s) com sucesso!`);
-      const deletedIds = new Set(orphanSelected.map(u => u.id));
-      setAuthUsers(prev => prev.filter(u => !deletedIds.has(u.id)));
+    // Update UI with results
+    if (successfullyDeletedIds.length > 0) {
+      const deletedSet = new Set(successfullyDeletedIds);
+      setAuthUsers(prev => prev.filter(u => !deletedSet.has(u.id)));
       setAuthSummary(prev => prev ? {
         ...prev,
-        total_auth_users: prev.total_auth_users - deleted,
-        orphan_users: prev.orphan_users - deleted
+        total_auth_users: prev.total_auth_users - successfullyDeletedIds.length,
+        orphan_users: prev.orphan_users - successfullyDeletedIds.length
       } : null);
       setSelectedAuthUsers(new Set());
     }
     
+    // Show result messages
+    if (deleted > 0) {
+      toast.success(`${deleted} usuário(s) deletado(s) com sucesso!`);
+    }
+    if (alreadyDeleted > 0) {
+      toast.info(`${alreadyDeleted} usuário(s) já haviam sido deletados`);
+    }
     if (errors > 0) {
       toast.error(`${errors} usuário(s) não puderam ser deletados`);
     }
+    
+    // Force refresh the list to ensure accuracy
+    await loadAuthUsers();
   };
 
   const handleDeleteOrphanUser = async (userId: string, email: string) => {
