@@ -11,7 +11,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 interface GaleriaItem {
@@ -687,7 +687,22 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
         <Dialog open={!!selectedVideo} onOpenChange={(open) => !open && setSelectedVideo(null)}>
           <DialogContent className="max-w-4xl w-full p-0">
             <DialogHeader className="p-4 pb-0">
-              <DialogTitle>{selectedVideo?.titulo}</DialogTitle>
+              <div className="flex items-center justify-between pr-8">
+                <DialogTitle>{selectedVideo?.titulo}</DialogTitle>
+                {selectedVideo?.video_url && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      const videoId = selectedVideo.video_url?.split('/').pop();
+                      window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Abrir no YouTube
+                  </Button>
+                )}
+              </div>
             </DialogHeader>
             <div className="p-4">
               <div className="aspect-video w-full">
