@@ -2047,10 +2047,21 @@ export default function Admin() {
       <Dialog open={showAuthUsersDialog} onOpenChange={setShowAuthUsersDialog}>
         <DialogContent className="max-w-4xl max-h-[80vh]">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5 text-primary" />
-              Usuários no Sistema de Autenticação
-            </DialogTitle>
+            <div className="flex items-center justify-between">
+              <DialogTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" />
+                Usuários no Sistema de Autenticação
+              </DialogTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadAuthUsers}
+                disabled={isLoadingAuthUsers}
+              >
+                <RefreshCw className={`h-4 w-4 mr-1 ${isLoadingAuthUsers ? 'animate-spin' : ''}`} />
+                Atualizar
+              </Button>
+            </div>
             <DialogDescription>
               Lista de todos os usuários cadastrados no auth.users
             </DialogDescription>

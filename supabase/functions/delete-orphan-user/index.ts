@@ -79,6 +79,15 @@ serve(async (req) => {
     const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(userId)
 
     if (deleteError) {
+      // If user is already deleted, treat as success
+      if (deleteError.message === 'User not found' || (deleteError as any).code === 'user_not_found') {
+        console.log('User already deleted or not found:', userId)
+        return new Response(
+          JSON.stringify({ success: true, message: 'Usuário já foi deletado ou não existe', already_deleted: true }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+        )
+      }
+      
       console.error('Error deleting orphan user:', deleteError)
       throw deleteError
     }
