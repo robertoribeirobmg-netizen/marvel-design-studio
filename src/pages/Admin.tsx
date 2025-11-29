@@ -121,6 +121,14 @@ export default function Admin() {
   const [editLote, setEditLote] = useState('');
   const [editFase, setEditFase] = useState('');
   const [editDataCompra, setEditDataCompra] = useState('');
+  
+  // Linking COHAPM state
+  const [linkingCohapm, setLinkingCohapm] = useState<any>(null);
+  const [linkMode, setLinkMode] = useState<'existing' | 'new'>('new');
+  const [profilesForLink, setProfilesForLink] = useState<any[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState<string>('');
+  const [isLinking, setIsLinking] = useState(false);
+  const [searchProfileTerm, setSearchProfileTerm] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   
 
@@ -389,6 +397,117 @@ export default function Admin() {
       toast.error(error.message || 'Erro ao remover cooperado');
     }
   };
+
+  // Funções para vincular COHAPM
+  const openLinkDialog = async (cohapmRecord: any) => {
+    setLinkingCohapm(cohapmRecord);
+    setLinkMode('new');
+    setSelectedProfileId('');
+    setSearchProfileTerm('');
+    
+    // Carregar profiles disponíveis para vinculação
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, nome_completo, email, cpf, quadra, lote')
+      .order('nome_completo');
+    
+    setProfilesForLink(profiles || []);
+  };
+
+  const handleLinkToExistingProfile = async () => {
+    if (!selectedProfileId || !linkingCohapm) return;
+    
+    setIsLinking(true);
+    try {
+      const { error } = await supabase
+        .from('compradores_cohapm')
+        .update({ profile_id: selectedProfileId })
+        .eq('id', linkingCohapm.id);
+
+      if (error) throw error;
+
+      toast.success('Registro COHAPM vinculado ao profile com sucesso!');
+      setLinkingCohapm(null);
+      loadCooperados();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao vincular registro');
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const handleCreateUserFromCohapm = async () => {
+    if (!linkingCohapm) return;
+    
+    // Verificar se tem email
+    if (!linkingCohapm.email || linkingCohapm.email === '-') {
+      toast.error('Registro COHAPM não possui email válido para criar usuário');
+      return;
+    }
+    
+    setIsLinking(true);
+    try {
+      // Gerar senha automaticamente
+      const autoPassword = generatePassword();
+
+      // Create user using admin function
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email: linkingCohapm.email,
+          password: autoPassword,
+          nome_completo: linkingCohapm.nome_completo,
+          cpf: linkingCohapm.cpf || null,
+          telefone: linkingCohapm.telefone || null,
+          quadra: linkingCohapm.quadra || null,
+          lote: linkingCohapm.lote || null,
+          fase: null,
+          data_compra: linkingCohapm.data_compra || null,
+          role: 'cooperado',
+        },
+      });
+
+      if (error) throw error;
+      
+      if (data?.duplicate) {
+        toast.error(`Já existe um usuário cadastrado com o email ${linkingCohapm.email}`);
+        setIsLinking(false);
+        return;
+      }
+
+      // Vincular o registro COHAPM ao novo profile
+      if (data?.userId) {
+        await supabase
+          .from('compradores_cohapm')
+          .update({ profile_id: data.userId })
+          .eq('id', linkingCohapm.id);
+      }
+
+      // Mostrar senha gerada
+      setGeneratedPassword(autoPassword);
+      setGeneratedUserName(linkingCohapm.nome_completo);
+      setShowPasswordDialog(true);
+
+      toast.success('Usuário criado e vinculado com sucesso!');
+      setLinkingCohapm(null);
+      loadCooperados();
+    } catch (error: any) {
+      toast.error(error.message || 'Erro ao criar usuário');
+    } finally {
+      setIsLinking(false);
+    }
+  };
+
+  const filteredProfilesForLink = profilesForLink.filter(p => {
+    if (!searchProfileTerm) return true;
+    const term = searchProfileTerm.toLowerCase();
+    return (
+      p.nome_completo?.toLowerCase().includes(term) ||
+      p.email?.toLowerCase().includes(term) ||
+      p.cpf?.includes(term) ||
+      p.quadra?.toLowerCase().includes(term) ||
+      p.lote?.toLowerCase().includes(term)
+    );
+  });
 
   const handleBulkDelete = async () => {
     if (selectedCooperados.length === 0) return;
@@ -1439,9 +1558,21 @@ export default function Admin() {
                                 Editar
                               </Button>
                             ) : (
-                              <Badge variant="secondary" className="text-xs">
-                                {cooperado.situacao_financeira || 'Sem login'}
-                              </Badge>
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openLinkDialog(cooperado)}
+                                >
+                                  <UserPlus className="h-4 w-4 mr-1" />
+                                  Vincular
+                                </Button>
+                                {cooperado.situacao_financeira && (
+                                  <Badge variant="secondary" className="text-xs">
+                                    {cooperado.situacao_financeira}
+                                  </Badge>
+                                )}
+                              </div>
                             )}
                           </TableCell>
                         </TableRow>
@@ -1584,6 +1715,145 @@ export default function Admin() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link COHAPM Dialog */}
+      <Dialog open={!!linkingCohapm} onOpenChange={(open) => !open && setLinkingCohapm(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <UserPlus className="h-5 w-5 text-primary" />
+              Vincular Registro COHAPM
+            </DialogTitle>
+            <DialogDescription>
+              Vincule este registro a um profile existente ou crie um novo usuário
+            </DialogDescription>
+          </DialogHeader>
+          
+          {linkingCohapm && (
+            <div className="space-y-4">
+              {/* Dados do registro COHAPM */}
+              <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                <h4 className="font-medium text-amber-800 dark:text-amber-200 mb-2">Dados do Registro COHAPM</h4>
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                  <div><span className="text-muted-foreground">Nome:</span> {linkingCohapm.nome_completo}</div>
+                  <div><span className="text-muted-foreground">Email:</span> {linkingCohapm.email || '-'}</div>
+                  <div><span className="text-muted-foreground">CPF:</span> {linkingCohapm.cpf || '-'}</div>
+                  <div><span className="text-muted-foreground">Telefone:</span> {linkingCohapm.telefone || '-'}</div>
+                  <div><span className="text-muted-foreground">Quadra:</span> {linkingCohapm.quadra || '-'}</div>
+                  <div><span className="text-muted-foreground">Lote:</span> {linkingCohapm.lote || '-'}</div>
+                </div>
+              </div>
+
+              {/* Opções de vinculação */}
+              <div className="space-y-3">
+                <Label>Escolha uma opção:</Label>
+                <div className="flex gap-3">
+                  <Button
+                    variant={linkMode === 'new' ? 'default' : 'outline'}
+                    onClick={() => setLinkMode('new')}
+                    className="flex-1"
+                  >
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Criar Novo Usuário
+                  </Button>
+                  <Button
+                    variant={linkMode === 'existing' ? 'default' : 'outline'}
+                    onClick={() => setLinkMode('existing')}
+                    className="flex-1"
+                  >
+                    <Users className="h-4 w-4 mr-2" />
+                    Vincular a Existente
+                  </Button>
+                </div>
+              </div>
+
+              {linkMode === 'new' ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-muted/50 rounded-lg">
+                    <p className="text-sm text-muted-foreground">
+                      Será criado um novo usuário com os dados do registro COHAPM.
+                      {linkingCohapm.email && linkingCohapm.email !== '-' ? (
+                        <span className="block mt-1 text-primary">
+                          Email: <strong>{linkingCohapm.email}</strong>
+                        </span>
+                      ) : (
+                        <span className="block mt-1 text-destructive">
+                          ⚠️ Este registro não possui email. Não é possível criar um usuário.
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <Button
+                    onClick={handleCreateUserFromCohapm}
+                    disabled={isLinking || !linkingCohapm.email || linkingCohapm.email === '-'}
+                    className="w-full"
+                  >
+                    {isLinking ? 'Criando...' : 'Criar Usuário e Vincular'}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Buscar Profile</Label>
+                    <div className="relative">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por nome, email, CPF, quadra ou lote..."
+                        value={searchProfileTerm}
+                        onChange={(e) => setSearchProfileTerm(e.target.value)}
+                        className="pl-10"
+                      />
+                    </div>
+                  </div>
+                  
+                  <ScrollArea className="h-[200px] border rounded-md">
+                    <div className="p-2 space-y-1">
+                      {filteredProfilesForLink.length === 0 ? (
+                        <p className="text-center text-muted-foreground py-4">
+                          Nenhum profile encontrado
+                        </p>
+                      ) : (
+                        filteredProfilesForLink.map((profile) => (
+                          <div
+                            key={profile.id}
+                            className={`p-3 rounded-md cursor-pointer transition-colors ${
+                              selectedProfileId === profile.id
+                                ? 'bg-primary/10 border border-primary'
+                                : 'hover:bg-muted'
+                            }`}
+                            onClick={() => setSelectedProfileId(profile.id)}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <p className="font-medium">{profile.nome_completo}</p>
+                                <p className="text-sm text-muted-foreground">{profile.email}</p>
+                              </div>
+                              <div className="text-right text-xs text-muted-foreground">
+                                {profile.quadra && profile.lote && (
+                                  <p>Q{profile.quadra} L{profile.lote}</p>
+                                )}
+                                {profile.cpf && <p>{profile.cpf}</p>}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </ScrollArea>
+
+                  <Button
+                    onClick={handleLinkToExistingProfile}
+                    disabled={isLinking || !selectedProfileId}
+                    className="w-full"
+                  >
+                    {isLinking ? 'Vinculando...' : 'Vincular ao Profile Selecionado'}
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
