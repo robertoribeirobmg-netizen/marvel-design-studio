@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { Download, Upload, FileText, CheckCircle2, XCircle, AlertCircle, FileDown } from 'lucide-react';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Download, Upload, FileText, CheckCircle2, XCircle, AlertCircle, FileDown, RefreshCw, Terminal } from 'lucide-react';
 import { downloadCooperadosTemplate } from '@/lib/cooperadosTemplateGenerator';
 import ColumnMappingSelector from '@/components/ColumnMappingSelector';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,7 +26,15 @@ interface ProcessResult {
   }>;
 }
 
+interface LogEntry {
+  timestamp: string;
+  type: 'info' | 'success' | 'warning' | 'error';
+  message: string;
+}
+
 const requiredFields = ['tipo_usuario', 'nome_completo', 'email', 'cpf'];
+
+const BATCH_SIZE = 30; // Processar 30 registros por vez para evitar timeout
 
 interface UploadCooperadosLoteProps {
   onImportComplete?: () => void;
@@ -48,7 +57,17 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
   });
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [currentBatch, setCurrentBatch] = useState(0);
+  const [totalBatches, setTotalBatches] = useState(0);
   const [result, setResult] = useState<ProcessResult | null>(null);
+  const [logs, setLogs] = useState<LogEntry[]>([]);
+  const [showLogs, setShowLogs] = useState(false);
+  const logEndRef = useRef<HTMLDivElement>(null);
+
+  const addLog = (type: LogEntry['type'], message: string) => {
+    const timestamp = new Date().toLocaleTimeString('pt-BR');
+    setLogs(prev => [...prev, { timestamp, type, message }]);
+  };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
@@ -56,6 +75,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
 
     setFile(selectedFile);
     setResult(null);
+    setLogs([]);
 
     const reader = new FileReader();
     reader.onload = (e) => {
@@ -76,9 +96,12 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         setExcelHeaders(headerRow);
         setParsedData(dataRows.filter(row => Array.isArray(row) && row.some(cell => cell !== null && cell !== '')));
         setShowMapping(true);
+        addLog('info', `Arquivo carregado: ${selectedFile.name}`);
+        addLog('info', `${dataRows.length} linhas encontradas`);
       } catch (error) {
         console.error('Erro ao ler arquivo:', error);
         toast.error('Erro ao ler arquivo Excel');
+        addLog('error', `Erro ao ler arquivo: ${error}`);
       }
     };
 
@@ -97,9 +120,8 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     const tiposUsuarioValidos = ['admin', 'cooperado', 'admin_obras', 'executivo_vendas'];
 
     data.forEach((row, index) => {
-      const rowNumber = index + 2; // +2 porque Excel começa em 1 e pulamos header
+      const rowNumber = index + 2;
 
-      // Validar email se fornecido
       if (row.email && typeof row.email === 'string' && row.email.trim()) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(row.email.trim())) {
@@ -112,33 +134,6 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         }
       }
 
-      // Validar CPF se fornecido
-      if (row.cpf && typeof row.cpf === 'string' && row.cpf.trim()) {
-        const cpfLimpo = row.cpf.replace(/\D/g, '');
-        if (cpfLimpo.length !== 11 && cpfLimpo.length !== 14) {
-          errors.push({
-            row: rowNumber,
-            field: 'cpf',
-            message: 'CPF deve ter 11 dígitos (ou 14 para CNPJ)',
-            value: row.cpf
-          });
-        }
-      }
-
-      // Validar telefone se fornecido
-      if (row.telefone && typeof row.telefone === 'string' && row.telefone.trim()) {
-        const telefoneLimpo = row.telefone.replace(/\D/g, '');
-        if (telefoneLimpo.length < 10 || telefoneLimpo.length > 11) {
-          errors.push({
-            row: rowNumber,
-            field: 'telefone',
-            message: 'Telefone deve ter 10 ou 11 dígitos',
-            value: row.telefone
-          });
-        }
-      }
-
-      // Validar tipo de usuário se fornecido
       if (row.tipo_usuario && typeof row.tipo_usuario === 'string') {
         const tipoNormalizado = row.tipo_usuario.toLowerCase().trim();
         if (!tiposUsuarioValidos.includes(tipoNormalizado)) {
@@ -151,7 +146,6 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         }
       }
 
-      // Validar campos obrigatórios básicos
       if (row.nome_completo && typeof row.nome_completo === 'string') {
         if (row.nome_completo.trim().length < 3) {
           errors.push({
@@ -167,16 +161,65 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     return errors;
   };
 
-  const handleProcessar = async () => {
+  const processarLote = async (cooperados: any[], batchNumber: number, totalBatches: number): Promise<ProcessResult> => {
+    addLog('info', `Processando lote ${batchNumber}/${totalBatches} (${cooperados.length} registros)...`);
+    
+    try {
+      const { data, error } = await supabase.functions.invoke('process-cooperados-batch', {
+        body: { cooperados }
+      });
 
+      if (error) {
+        const errorMessage = error.message || JSON.stringify(error);
+        addLog('error', `Erro no lote ${batchNumber}: ${errorMessage}`);
+        
+        // Retornar resultado parcial com erro
+        return {
+          success: 0,
+          errors: cooperados.length,
+          duplicates: 0,
+          associated: 0,
+          details: cooperados.map((c, i) => ({
+            row: c.row_number,
+            status: 'error' as const,
+            message: `Erro de conexão: ${errorMessage}`,
+            nome: c.nome_completo
+          }))
+        };
+      }
+
+      addLog('success', `Lote ${batchNumber} concluído: ${data.success} sucesso, ${data.duplicates} duplicados, ${data.errors} erros`);
+      return data;
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'Erro desconhecido';
+      addLog('error', `Exceção no lote ${batchNumber}: ${errorMessage}`);
+      
+      return {
+        success: 0,
+        errors: cooperados.length,
+        duplicates: 0,
+        associated: 0,
+        details: cooperados.map((c) => ({
+          row: c.row_number,
+          status: 'error' as const,
+          message: `Exceção: ${errorMessage}`,
+          nome: c.nome_completo
+        }))
+      };
+    }
+  };
+
+  const handleProcessar = async () => {
     setShowMapping(false);
     setIsProcessing(true);
     setProgress(0);
+    setLogs([]);
+    setShowLogs(true);
 
     try {
       // Preparar dados mapeados
       const mappedData = parsedData.map((row, index) => {
-        const mapped: any = { row_number: index + 2 }; // +2 porque Excel começa em 1 e pulamos header
+        const mapped: any = { row_number: index + 2 };
         
         Object.entries(columnMapping).forEach(([key, colIndex]) => {
           if (colIndex !== null) {
@@ -187,33 +230,28 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         return mapped;
       });
 
+      addLog('info', `Total de registros a processar: ${mappedData.length}`);
+
       // Validar dados antes de processar
       const validationErrors = validateData(mappedData);
       
       if (validationErrors.length > 0) {
+        addLog('error', `${validationErrors.length} erros de validação encontrados`);
         setIsProcessing(false);
         setProgress(0);
         
-        // Mostrar erros de validação
         const errorMessages = validationErrors.slice(0, 5).map(err => 
           `Linha ${err.row} - ${err.field}: ${err.message} (valor: "${err.value}")`
         ).join('\n');
         
-        const totalErrors = validationErrors.length;
-        const moreErrors = totalErrors > 5 ? `\n... e mais ${totalErrors - 5} erro(s)` : '';
-        
         toast.error(
-          `${totalErrors} erro(s) de validação encontrado(s):\n${errorMessages}${moreErrors}`,
-          { 
-            duration: 10000,
-            style: { whiteSpace: 'pre-line' }
-          }
+          `${validationErrors.length} erro(s) de validação encontrado(s)`,
+          { duration: 10000 }
         );
         
-        // Criar resultado de validação para exibição
         setResult({
           success: 0,
-          errors: totalErrors,
+          errors: validationErrors.length,
           duplicates: 0,
           associated: 0,
           details: validationErrors.map(err => ({
@@ -226,63 +264,71 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         return;
       }
 
-      console.log('Enviando dados:', mappedData);
-
-      // Simular progresso enquanto processa
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) return prev;
-          return prev + 10;
-        });
-      }, 500);
-
-      // Chamar edge function para processar
-      const { data, error } = await supabase.functions.invoke('process-cooperados-batch', {
-        body: { cooperados: mappedData }
-      });
-
-      clearInterval(progressInterval);
-      setProgress(100);
-
-      if (error) {
-        console.error('Erro da edge function:', error);
-        throw error;
+      // Dividir em lotes
+      const batches: any[][] = [];
+      for (let i = 0; i < mappedData.length; i += BATCH_SIZE) {
+        batches.push(mappedData.slice(i, i + BATCH_SIZE));
       }
 
-      setResult(data);
+      setTotalBatches(batches.length);
+      addLog('info', `Dividido em ${batches.length} lote(s) de até ${BATCH_SIZE} registros`);
+
+      // Resultado acumulado
+      const finalResult: ProcessResult = {
+        success: 0,
+        errors: 0,
+        duplicates: 0,
+        associated: 0,
+        details: []
+      };
+
+      // Processar cada lote sequencialmente
+      for (let i = 0; i < batches.length; i++) {
+        setCurrentBatch(i + 1);
+        setProgress(Math.round((i / batches.length) * 100));
+
+        const batchResult = await processarLote(batches[i], i + 1, batches.length);
+        
+        finalResult.success += batchResult.success;
+        finalResult.errors += batchResult.errors;
+        finalResult.duplicates += batchResult.duplicates;
+        finalResult.associated += batchResult.associated;
+        finalResult.details.push(...batchResult.details);
+
+        // Pequena pausa entre lotes para não sobrecarregar
+        if (i < batches.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+
+      setProgress(100);
+      setResult(finalResult);
       
-      // Notificar que a importação foi concluída para atualizar a lista
-      if (onImportComplete && data.success > 0) {
+      addLog('success', '=== IMPORTAÇÃO CONCLUÍDA ===');
+      addLog('info', `Total processados: ${mappedData.length}`);
+      addLog('success', `Cadastrados com sucesso: ${finalResult.success}`);
+      addLog('info', `Vinculados COHAPM: ${finalResult.associated}`);
+      addLog('warning', `Duplicados/Existentes: ${finalResult.duplicates}`);
+      addLog('error', `Erros: ${finalResult.errors}`);
+
+      if (onImportComplete && finalResult.success > 0) {
         onImportComplete();
       }
       
-      // Notificações detalhadas
-      const total = mappedData.length;
-      const processed = data.success + data.duplicates + data.errors;
-      
       toast.success(
-        `Importação concluída! ${data.success} de ${total} cooperado(s) cadastrado(s) com sucesso`,
+        `Importação concluída! ${finalResult.success} de ${mappedData.length} cooperado(s) cadastrado(s)`,
         { duration: 5000 }
       );
-      
-      if (data.associated > 0) {
-        toast.info(`${data.associated} cooperado(s) vinculado(s) aos dados financeiros COHAPM`);
-      }
-      
-      if (data.duplicates > 0) {
-        toast.warning(`${data.duplicates} cooperado(s) já cadastrado(s) anteriormente`);
-      }
-      
-      if (data.errors > 0) {
-        toast.error(`${data.errors} erro(s) encontrado(s). Verifique os detalhes abaixo.`);
-      }
 
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
       console.error('Erro ao processar:', error);
-      toast.error('Erro ao processar arquivo. Tente novamente.');
+      addLog('error', `Erro geral: ${errorMessage}`);
+      toast.error(`Erro ao processar arquivo: ${errorMessage}`);
       setProgress(0);
     } finally {
       setIsProcessing(false);
+      setCurrentBatch(0);
     }
   };
 
@@ -293,6 +339,10 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
     setShowMapping(false);
     setResult(null);
     setProgress(0);
+    setLogs([]);
+    setShowLogs(false);
+    setCurrentBatch(0);
+    setTotalBatches(0);
     setColumnMapping({
       tipo_usuario: null,
       nome_completo: null,
@@ -320,7 +370,6 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
       return;
     }
 
-    // Criar dados para Excel
     const exportData = successfulImports.map((detail, index) => ({
       '#': index + 1,
       'Nome': detail.nome || '',
@@ -329,26 +378,32 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
       'Observação': 'Senha deve ser alterada no primeiro acesso'
     }));
 
-    // Criar workbook
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.json_to_sheet(exportData);
 
-    // Ajustar largura das colunas
     ws['!cols'] = [
-      { wch: 5 },   // #
-      { wch: 40 },  // Nome
-      { wch: 35 },  // Email
-      { wch: 20 },  // Senha
-      { wch: 40 }   // Observação
+      { wch: 5 },
+      { wch: 40 },
+      { wch: 35 },
+      { wch: 20 },
+      { wch: 40 }
     ];
 
     XLSX.utils.book_append_sheet(wb, ws, 'Credenciais');
 
-    // Gerar arquivo
     const fileName = `credenciais_cooperados_${new Date().toISOString().split('T')[0]}.xlsx`;
     XLSX.writeFile(wb, fileName);
 
     toast.success(`${successfulImports.length} credenciais exportadas com sucesso!`);
+  };
+
+  const getLogColor = (type: LogEntry['type']) => {
+    switch (type) {
+      case 'success': return 'text-green-600';
+      case 'warning': return 'text-yellow-600';
+      case 'error': return 'text-red-600';
+      default: return 'text-muted-foreground';
+    }
   };
 
   return (
@@ -422,7 +477,7 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
 
             <div className="flex gap-2">
               <Button onClick={handleProcessar} className="flex-1">
-                Processar Dados
+                Processar Dados ({parsedData.length} registros)
               </Button>
               <Button onClick={resetUpload} variant="outline">
                 Cancelar
@@ -435,12 +490,45 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
         {isProcessing && (
           <div className="space-y-4">
             <Alert>
-              <AlertCircle className="h-4 w-4" />
+              <RefreshCw className="h-4 w-4 animate-spin" />
               <AlertDescription>
-                Processando cooperados... Por favor, aguarde.
+                Processando lote {currentBatch} de {totalBatches}... Por favor, aguarde.
               </AlertDescription>
             </Alert>
             <Progress value={progress} />
+            <p className="text-sm text-center text-muted-foreground">
+              {progress}% concluído
+            </p>
+          </div>
+        )}
+
+        {/* Log Panel */}
+        {showLogs && logs.length > 0 && (
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <h4 className="text-sm font-semibold flex items-center gap-2">
+                <Terminal className="h-4 w-4" />
+                Log de Importação
+              </h4>
+              <Button 
+                variant="ghost" 
+                size="sm"
+                onClick={() => setShowLogs(!showLogs)}
+              >
+                {showLogs ? 'Ocultar' : 'Mostrar'}
+              </Button>
+            </div>
+            <ScrollArea className="h-48 w-full rounded-md border bg-muted/50 p-3">
+              <div className="space-y-1 font-mono text-xs">
+                {logs.map((log, index) => (
+                  <div key={index} className={`${getLogColor(log.type)}`}>
+                    <span className="text-muted-foreground">[{log.timestamp}]</span>{' '}
+                    {log.message}
+                  </div>
+                ))}
+                <div ref={logEndRef} />
+              </div>
+            </ScrollArea>
           </div>
         )}
 
@@ -498,40 +586,43 @@ export function UploadCooperadosLote({ onImportComplete }: UploadCooperadosLoteP
             </div>
 
             {/* Details */}
-            {result.details && result.details.length > 0 && (
-              <div className="border rounded-lg p-4 max-h-96 overflow-y-auto">
-                <h4 className="font-semibold mb-3">Detalhes do Processamento</h4>
-                <div className="space-y-2">
-                  {result.details.map((detail, index) => (
-                    <div
-                      key={index}
-                      className={`flex items-start gap-2 p-2 rounded text-sm ${
-                        detail.status === 'success'
-                          ? 'bg-green-50 text-green-800'
-                          : detail.status === 'duplicate' || detail.status === 'existing'
-                          ? 'bg-yellow-50 text-yellow-800'
-                          : 'bg-red-50 text-red-800'
-                      }`}
-                    >
-                      {detail.status === 'success' ? (
-                        <CheckCircle2 className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      ) : detail.status === 'duplicate' || detail.status === 'existing' ? (
-                        <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      ) : (
-                        <XCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                      )}
-                      <div>
-                        <p className="font-medium">Linha {detail.row}</p>
-                        {detail.nome && <p className="text-xs opacity-75">{detail.nome}</p>}
-                        <p>{detail.message}</p>
+            {result.details.length > 0 && (
+              <div className="space-y-2">
+                <h4 className="font-semibold">Detalhes do Processamento</h4>
+                <ScrollArea className="h-64 rounded-md border">
+                  <div className="p-4 space-y-2">
+                    {result.details.map((detail, index) => (
+                      <div
+                        key={index}
+                        className={`flex items-start gap-2 p-2 rounded text-sm ${
+                          detail.status === 'success'
+                            ? 'bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200'
+                            : detail.status === 'duplicate' || detail.status === 'existing'
+                            ? 'bg-yellow-50 text-yellow-800 dark:bg-yellow-950 dark:text-yellow-200'
+                            : 'bg-red-50 text-red-800 dark:bg-red-950 dark:text-red-200'
+                        }`}
+                      >
+                        {detail.status === 'success' ? (
+                          <CheckCircle2 className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        ) : detail.status === 'duplicate' || detail.status === 'existing' ? (
+                          <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        ) : (
+                          <XCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
+                        )}
+                        <div>
+                          <span className="font-medium">Linha {detail.row}:</span>{' '}
+                          {detail.nome && <span className="font-medium">{detail.nome} - </span>}
+                          {detail.message}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </ScrollArea>
               </div>
             )}
 
-            <div className="flex gap-2">
+            {/* Action Buttons */}
+            <div className="flex gap-2 flex-wrap">
               {result.success > 0 && (
                 <Button onClick={exportCredentials} variant="outline" className="flex-1">
                   <FileDown className="h-4 w-4 mr-2" />
