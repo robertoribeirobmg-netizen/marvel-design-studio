@@ -121,6 +121,9 @@ export default function Admin() {
   const [editLote, setEditLote] = useState('');
   const [editFase, setEditFase] = useState('');
   const [editDataCompra, setEditDataCompra] = useState('');
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [newGeneratedPassword, setNewGeneratedPassword] = useState('');
+  const [showNewPasswordDialog, setShowNewPasswordDialog] = useState(false);
   
   // Linking COHAPM state
   const [linkingCohapm, setLinkingCohapm] = useState<any>(null);
@@ -390,6 +393,45 @@ export default function Admin() {
       }
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const handleResetPassword = async () => {
+    if (!editingCooperado) return;
+    
+    // Verificar se é um cooperado do tipo profile (tem usuário auth)
+    if (editingCooperado.fonte === 'cohapm') {
+      toast.error('Este registro COHAPM não possui usuário no sistema. Vincule-o primeiro.');
+      return;
+    }
+    
+    if (!confirm(`Tem certeza que deseja gerar uma nova senha para ${editingCooperado.nome_completo}?`)) return;
+    
+    setIsResettingPassword(true);
+    
+    try {
+      // Gerar nova senha
+      const newPassword = generatePassword();
+      
+      const { data, error } = await supabase.functions.invoke('reset-user-password', {
+        body: { 
+          userId: editingCooperado.id,
+          newPassword: newPassword
+        }
+      });
+      
+      if (error) throw error;
+      if (!data?.success) throw new Error(data?.error || 'Erro ao gerar nova senha');
+      
+      // Mostrar nova senha gerada
+      setNewGeneratedPassword(newPassword);
+      setShowNewPasswordDialog(true);
+      toast.success('Nova senha gerada com sucesso!');
+    } catch (error: any) {
+      console.error('Erro ao resetar senha:', error);
+      toast.error(error.message || 'Erro ao gerar nova senha');
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -1914,6 +1956,30 @@ export default function Admin() {
                 />
               </div>
             </div>
+            
+            {/* Seção de Senha - apenas para profiles (com usuário auth) */}
+            {editingCooperado?.fonte !== 'cohapm' && (
+              <div className="border-t pt-4 mt-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <Label className="text-sm font-medium">Gerar Nova Senha</Label>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Gera uma nova senha aleatória para o cooperado
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={handleResetPassword}
+                    disabled={isResettingPassword}
+                  >
+                    <Shield className="h-4 w-4 mr-2" />
+                    {isResettingPassword ? 'Gerando...' : 'Gerar Nova Senha'}
+                  </Button>
+                </div>
+              </div>
+            )}
+            
             <div className="flex justify-end gap-2">
               <Button
                 type="button"
@@ -2705,6 +2771,56 @@ export default function Admin() {
           </div>
           <div className="flex justify-end">
             <Button onClick={() => setShowPasswordDialog(false)}>
+              Fechar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Password Generated Dialog (from edit) */}
+      <Dialog open={showNewPasswordDialog} onOpenChange={setShowNewPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              Nova Senha Gerada
+            </DialogTitle>
+            <DialogDescription>
+              A nova senha para <strong>{editingCooperado?.nome_completo}</strong> foi gerada com sucesso
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nova Senha</Label>
+              <div className="flex items-center gap-2">
+                <div className="flex-1 p-3 bg-muted rounded-md font-mono text-lg select-all">
+                  {newGeneratedPassword}
+                </div>
+                <Button
+                  type="button"
+                  size="icon"
+                  variant="outline"
+                  onClick={() => {
+                    navigator.clipboard.writeText(newGeneratedPassword);
+                    toast.success('Senha copiada para área de transferência!');
+                  }}
+                  className="shrink-0"
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Clique no botão ao lado para copiar a senha
+              </p>
+            </div>
+            <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-md">
+              <p className="text-xs text-amber-800 dark:text-amber-200">
+                <strong>Importante:</strong> Envie esta nova senha ao cooperado. Ele precisará dela para fazer login no sistema.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end">
+            <Button onClick={() => setShowNewPasswordDialog(false)}>
               Fechar
             </Button>
           </div>
