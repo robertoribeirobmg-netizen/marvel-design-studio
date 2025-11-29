@@ -2095,14 +2095,24 @@ export default function Admin() {
                 Selecionar Órfãos
               </Button>
               {selectedAuthUsers.size > 0 && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearAuthUserSelection}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Limpar
-                </Button>
+                <>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearAuthUserSelection}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Limpar
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={handleDeleteSelectedAuthUsers}
+                  >
+                    <Trash2 className="h-4 w-4 mr-1" />
+                    Excluir ({authUsers.filter(u => selectedAuthUsers.has(u.id) && u.is_orphan).length})
+                  </Button>
+                </>
               )}
             </div>
             {selectedAuthUsers.size > 0 && (
