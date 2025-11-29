@@ -1763,7 +1763,7 @@ export default function Admin() {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>Fonte</TableHead>
+                        <TableHead>Tipo de Usuário</TableHead>
                         <TableHead>Nome</TableHead>
                         <TableHead>Email</TableHead>
                         <TableHead>CPF</TableHead>
@@ -1778,12 +1778,22 @@ export default function Admin() {
                       {cooperados.map((cooperado) => (
                         <TableRow key={`${cooperado.fonte}-${cooperado.id}`}>
                           <TableCell>
-                            <Badge 
-                              variant={cooperado.fonte === 'profile' ? 'default' : 'outline'}
-                              className={cooperado.fonte === 'cohapm' ? 'bg-amber-500/10 text-amber-700 border-amber-300' : ''}
-                            >
-                              {cooperado.fonte === 'profile' ? 'Profile' : 'COHAPM'}
-                            </Badge>
+                            {cooperado.user_roles && cooperado.user_roles.length > 0 ? (
+                              <Badge 
+                                variant={cooperado.user_roles[0]?.role === 'admin' ? 'destructive' : 
+                                        cooperado.user_roles[0]?.role === 'admin_obras' ? 'secondary' :
+                                        cooperado.user_roles[0]?.role === 'executivo_vendas' ? 'outline' : 'default'}
+                              >
+                                {cooperado.user_roles[0]?.role === 'admin' ? 'Administrador' :
+                                 cooperado.user_roles[0]?.role === 'admin_obras' ? 'Admin Obras' :
+                                 cooperado.user_roles[0]?.role === 'executivo_vendas' ? 'Executivo Vendas' :
+                                 'Cooperado'}
+                              </Badge>
+                            ) : (
+                              <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-300">
+                                Não vinculado
+                              </Badge>
+                            )}
                           </TableCell>
                           <TableCell className="font-medium">{cooperado.nome_completo}</TableCell>
                           <TableCell>{cooperado.email || '-'}</TableCell>
