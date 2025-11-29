@@ -3,11 +3,12 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, AlertCircle, Bell } from 'lucide-react';
+import { LogOut, User, Calendar, Phone, FileText, Building2, TrendingUp, Camera, Filter, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, AlertCircle, Bell, Play, ExternalLink } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar as CalendarComp } from '@/components/ui/calendar';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { PhotoLightbox } from '@/components/PhotoLightbox';
 import { AcompanhamentoObras } from '@/components/AcompanhamentoObras';
 import { DashboardComparativoObras } from '@/components/DashboardComparativoObras';
@@ -33,6 +34,18 @@ export default function AreaCooperado() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [showAlterarSenha, setShowAlterarSenha] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<any>(null);
+
+  // Helper functions for YouTube
+  const getYouTubeThumbnail = (embedUrl: string) => {
+    const videoId = embedUrl?.split('/').pop()?.split('?')[0];
+    return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
+  };
+
+  const getYouTubeWatchUrl = (embedUrl: string) => {
+    const videoId = embedUrl?.split('/').pop()?.split('?')[0];
+    return videoId ? `https://www.youtube.com/watch?v=${videoId}` : '';
+  };
 
   // const { parcelas, isLoading: isLoadingParcelas } = useParcelasData(user?.id);
 
@@ -440,19 +453,29 @@ export default function AreaCooperado() {
                             key={foto.id}
                             className="group relative overflow-hidden rounded-lg border bg-card cursor-pointer hover:shadow-lg transition-all"
                             onClick={() => {
-                              setLightboxIndex((currentPage - 1) * itemsPerPage + index);
-                              setLightboxOpen(true);
+                              if (foto.video_url) {
+                                setSelectedVideo(foto);
+                              } else {
+                                setLightboxIndex((currentPage - 1) * itemsPerPage + index);
+                                setLightboxOpen(true);
+                              }
                             }}
                           >
                             {foto.video_url ? (
-                              <div className="aspect-video bg-muted flex items-center justify-center">
-                                <video
-                                  src={foto.video_url}
-                                  className="w-full h-full object-cover"
-                                  controls={false}
-                                  muted
-                                  preload="metadata"
+                              <div className="aspect-video bg-muted relative">
+                                <img
+                                  src={getYouTubeThumbnail(foto.video_url)}
+                                  alt={foto.titulo}
+                                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${foto.video_url?.split('/').pop()}/hqdefault.jpg`;
+                                  }}
                                 />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                  <div className="bg-red-600 rounded-full p-3 group-hover:scale-110 transition-transform">
+                                    <Play className="h-6 w-6 text-white fill-white" />
+                                  </div>
+                                </div>
                               </div>
                             ) : (
                               <div className="aspect-video bg-muted">
@@ -487,19 +510,29 @@ export default function AreaCooperado() {
                             key={foto.id}
                             className="flex gap-4 p-4 border rounded-lg hover:shadow-md transition-shadow cursor-pointer"
                             onClick={() => {
-                              setLightboxIndex((currentPage - 1) * itemsPerPage + index);
-                              setLightboxOpen(true);
+                              if (foto.video_url) {
+                                setSelectedVideo(foto);
+                              } else {
+                                setLightboxIndex((currentPage - 1) * itemsPerPage + index);
+                                setLightboxOpen(true);
+                              }
                             }}
                           >
                             {foto.video_url ? (
-                              <div className="w-32 h-32 flex-shrink-0 bg-muted rounded-md overflow-hidden">
-                                <video
-                                  src={foto.video_url}
+                              <div className="w-32 h-32 flex-shrink-0 bg-muted rounded-md overflow-hidden relative group">
+                                <img
+                                  src={getYouTubeThumbnail(foto.video_url)}
+                                  alt={foto.titulo}
                                   className="w-full h-full object-cover"
-                                  controls={false}
-                                  muted
-                                  preload="metadata"
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${foto.video_url?.split('/').pop()}/hqdefault.jpg`;
+                                  }}
                                 />
+                                <div className="absolute inset-0 flex items-center justify-center bg-black/20 group-hover:bg-black/40 transition-colors">
+                                  <div className="bg-red-600 rounded-full p-2 group-hover:scale-110 transition-transform">
+                                    <Play className="h-4 w-4 text-white fill-white" />
+                                  </div>
+                                </div>
                               </div>
                             ) : (
                               <div className="w-32 h-32 flex-shrink-0 bg-muted rounded-md overflow-hidden">
@@ -661,12 +694,57 @@ export default function AreaCooperado() {
 
       {/* Photo Lightbox */}
       <PhotoLightbox
-        photos={fotos}
+        photos={fotos.filter(f => f.foto_url)}
         currentIndex={lightboxIndex}
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
         onNavigate={setLightboxIndex}
       />
+
+      {/* Video Dialog */}
+      <Dialog open={!!selectedVideo} onOpenChange={(open) => !open && setSelectedVideo(null)}>
+        <DialogContent className="max-w-4xl w-full p-0">
+          <DialogHeader className="p-4 pb-0">
+            <div className="flex items-center justify-between pr-8">
+              <DialogTitle>{selectedVideo?.titulo}</DialogTitle>
+              {selectedVideo?.video_url && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    window.open(getYouTubeWatchUrl(selectedVideo.video_url), '_blank');
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Abrir no YouTube
+                </Button>
+              )}
+            </div>
+          </DialogHeader>
+          <div className="p-4">
+            <div className="aspect-video w-full">
+              {selectedVideo?.video_url && (
+                <iframe
+                  src={`${selectedVideo.video_url}?autoplay=1`}
+                  title={selectedVideo.titulo}
+                  className="w-full h-full rounded-lg"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              )}
+            </div>
+            {selectedVideo?.descricao && (
+              <p className="text-muted-foreground mt-3">{selectedVideo.descricao}</p>
+            )}
+            <div className="flex items-center gap-2 mt-2">
+              <Badge variant="secondary">{selectedVideo?.categoria}</Badge>
+              <span className="text-xs text-muted-foreground">
+                {selectedVideo && format(parseISO(selectedVideo.data_upload), 'dd/MM/yyyy')}
+              </span>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
