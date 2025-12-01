@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import logo from "@/assets/logo.png";
+import logo from "@/assets/logo-felicita.png";
 import heroBackground from "@/assets/hero-background.png";
 import { useScrollReveal } from "@/hooks/useScrollReveal";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -209,11 +209,11 @@ export default function Home() {
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
         {/* Background Image with Parallax */}
         <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-100 ease-out"
+          className="absolute inset-0 bg-center bg-no-repeat transition-transform duration-100 ease-out animate-pan-slow"
           style={{ 
             backgroundImage: `url(${heroBackground})`,
             transform: `translateY(${parallaxOffset}px)`,
-            backgroundSize: 'cover',
+            backgroundSize: 'auto 100%',
           }}
         />
         <div className="container mx-auto relative z-10">
