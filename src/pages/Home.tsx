@@ -209,7 +209,7 @@ export default function Home() {
       <section className="relative pt-32 pb-20 px-4 overflow-hidden">
         {/* Background Image with Parallax */}
         <div 
-          className="absolute inset-0 bg-center bg-no-repeat transition-transform duration-100 ease-out animate-pan-slow"
+          className="absolute inset-0 bg-center bg-no-repeat transition-transform duration-100 ease-out md:animate-none animate-pan-slow md:bg-cover"
           style={{ 
             backgroundImage: `url(${heroBackground})`,
             transform: `translateY(${parallaxOffset}px)`,

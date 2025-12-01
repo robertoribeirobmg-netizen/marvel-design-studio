@@ -119,7 +119,7 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "pan-slow": "pan-slow 20s ease-in-out infinite alternate",
+        "pan-slow": "pan-slow 40s ease-in-out infinite alternate",
       },
     },
   },
