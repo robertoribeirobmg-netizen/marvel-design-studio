@@ -391,7 +391,7 @@ export default function Home() {
               {
                 icon: Shield,
                 title: "COHAPM Confiável",
-                description: "Mais de 50 anos de experiência em empreendimentos habitacionais, com histórico comprovado de sucesso"
+                description: "Mais de 28 anos de experiência em empreendimentos habitacionais, com histórico comprovado de sucesso"
               },
               {
                 icon: Heart,
