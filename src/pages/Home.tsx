@@ -245,99 +245,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Sobre Section */}
-      <section id="sobre" className="py-20 px-4">
-        <div ref={sobreReveal.ref} className={`container mx-auto transition-all duration-700 ${sobreReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="text-center mb-16">
-            <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sobre o Projeto</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Um Empreendimento Único</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Desenvolvido pela COHAPM através do programa PHSPBA, unindo qualidade, transparência e realização de sonhos
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: Building2,
-                title: "Programa PHSPBA",
-                description: "Programa Habitacional do Servidor Público do Estado da Bahia, permitindo que você realize o sonho da casa própria"
-              },
-              {
-                icon: Shield,
-                title: "COHAPM Confiável",
-                description: "Mais de 50 anos de experiência em empreendimentos habitacionais, com histórico comprovado de sucesso"
-              },
-              {
-                icon: Heart,
-                title: "Para Sua Família",
-                description: "Infraestrutura completa pensada para o bem-estar e lazer de toda a família"
-              }
-            ].map((item, index) => (
-              <div key={index} className="group p-8 bg-card rounded-2xl border border-border hover:shadow-xl hover:scale-105 transition-all duration-300">
-                <div className="w-14 h-14 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform">
-                  <item.icon className="h-7 w-7 text-primary-foreground" />
-                </div>
-                <h3 className="text-xl font-bold mb-3">{item.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefícios PHSPBA */}
-      <section id="beneficios" className="py-20 px-4 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-accent/10 to-primary/10" />
-        <div className="absolute inset-0 opacity-5" style={{backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '20px 20px'}} />
-        
-        <div ref={beneficiosReveal.ref} className={`container mx-auto relative z-10 transition-all duration-700 ${beneficiosReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
-          <div className="text-center mb-16">
-            <span className="text-sm font-semibold text-secondary uppercase tracking-wider">PHSPBA</span>
-            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Benefícios Exclusivos</h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Vantagens únicas para servidores públicos estaduais da Bahia
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 mb-12">
-            {[
-              { number: "01", title: "Parcelas Acessíveis", description: "Condições especiais de pagamento descontadas em folha" },
-              { number: "02", title: "Sem Burocracia", description: "Processo simplificado e direto para os cooperados" },
-              { number: "03", title: "Localização Premium", description: "Um dos destinos mais valorizados do litoral baiano" },
-              { number: "04", title: "Acompanhamento Online", description: "Portal exclusivo para monitorar a evolução da obra" }
-            ].map((benefit, index) => (
-              <div key={index} className="flex gap-6 p-6 bg-card/80 backdrop-blur-sm rounded-2xl border border-border hover:shadow-lg transition-all">
-                <div className="text-6xl font-bold bg-gradient-to-br from-secondary to-accent bg-clip-text text-transparent opacity-30">
-                  {benefit.number}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
-                  <p className="text-muted-foreground">{benefit.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="bg-card/80 backdrop-blur-sm p-8 rounded-2xl border border-border">
-            <h3 className="text-2xl font-bold mb-6 text-center">Quem Pode Participar?</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              {[
-                "Servidores Públicos Estaduais Ativos",
-                "Servidores com desconto em folha autorizado",
-                "Funcionários de autarquias estaduais",
-                "Pensionistas do Estado da Bahia"
-              ].map((item, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
-                  <span className="text-muted-foreground">{item}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Áreas de Lazer */}
       <section id="lazer" className="py-20 px-4">
         <div ref={lazerReveal.ref} className={`container mx-auto transition-all duration-700 ${lazerReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
@@ -405,6 +312,99 @@ export default function Home() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Benefícios PHSPBA */}
+      <section id="beneficios" className="py-20 px-4 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary/10 via-accent/10 to-primary/10" />
+        <div className="absolute inset-0 opacity-5" style={{backgroundImage: 'radial-gradient(circle, currentColor 1px, transparent 1px)', backgroundSize: '20px 20px'}} />
+        
+        <div ref={beneficiosReveal.ref} className={`container mx-auto relative z-10 transition-all duration-700 ${beneficiosReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className="text-center mb-16">
+            <span className="text-sm font-semibold text-secondary uppercase tracking-wider">PHSPBA</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Benefícios Exclusivos</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Vantagens únicas para servidores públicos estaduais da Bahia
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 mb-12">
+            {[
+              { number: "01", title: "Parcelas Acessíveis", description: "Condições especiais de pagamento descontadas em folha" },
+              { number: "02", title: "Sem Burocracia", description: "Processo simplificado e direto para os cooperados" },
+              { number: "03", title: "Localização Premium", description: "Um dos destinos mais valorizados do litoral baiano" },
+              { number: "04", title: "Acompanhamento Online", description: "Portal exclusivo para monitorar a evolução da obra" }
+            ].map((benefit, index) => (
+              <div key={index} className="flex gap-6 p-6 bg-card/80 backdrop-blur-sm rounded-2xl border border-border hover:shadow-lg transition-all">
+                <div className="text-6xl font-bold bg-gradient-to-br from-secondary to-accent bg-clip-text text-transparent opacity-30">
+                  {benefit.number}
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold mb-2">{benefit.title}</h3>
+                  <p className="text-muted-foreground">{benefit.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="bg-card/80 backdrop-blur-sm p-8 rounded-2xl border border-border">
+            <h3 className="text-2xl font-bold mb-6 text-center">Quem Pode Participar?</h3>
+            <div className="grid md:grid-cols-2 gap-4">
+              {[
+                "Servidores Públicos Estaduais Ativos",
+                "Servidores com desconto em folha autorizado",
+                "Funcionários de autarquias estaduais",
+                "Pensionistas do Estado da Bahia"
+              ].map((item, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
+                  <span className="text-muted-foreground">{item}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Sobre Section */}
+      <section id="sobre" className="py-20 px-4">
+        <div ref={sobreReveal.ref} className={`container mx-auto transition-all duration-700 ${sobreReveal.isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+          <div className="text-center mb-16">
+            <span className="text-sm font-semibold text-primary uppercase tracking-wider">Sobre o Projeto</span>
+            <h2 className="font-display text-4xl md:text-5xl font-bold mt-3 mb-4 text-primary">Um Empreendimento Único</h2>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Desenvolvido pela COHAPM através do programa PHSPBA, unindo qualidade, transparência e realização de sonhos
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              {
+                icon: Building2,
+                title: "Programa PHSPBA",
+                description: "Programa Habitacional do Servidor Público do Estado da Bahia, permitindo que você realize o sonho da casa própria"
+              },
+              {
+                icon: Shield,
+                title: "COHAPM Confiável",
+                description: "Mais de 50 anos de experiência em empreendimentos habitacionais, com histórico comprovado de sucesso"
+              },
+              {
+                icon: Heart,
+                title: "Para Sua Família",
+                description: "Infraestrutura completa pensada para o bem-estar e lazer de toda a família"
+              }
+            ].map((item, index) => (
+              <div key={index} className="group p-8 bg-card rounded-2xl border border-border hover:shadow-xl hover:scale-105 transition-all duration-300">
+                <div className="w-14 h-14 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center mb-6 group-hover:rotate-6 transition-transform">
+                  <item.icon className="h-7 w-7 text-primary-foreground" />
+                </div>
+                <h3 className="text-xl font-bold mb-3">{item.title}</h3>
+                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Diferenciais */}
       <section id="diferenciais" className="py-20 px-4 bg-muted/30">
