@@ -146,7 +146,7 @@ export default function Home() {
     {
       icon: CheckCircle,
       title: "Qualidade Certificada",
-      description: "Projeto arquitetônico premiado e equipe com mais de 50 anos de experiência"
+      description: "Projeto arquitetônico realizado por equipe com mais de 35 anos de experiência"
     }
   ];
 
