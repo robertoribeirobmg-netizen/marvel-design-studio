@@ -355,10 +355,10 @@ export default function Home() {
             <h3 className="text-2xl font-bold mb-6 text-center">Quem Pode Participar?</h3>
             <div className="grid md:grid-cols-2 gap-4">
               {[
-                "Servidores Públicos Estaduais Ativos",
-                "Servidores com desconto em folha autorizado",
-                "Funcionários de autarquias estaduais",
-                "Pensionistas do Estado da Bahia"
+                "Servidores Públicos Estaduais",
+                "Servidores Públicos Municipais (Toda Bahia)",
+                "Servidores Públicos Federais",
+                "Cooperados Conveniados"
               ].map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <CheckCircle className="h-5 w-5 text-success flex-shrink-0" />
