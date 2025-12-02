@@ -47,6 +47,7 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [selectedVideo, setSelectedVideo] = useState<GaleriaItem | null>(null);
+  const [selectedPdf, setSelectedPdf] = useState<GaleriaItem | null>(null);
 
   useEffect(() => {
     loadItems();
@@ -514,16 +515,16 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                         }}
                       >
                         {item.foto_url?.endsWith('.pdf') ? (
-                          <a 
-                            href={item.foto_url} 
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors"
-                            onClick={(e) => e.stopPropagation()}
+                          <div 
+                            className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedPdf(item);
+                            }}
                           >
                             <FileText className="h-12 w-12 text-primary mb-2" />
-                            <span className="text-xs text-muted-foreground">Clique para abrir PDF</span>
-                          </a>
+                            <span className="text-xs text-muted-foreground">Clique para visualizar</span>
+                          </div>
                         ) : item.foto_url ? (
                           <OptimizedImage
                             src={item.foto_url}
@@ -610,28 +611,14 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                     )}
                     onClick={() => {
                       if (item.video_url) setSelectedVideo(item);
-                      else if (item.foto_url?.endsWith('.pdf')) {
-                        const link = document.createElement('a');
-                        link.href = item.foto_url;
-                        link.target = '_blank';
-                        link.rel = 'noopener noreferrer';
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }
+                      else if (item.foto_url?.endsWith('.pdf')) setSelectedPdf(item);
                     }}
                   >
                     {item.foto_url?.endsWith('.pdf') ? (
-                      <a 
-                        href={item.foto_url} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors"
-                        onClick={(e) => e.stopPropagation()}
-                      >
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors">
                         <FileText className="h-8 w-8 text-primary" />
                         <span className="text-[10px] text-muted-foreground mt-1">PDF</span>
-                      </a>
+                      </div>
                     ) : item.foto_url ? (
                       <OptimizedImage
                         src={item.foto_url}
@@ -820,6 +807,61 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                 <Badge variant="secondary">{selectedVideo?.categoria}</Badge>
                 <span className="text-xs text-muted-foreground">
                   {selectedVideo && new Date(selectedVideo.data_upload).toLocaleDateString('pt-BR')}
+                </span>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* PDF Dialog */}
+        <Dialog open={!!selectedPdf} onOpenChange={(open) => !open && setSelectedPdf(null)}>
+          <DialogContent className="max-w-5xl w-full h-[90vh] p-0">
+            <DialogHeader className="p-4 pb-0">
+              <div className="flex items-center justify-between pr-8">
+                <DialogTitle>{selectedPdf?.titulo}</DialogTitle>
+                {selectedPdf?.foto_url && (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                    >
+                      <a href={selectedPdf.foto_url} download target="_blank" rel="noopener noreferrer">
+                        <Download className="h-4 w-4 mr-2" />
+                        Download
+                      </a>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      asChild
+                    >
+                      <a href={selectedPdf.foto_url} target="_blank" rel="noopener noreferrer">
+                        <ExternalLink className="h-4 w-4 mr-2" />
+                        Abrir em nova aba
+                      </a>
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </DialogHeader>
+            <div className="p-4 flex-1 h-full">
+              <div className="w-full h-[calc(90vh-120px)]">
+                {selectedPdf?.foto_url && (
+                  <iframe
+                    src={selectedPdf.foto_url}
+                    title={selectedPdf.titulo}
+                    className="w-full h-full rounded-lg border"
+                  />
+                )}
+              </div>
+              {selectedPdf?.descricao && (
+                <p className="text-muted-foreground mt-3">{selectedPdf.descricao}</p>
+              )}
+              <div className="flex items-center gap-2 mt-2">
+                <Badge variant="secondary">{selectedPdf?.categoria}</Badge>
+                <span className="text-xs text-muted-foreground">
+                  {selectedPdf && new Date(selectedPdf.data_upload).toLocaleDateString('pt-BR')}
                 </span>
               </div>
             </div>
