@@ -350,39 +350,84 @@ export default function Admin() {
     setIsUpdating(true);
 
     try {
-      // Validar duplicação de quadra/lote se ambos forem fornecidos
-      if (editQuadra && editLote) {
-        const { data: existing } = await supabase
+      // Verificar se é um registro COHAPM ou Profile
+      const isCohapmSource = editingCooperado.fonte === 'cohapm';
+
+      if (isCohapmSource) {
+        // Atualizar diretamente na tabela compradores_cohapm
+        const { error: cohapmError } = await supabase
+          .from('compradores_cohapm')
+          .update({
+            nome: editNome,
+            telefone: editTelefone || null,
+            cpf_cnpj: editCpf || null,
+            quadra: editQuadra || null,
+            lote: editLote || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingCooperado.id);
+
+        if (cohapmError) throw cohapmError;
+
+        toast.success('Registro COHAPM atualizado com sucesso!');
+      } else {
+        // Validar duplicação de quadra/lote se ambos forem fornecidos
+        if (editQuadra && editLote) {
+          const { data: existing } = await supabase
+            .from('profiles')
+            .select('id, nome_completo')
+            .eq('quadra', editQuadra)
+            .eq('lote', editLote)
+            .neq('id', editingCooperado.id)
+            .maybeSingle();
+
+          if (existing) {
+            toast.error(`Quadra ${editQuadra} Lote ${editLote} já está cadastrado para ${existing.nome_completo}`);
+            setIsUpdating(false);
+            return;
+          }
+        }
+
+        // Atualizar profile
+        const { error: profileError } = await supabase
           .from('profiles')
-          .select('id, nome_completo')
-          .eq('quadra', editQuadra)
-          .eq('lote', editLote)
-          .neq('id', editingCooperado.id)
+          .update({
+            nome_completo: editNome,
+            telefone: editTelefone || null,
+            cpf: editCpf || null,
+            quadra: editQuadra || null,
+            lote: editLote || null,
+            fase: editFase || null,
+            data_compra: editDataCompra || null,
+          })
+          .eq('id', editingCooperado.id);
+
+        if (profileError) throw profileError;
+
+        // Também atualizar compradores_cohapm vinculado (se existir)
+        const { data: compradorVinculado } = await supabase
+          .from('compradores_cohapm')
+          .select('id')
+          .eq('profile_id', editingCooperado.id)
           .maybeSingle();
 
-        if (existing) {
-          toast.error(`Quadra ${editQuadra} Lote ${editLote} já está cadastrado para ${existing.nome_completo}`);
-          setIsUpdating(false);
-          return;
+        if (compradorVinculado) {
+          await supabase
+            .from('compradores_cohapm')
+            .update({
+              nome: editNome,
+              telefone: editTelefone || null,
+              cpf_cnpj: editCpf || null,
+              quadra: editQuadra || null,
+              lote: editLote || null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', compradorVinculado.id);
         }
+
+        toast.success('Cooperado atualizado com sucesso!');
       }
 
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          nome_completo: editNome,
-          telefone: editTelefone || null,
-          cpf: editCpf || null,
-          quadra: editQuadra || null,
-          lote: editLote || null,
-          fase: editFase || null,
-          data_compra: editDataCompra || null,
-        })
-        .eq('id', editingCooperado.id);
-
-      if (error) throw error;
-
-      toast.success('Cooperado atualizado com sucesso!');
       setEditingCooperado(null);
       loadCooperados();
     } catch (error: any) {
