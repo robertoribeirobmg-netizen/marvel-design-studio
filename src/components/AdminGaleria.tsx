@@ -502,7 +502,15 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                         )}
                         onClick={() => {
                           if (item.video_url) setSelectedVideo(item);
-                          else if (item.foto_url?.endsWith('.pdf')) window.open(item.foto_url, '_blank');
+                          else if (item.foto_url?.endsWith('.pdf')) {
+                            const link = document.createElement('a');
+                            link.href = item.foto_url;
+                            link.target = '_blank';
+                            link.rel = 'noopener noreferrer';
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }
                         }}
                       >
                         {item.foto_url?.endsWith('.pdf') ? (
@@ -581,7 +589,15 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                     )}
                     onClick={() => {
                       if (item.video_url) setSelectedVideo(item);
-                      else if (item.foto_url?.endsWith('.pdf')) window.open(item.foto_url, '_blank');
+                      else if (item.foto_url?.endsWith('.pdf')) {
+                        const link = document.createElement('a');
+                        link.href = item.foto_url;
+                        link.target = '_blank';
+                        link.rel = 'noopener noreferrer';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }
                     }}
                   >
                     {item.foto_url?.endsWith('.pdf') ? (
