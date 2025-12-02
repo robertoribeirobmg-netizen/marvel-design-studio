@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink, FileText } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink, FileText, Download } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 interface GaleriaItem {
@@ -566,13 +566,28 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                           <span className="text-xs text-muted-foreground">
                             {new Date(item.data_upload).toLocaleDateString('pt-BR')}
                           </span>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => handleDelete(item.id, item.foto_url)}
-                          >
-                            <Trash2 className="h-3 w-3" />
-                          </Button>
+                          <div className="flex gap-1">
+                            {item.foto_url?.endsWith('.pdf') && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                asChild
+                              >
+                                <a href={item.foto_url} download target="_blank" rel="noopener noreferrer">
+                                  <Download className="h-3 w-3" />
+                                </a>
+                              </Button>
+                            )}
+                            {!readOnly && (
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDelete(item.id, item.foto_url)}
+                              >
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -663,15 +678,28 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                           year: 'numeric'
                         })}
                       </span>
-                      {!readOnly && (
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(item.id, item.foto_url)}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      )}
+                      <div className="flex gap-1">
+                        {item.foto_url?.endsWith('.pdf') && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                          >
+                            <a href={item.foto_url} download target="_blank" rel="noopener noreferrer">
+                              <Download className="h-3 w-3" />
+                            </a>
+                          </Button>
+                        )}
+                        {!readOnly && (
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(item.id, item.foto_url)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
