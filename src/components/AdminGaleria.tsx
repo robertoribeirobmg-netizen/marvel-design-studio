@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 interface GaleriaItem {
@@ -21,7 +21,7 @@ interface GaleriaItem {
   descricao: string | null;
   foto_url: string | null;
   video_url: string | null;
-  categoria: '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo';
+  categoria: '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo' | 'Documentos';
   data_upload: string;
 }
 
@@ -32,11 +32,11 @@ interface AdminGaleriaProps {
 export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
   const [items, setItems] = useState<GaleriaItem[]>([]);
   const [uploading, setUploading] = useState(false);
-  const [tipo, setTipo] = useState<'foto' | 'video'>('foto');
+  const [tipo, setTipo] = useState<'foto' | 'video' | 'pdf'>('foto');
   const [form, setForm] = useState({
     titulo: '',
     descricao: '',
-    categoria: '1ª Fase do Muro' as '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo',
+    categoria: '1ª Fase do Muro' as '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo' | 'Documentos',
     videoUrl: '',
   });
   const [file, setFile] = useState<File | null>(null);
@@ -116,8 +116,8 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
       return;
     }
 
-    if (tipo === 'foto' && !file) {
-      toast.error('Selecione uma foto');
+    if ((tipo === 'foto' || tipo === 'pdf') && !file) {
+      toast.error(tipo === 'foto' ? 'Selecione uma foto' : 'Selecione um PDF');
       return;
     }
 
@@ -132,7 +132,7 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
       let foto_url = null;
       let video_url = null;
 
-      if (tipo === 'foto' && file) {
+      if ((tipo === 'foto' || tipo === 'pdf') && file) {
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
         
@@ -170,7 +170,8 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
 
       if (error) throw error;
 
-      toast.success(`${tipo === 'foto' ? 'Foto' : 'Vídeo'} adicionado com sucesso!`);
+      const tipoLabel = tipo === 'foto' ? 'Foto' : tipo === 'pdf' ? 'PDF' : 'Vídeo';
+      toast.success(`${tipoLabel} adicionado com sucesso!`);
       setForm({
         titulo: '',
         descricao: '',
@@ -236,7 +237,7 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
               <Label>Tipo de Conteúdo</Label>
               <Select
                 value={tipo}
-                onValueChange={(value: 'foto' | 'video') => setTipo(value)}
+                onValueChange={(value: 'foto' | 'video' | 'pdf') => setTipo(value)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -252,6 +253,12 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                     <div className="flex items-center gap-2">
                       <Video className="h-4 w-4" />
                       Vídeo do YouTube
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="pdf">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      PDF / Documento
                     </div>
                   </SelectItem>
                 </SelectContent>
@@ -286,6 +293,7 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                   <SelectItem value="Pavimentação">Pavimentação</SelectItem>
                   <SelectItem value="Portaria e Clube">Portaria e Clube</SelectItem>
                   <SelectItem value="Paisagismo">Paisagismo</SelectItem>
+                  <SelectItem value="Documentos">Documentos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -306,6 +314,20 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                 <Input
                   type="file"
                   accept="image/*"
+                  onChange={(e) => setFile(e.target.files?.[0] || null)}
+                />
+                {file && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Arquivo selecionado: {file.name}
+                  </p>
+                )}
+              </div>
+            ) : tipo === 'pdf' ? (
+              <div>
+                <Label>Selecionar PDF</Label>
+                <Input
+                  type="file"
+                  accept=".pdf,application/pdf"
                   onChange={(e) => setFile(e.target.files?.[0] || null)}
                 />
                 {file && (
@@ -337,7 +359,7 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
               className="w-full"
             >
               <Upload className="h-4 w-4 mr-2" />
-              {uploading ? 'Enviando...' : `Adicionar ${tipo === 'foto' ? 'Foto' : 'Vídeo'}`}
+              {uploading ? 'Enviando...' : `Adicionar ${tipo === 'foto' ? 'Foto' : tipo === 'pdf' ? 'PDF' : 'Vídeo'}`}
             </Button>
           </CardContent>
         </Card>
@@ -476,11 +498,19 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                       <div 
                         className={cn(
                           "relative aspect-video rounded-lg overflow-hidden bg-muted",
-                          item.video_url && "cursor-pointer group"
+                          (item.video_url || (item.foto_url?.endsWith('.pdf'))) && "cursor-pointer group"
                         )}
-                        onClick={() => item.video_url && setSelectedVideo(item)}
+                        onClick={() => {
+                          if (item.video_url) setSelectedVideo(item);
+                          else if (item.foto_url?.endsWith('.pdf')) window.open(item.foto_url, '_blank');
+                        }}
                       >
-                        {item.foto_url ? (
+                        {item.foto_url?.endsWith('.pdf') ? (
+                          <div className="w-full h-full flex flex-col items-center justify-center bg-muted group-hover:bg-muted/80 transition-colors">
+                            <FileText className="h-12 w-12 text-primary mb-2" />
+                            <span className="text-xs text-muted-foreground">Clique para abrir PDF</span>
+                          </div>
+                        ) : item.foto_url ? (
                           <OptimizedImage
                             src={item.foto_url}
                             alt={item.titulo}
@@ -547,11 +577,19 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                   <div 
                     className={cn(
                       "shrink-0 w-24 h-24 rounded-md overflow-hidden bg-muted",
-                      item.video_url && "cursor-pointer group"
+                      (item.video_url || item.foto_url?.endsWith('.pdf')) && "cursor-pointer group"
                     )}
-                    onClick={() => item.video_url && setSelectedVideo(item)}
+                    onClick={() => {
+                      if (item.video_url) setSelectedVideo(item);
+                      else if (item.foto_url?.endsWith('.pdf')) window.open(item.foto_url, '_blank');
+                    }}
                   >
-                    {item.foto_url ? (
+                    {item.foto_url?.endsWith('.pdf') ? (
+                      <div className="w-full h-full flex flex-col items-center justify-center bg-muted group-hover:bg-muted/80 transition-colors">
+                        <FileText className="h-8 w-8 text-primary" />
+                        <span className="text-[10px] text-muted-foreground mt-1">PDF</span>
+                      </div>
+                    ) : item.foto_url ? (
                       <OptimizedImage
                         src={item.foto_url}
                         alt={item.titulo}
