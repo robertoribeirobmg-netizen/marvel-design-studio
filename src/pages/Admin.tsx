@@ -107,6 +107,7 @@ export default function Admin() {
   const [filterQuadra, setFilterQuadra] = useState('');
   const [filterLote, setFilterLote] = useState('');
   const [filterFase, setFilterFase] = useState('');
+  const [searchTerm, setSearchTerm] = useState('');
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -1786,6 +1787,29 @@ export default function Admin() {
               </CardDescription>
             </CardHeader>
             <CardContent>
+              {/* Campo de Busca */}
+              <div className="mb-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome, email, CPF ou telefone..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  {searchTerm && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                      onClick={() => setSearchTerm('')}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
+
               {isLoading ? (
                 <div className="text-center py-8">Carregando...</div>
               ) : cooperados.length === 0 ? (
@@ -1804,6 +1828,19 @@ export default function Admin() {
                     <Badge variant="secondary">
                       Total: {cooperados.length}
                     </Badge>
+                    {searchTerm && (
+                      <Badge variant="secondary" className="bg-blue-500/10 text-blue-700">
+                        Filtrados: {cooperados.filter(c => {
+                          const term = searchTerm.toLowerCase();
+                          return (
+                            (c.nome_completo?.toLowerCase().includes(term)) ||
+                            (c.email?.toLowerCase().includes(term)) ||
+                            (c.cpf?.toLowerCase().includes(term)) ||
+                            (c.telefone?.toLowerCase().includes(term))
+                          );
+                        }).length}
+                      </Badge>
+                    )}
                   </div>
                   <Table>
                     <TableHeader>
@@ -1820,7 +1857,18 @@ export default function Admin() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {cooperados.map((cooperado) => (
+                      {cooperados
+                        .filter((cooperado) => {
+                          if (!searchTerm) return true;
+                          const term = searchTerm.toLowerCase();
+                          return (
+                            (cooperado.nome_completo?.toLowerCase().includes(term)) ||
+                            (cooperado.email?.toLowerCase().includes(term)) ||
+                            (cooperado.cpf?.toLowerCase().includes(term)) ||
+                            (cooperado.telefone?.toLowerCase().includes(term))
+                          );
+                        })
+                        .map((cooperado) => (
                         <TableRow key={`${cooperado.fonte}-${cooperado.id}`}>
                           <TableCell>
                             {cooperado.user_roles && cooperado.user_roles.length > 0 ? (
