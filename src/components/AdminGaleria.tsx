@@ -514,10 +514,16 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                         }}
                       >
                         {item.foto_url?.endsWith('.pdf') ? (
-                          <div className="w-full h-full flex flex-col items-center justify-center bg-muted group-hover:bg-muted/80 transition-colors">
+                          <a 
+                            href={item.foto_url} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <FileText className="h-12 w-12 text-primary mb-2" />
                             <span className="text-xs text-muted-foreground">Clique para abrir PDF</span>
-                          </div>
+                          </a>
                         ) : item.foto_url ? (
                           <OptimizedImage
                             src={item.foto_url}
@@ -601,10 +607,16 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                     }}
                   >
                     {item.foto_url?.endsWith('.pdf') ? (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-muted group-hover:bg-muted/80 transition-colors">
+                      <a 
+                        href={item.foto_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
                         <FileText className="h-8 w-8 text-primary" />
                         <span className="text-[10px] text-muted-foreground mt-1">PDF</span>
-                      </div>
+                      </a>
                     ) : item.foto_url ? (
                       <OptimizedImage
                         src={item.foto_url}
