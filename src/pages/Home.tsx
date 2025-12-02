@@ -8,7 +8,6 @@ import {
   Phone,
   Mail,
   Instagram,
-  Facebook,
   Youtube,
   CheckCircle,
   Building2,
@@ -558,13 +557,10 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4">Redes Sociais</h4>
               <div className="flex gap-3">
-                <a href="#" className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                <a href="https://www.instagram.com/cohapm/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
                   <Instagram className="h-5 w-5" />
                 </a>
-                <a href="#" className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
-                  <Facebook className="h-5 w-5" />
-                </a>
-                <a href="#" className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
+                <a href="https://www.youtube.com/@ResidencialLaFelicita" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center hover:bg-primary hover:text-white transition-all">
                   <Youtube className="h-5 w-5" />
                 </a>
               </div>
