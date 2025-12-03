@@ -515,16 +515,17 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                         }}
                       >
                         {item.foto_url?.endsWith('.pdf') ? (
-                          <div 
+                          <a 
+                            href={item.foto_url}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
                             className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setSelectedPdf(item);
-                            }}
+                            onClick={(e) => e.stopPropagation()}
                           >
-                            <FileText className="h-12 w-12 text-primary mb-2" />
-                            <span className="text-xs text-muted-foreground">Clique para visualizar</span>
-                          </div>
+                            <FileText className="h-12 w-12 text-destructive mb-2" />
+                            <span className="text-xs text-muted-foreground">Clique para baixar</span>
+                          </a>
                         ) : item.foto_url ? (
                           <OptimizedImage
                             src={item.foto_url}
@@ -611,14 +612,20 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                     )}
                     onClick={() => {
                       if (item.video_url) setSelectedVideo(item);
-                      else if (item.foto_url?.endsWith('.pdf')) setSelectedPdf(item);
                     }}
                   >
                     {item.foto_url?.endsWith('.pdf') ? (
-                      <div className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors">
-                        <FileText className="h-8 w-8 text-primary" />
+                      <a 
+                        href={item.foto_url}
+                        download
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full h-full flex flex-col items-center justify-center bg-muted hover:bg-muted/80 transition-colors"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <FileText className="h-8 w-8 text-destructive" />
                         <span className="text-[10px] text-muted-foreground mt-1">PDF</span>
-                      </div>
+                      </a>
                     ) : item.foto_url ? (
                       <OptimizedImage
                         src={item.foto_url}
