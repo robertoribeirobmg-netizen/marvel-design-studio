@@ -157,6 +157,26 @@ export default function AreaCooperado() {
   //   .filter(p => p.situacao !== 'PAGO')
   //   .reduce((sum, p) => sum + p.valor, 0);
 
+  // Função para download de PDF
+  const handleDownloadPdf = async (url: string, filename: string) => {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename || 'documento.pdf';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error('Erro ao baixar PDF:', error);
+      // Fallback: abrir em nova aba
+      window.open(url, '_blank');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       {/* Modal de Alteração de Senha no Primeiro Acesso */}
@@ -206,7 +226,6 @@ export default function AreaCooperado() {
           </div>
 
           {/* Notificações Financeiras - Ocultadas */}
-
 
           {/* Quick Links */}
           <div className="grid md:grid-cols-3 gap-6">
@@ -496,18 +515,17 @@ export default function AreaCooperado() {
                                 </div>
                               </div>
                             ) : foto.foto_url?.toLowerCase().endsWith('.pdf') ? (
-                              <a
-                                href={foto.foto_url}
-                                download
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="aspect-video bg-muted flex flex-col items-center justify-center hover:bg-muted/80 transition-colors"
-                                onClick={(e) => e.stopPropagation()}
+                              <div
+                                className="aspect-video bg-muted flex flex-col items-center justify-center hover:bg-muted/80 transition-colors cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDownloadPdf(foto.foto_url!, `${foto.titulo}.pdf`);
+                                }}
                               >
                                 <FileText className="h-12 w-12 text-destructive mb-2" />
                                 <span className="text-sm font-medium text-muted-foreground">PDF</span>
                                 <span className="text-xs text-muted-foreground mt-1">Clique para baixar</span>
-                              </a>
+                              </div>
                             ) : (
                               foto.foto_url && (
                                 <OptimizedImage
@@ -566,17 +584,16 @@ export default function AreaCooperado() {
                                 </div>
                               </div>
                             ) : foto.foto_url?.toLowerCase().endsWith('.pdf') ? (
-                              <a
-                                href={foto.foto_url}
-                                download
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="w-32 h-32 flex-shrink-0 rounded-md bg-muted flex flex-col items-center justify-center hover:bg-muted/80 transition-colors"
-                                onClick={(e) => e.stopPropagation()}
+                              <div
+                                className="w-32 h-32 flex-shrink-0 rounded-md bg-muted flex flex-col items-center justify-center hover:bg-muted/80 transition-colors cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDownloadPdf(foto.foto_url!, `${foto.titulo}.pdf`);
+                                }}
                               >
                                 <FileText className="h-8 w-8 text-destructive mb-1" />
                                 <span className="text-xs font-medium text-muted-foreground">PDF</span>
-                              </a>
+                              </div>
                             ) : (
                               foto.foto_url && (
                                 <OptimizedImage
