@@ -495,6 +495,19 @@ export default function AreaCooperado() {
                                   </div>
                                 </div>
                               </div>
+                            ) : foto.foto_url?.toLowerCase().endsWith('.pdf') ? (
+                              <a
+                                href={foto.foto_url}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="aspect-video bg-muted flex flex-col items-center justify-center hover:bg-muted/80 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <FileText className="h-12 w-12 text-destructive mb-2" />
+                                <span className="text-sm font-medium text-muted-foreground">PDF</span>
+                                <span className="text-xs text-muted-foreground mt-1">Clique para baixar</span>
+                              </a>
                             ) : (
                               foto.foto_url && (
                                 <OptimizedImage
@@ -552,6 +565,18 @@ export default function AreaCooperado() {
                                   </div>
                                 </div>
                               </div>
+                            ) : foto.foto_url?.toLowerCase().endsWith('.pdf') ? (
+                              <a
+                                href={foto.foto_url}
+                                download
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="w-32 h-32 flex-shrink-0 rounded-md bg-muted flex flex-col items-center justify-center hover:bg-muted/80 transition-colors"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <FileText className="h-8 w-8 text-destructive mb-1" />
+                                <span className="text-xs font-medium text-muted-foreground">PDF</span>
+                              </a>
                             ) : (
                               foto.foto_url && (
                                 <OptimizedImage
