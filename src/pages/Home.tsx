@@ -170,9 +170,9 @@ export default function Home() {
           
           <div className="hidden lg:flex items-center gap-6 xl:gap-8">
             {[
-              { href: '#sobre', label: 'Sobre' },
-              { href: '#beneficios', label: 'Benefícios' },
               { href: '#lazer', label: 'Lazer' },
+              { href: '#beneficios', label: 'Benefícios' },
+              { href: '#sobre', label: 'Sobre' },
               { href: '#diferenciais', label: 'Diferenciais' },
               { href: '#localizacao', label: 'Localização' },
               { href: '#contato', label: 'Contato' },
