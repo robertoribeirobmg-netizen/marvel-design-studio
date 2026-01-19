@@ -544,10 +544,10 @@ export default function Home() {
             <div>
               <h4 className="font-semibold mb-4">Contato</h4>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <div className="flex items-center gap-2">
+                <a href="https://wa.me/5571992304546" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-primary transition-colors">
                   <Phone className="h-4 w-4" />
                   (71) 99230-4546
-                </div>
+                </a>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
                   atendimento@cohapm.com.br
