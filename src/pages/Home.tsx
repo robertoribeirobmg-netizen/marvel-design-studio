@@ -546,7 +546,7 @@ export default function Home() {
               <div className="space-y-2 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Phone className="h-4 w-4" />
-                  (71) 3456-7890
+                  (71) 99230-4546
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
