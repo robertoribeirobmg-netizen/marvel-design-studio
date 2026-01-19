@@ -550,7 +550,7 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4" />
-                  contato@lafelicita.com.br
+                  atendimento@cohapm.com.br
                 </div>
               </div>
             </div>
