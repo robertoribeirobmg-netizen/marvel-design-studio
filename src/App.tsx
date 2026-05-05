@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,15 +10,26 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { AppLayout } from "./components/AppLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import AreaCooperado from "./pages/AreaCooperado";
-import Admin from "./pages/Admin";
-import Settings from "./pages/Settings";
-import PreviewImportacao from "./pages/PreviewImportacao";
-import AdminDashboard from "./pages/AdminDashboard";
-import ClienteDashboard from "./pages/ClienteDashboard";
 import NotFound from "./pages/NotFound";
 
+const AreaCooperado = lazy(() => import("./pages/AreaCooperado"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Settings = lazy(() => import("./pages/Settings"));
+const PreviewImportacao = lazy(() => import("./pages/PreviewImportacao"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
+const ClienteDashboard = lazy(() => import("./pages/ClienteDashboard"));
+
 const queryClient = new QueryClient();
+
+const RouteFallback = () => (
+  <div
+    role="status"
+    aria-live="polite"
+    className="flex min-h-[60vh] items-center justify-center text-muted-foreground"
+  >
+    Carregando…
+  </div>
+);
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
@@ -28,60 +40,62 @@ const App = () => (
         <BrowserRouter>
           <AuthProvider>
             <AppLayout>
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/login" element={<Login />} />
-                <Route
-                  path="/area-cooperado"
-                  element={
-                    <ProtectedRoute>
-                      <AreaCooperado />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin"
-                  element={
-                    <ProtectedRoute adminOrObras>
-                      <Admin />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/settings"
-                  element={
-                    <ProtectedRoute adminOnly>
-                      <Settings />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/preview-importacao"
-                  element={
-                    <ProtectedRoute adminOnly>
-                      <PreviewImportacao />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/admin/dashboard-parcelas"
-                  element={
-                    <ProtectedRoute adminOnly>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/cliente/dashboard"
-                  element={
-                    <ProtectedRoute>
-                      <ClienteDashboard />
-                    </ProtectedRoute>
-                  }
-                />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <Suspense fallback={<RouteFallback />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route
+                    path="/area-cooperado"
+                    element={
+                      <ProtectedRoute>
+                        <AreaCooperado />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedRoute adminOrObras>
+                        <Admin />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/settings"
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <Settings />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/preview-importacao"
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <PreviewImportacao />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/admin/dashboard-parcelas"
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <AdminDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/cliente/dashboard"
+                    element={
+                      <ProtectedRoute>
+                        <ClienteDashboard />
+                      </ProtectedRoute>
+                    }
+                  />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
             </AppLayout>
           </AuthProvider>
         </BrowserRouter>
