@@ -232,7 +232,9 @@ serve(async (req) => {
 
     const requestData = await req.json()
     
-    console.log('Dados recebidos:', JSON.stringify(requestData, null, 2))
+    // SECURITY: never log password
+    const { password: _omitPwdRecv, ...safeRequestData } = requestData ?? {}
+    console.log('Dados recebidos:', JSON.stringify(safeRequestData, null, 2))
     
     // Pre-process data: convert empty strings to null for optional fields
     // Strip CPF formatting (dots and dashes) before validation
@@ -250,7 +252,9 @@ serve(async (req) => {
       data_compra: requestData.data_compra && requestData.data_compra.trim() !== '' ? requestData.data_compra : null,
     }
     
-    console.log('Dados preprocessados:', JSON.stringify(preprocessedData, null, 2))
+    // SECURITY: never log password
+    const { password: _omitPwdPre, ...safePreprocessedData } = preprocessedData
+    console.log('Dados preprocessados:', JSON.stringify(safePreprocessedData, null, 2))
     
     // Validate input data with Zod
     const validationResult = createUserSchema.safeParse(preprocessedData)
