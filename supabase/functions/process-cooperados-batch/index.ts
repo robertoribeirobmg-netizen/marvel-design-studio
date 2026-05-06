@@ -220,8 +220,13 @@ serve(async (req) => {
           continue;
         }
 
-        // Gerar senha temporária (4 primeiros dígitos do CPF)
-        const senhaTemp = cpfNormalizado.substring(0, 4);
+        // Gerar senha temporária aleatória segura (16 chars base64url)
+        const senhaTemp = (() => {
+          const bytes = new Uint8Array(12);
+          crypto.getRandomValues(bytes);
+          return btoa(String.fromCharCode(...bytes))
+            .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        })();
 
         // Verificar se email já existe no auth.users
         const existingAuthUser = authUsersMap.get(emailLower);

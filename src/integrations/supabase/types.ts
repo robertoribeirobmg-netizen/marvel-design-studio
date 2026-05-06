@@ -435,7 +435,7 @@ export type Database = {
           foto_url: string | null
           id: string
           titulo: string
-          uploaded_by: string
+          uploaded_by: string | null
           video_url: string | null
         }
         Insert: {
@@ -446,7 +446,7 @@ export type Database = {
           foto_url?: string | null
           id?: string
           titulo: string
-          uploaded_by: string
+          uploaded_by?: string | null
           video_url?: string | null
         }
         Update: {
@@ -457,7 +457,7 @@ export type Database = {
           foto_url?: string | null
           id?: string
           titulo?: string
-          uploaded_by?: string
+          uploaded_by?: string | null
           video_url?: string | null
         }
         Relationships: []
