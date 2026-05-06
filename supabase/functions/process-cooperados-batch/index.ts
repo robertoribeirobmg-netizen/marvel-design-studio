@@ -205,7 +205,8 @@ serve(async (req) => {
         }
 
         // Validar tipo de usuário
-        const validRoles = ['cooperado', 'admin', 'admin_obras', 'executivo_vendas'];
+        // 'admin' is intentionally excluded - admin creation must go through create-user
+        const validRoles = ['cooperado', 'admin_obras', 'executivo_vendas'];
         const role = coop.tipo_usuario?.toLowerCase() || 'cooperado';
         
         if (!validRoles.includes(role)) {
