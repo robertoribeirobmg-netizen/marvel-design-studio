@@ -261,6 +261,16 @@ serve(async (req) => {
       );
     }
 
+    // Admin role enforcement
+    const { data: roleData } = await supabase
+      .from('user_roles').select('role').eq('user_id', user.id).eq('role', 'admin').maybeSingle();
+    if (!roleData) {
+      await logSecurityEvent(supabase, 'forbidden', req, user.id, { reason: 'non-admin attempted excel import' });
+      return new Response(JSON.stringify({ error: 'Forbidden: admin role required' }), {
+        status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     // Check rate limit
     const ipAddress = req.headers.get('x-forwarded-for') || req.headers.get('x-real-ip') || 'unknown';
     const rateLimitCheck = await checkRateLimit(supabase, ipAddress, '/process-excel-import');
