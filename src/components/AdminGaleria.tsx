@@ -609,13 +609,23 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
                               </Button>
                             )}
                             {!readOnly && (
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDelete(item.id, item.foto_url)}
-                              >
-                                <Trash2 className="h-3 w-3" />
-                              </Button>
+                              <>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => openEditDate(item)}
+                                  title="Editar data"
+                                >
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={() => handleDelete(item.id, item.foto_url)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </>
                             )}
                           </div>
                         </div>
