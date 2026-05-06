@@ -922,6 +922,51 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
             </div>
           </DialogContent>
         </Dialog>
+
+        {/* Edit Date Dialog */}
+        <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+          <DialogContent className="max-w-md w-[95vw]">
+            <DialogHeader>
+              <DialogTitle>Editar data — {editingItem?.titulo}</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <div className="space-y-2">
+                <Label>Data de upload</Label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal",
+                        !editDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {editDate ? format(editDate, "dd/MM/yyyy") : "Selecione"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={editDate}
+                      onSelect={setEditDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+                <Button variant="outline" onClick={() => setEditingItem(null)} disabled={savingEdit}>
+                  Cancelar
+                </Button>
+                <Button onClick={saveEditDate} disabled={savingEdit || !editDate}>
+                  {savingEdit ? 'Salvando...' : 'Salvar'}
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
