@@ -48,6 +48,34 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
   const [itemsPerPage, setItemsPerPage] = useState(12);
   const [selectedVideo, setSelectedVideo] = useState<GaleriaItem | null>(null);
   const [selectedPdf, setSelectedPdf] = useState<GaleriaItem | null>(null);
+  const [editingItem, setEditingItem] = useState<GaleriaItem | null>(null);
+  const [editDate, setEditDate] = useState<Date | undefined>(undefined);
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEditDate = (item: GaleriaItem) => {
+    setEditingItem(item);
+    setEditDate(new Date(item.data_upload));
+  };
+
+  const saveEditDate = async () => {
+    if (!editingItem || !editDate) return;
+    setSavingEdit(true);
+    try {
+      const { error } = await supabase
+        .from('obra_fotos')
+        .update({ data_upload: editDate.toISOString() })
+        .eq('id', editingItem.id);
+      if (error) throw error;
+      toast.success('Data atualizada com sucesso!');
+      setEditingItem(null);
+      loadItems();
+    } catch (e) {
+      console.error(e);
+      toast.error('Erro ao atualizar data');
+    } finally {
+      setSavingEdit(false);
+    }
+  };
 
   useEffect(() => {
     loadItems();
