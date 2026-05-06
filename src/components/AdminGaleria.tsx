@@ -12,7 +12,7 @@ import { Calendar } from '@/components/ui/calendar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { OptimizedImage } from '@/components/OptimizedImage';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink, FileText, Download } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, Video, Link as LinkIcon, Calendar as CalendarIcon, X, Grid3x3, List, ChevronLeft, ChevronRight, Play, ExternalLink, FileText, Download, Pencil } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 interface GaleriaItem {
