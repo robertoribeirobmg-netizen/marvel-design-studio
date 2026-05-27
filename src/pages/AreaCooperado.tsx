@@ -25,7 +25,7 @@ export default function AreaCooperado() {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fotos, setFotos] = useState<any[]>([]);
-  const [filtroCategoria, setFiltroCategoria] = useState<'todas' | '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo'>('todas');
+  const [filtroCategoria, setFiltroCategoria] = useState<'1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo'>('1ª Fase do Muro');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [dateFrom, setDateFrom] = useState<Date>();
