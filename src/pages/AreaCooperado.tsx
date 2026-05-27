@@ -85,9 +85,7 @@ export default function AreaCooperado() {
         .from('obra_fotos')
         .select('*');
 
-      if (categoria !== 'todas') {
-        query = query.eq('categoria', categoria as any);
-      }
+      query = query.eq('categoria', categoria as any);
 
       // Aplicar filtros de data
       if (fromDate) {
