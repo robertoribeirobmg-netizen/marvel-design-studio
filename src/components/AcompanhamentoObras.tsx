@@ -6,11 +6,13 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
-import { Calendar, CheckCircle2, Clock, Edit2, Save, X } from 'lucide-react';
+import { Calendar, CheckCircle2, Clock, Edit2, Save, X, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import { detalhesEtapasObra } from '@/data/detalhesEtapasObra';
+import { Badge as BadgeUI } from '@/components/ui/badge';
 
 interface EtapaObra {
   id: string;
