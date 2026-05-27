@@ -33,6 +33,7 @@ export function AcompanhamentoObras() {
   const [progressoGeralId, setProgressoGeralId] = useState<string | null>(null);
   const [showEditProgressoGeral, setShowEditProgressoGeral] = useState(false);
   const [editProgressoGeralValue, setEditProgressoGeralValue] = useState<number>(0);
+  const [detalheEtapa, setDetalheEtapa] = useState<EtapaObra | null>(null);
   const { isAdmin, isAdminObras, user } = useAuth();
 
   const canEdit = isAdmin || isAdminObras;
