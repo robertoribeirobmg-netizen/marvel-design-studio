@@ -54,16 +54,32 @@ export function AdminGaleria({ readOnly = false }: AdminGaleriaProps) {
 
   const openEditDate = (item: GaleriaItem) => {
     setEditingItem(item);
-    setEditDate(new Date(item.data_upload));
+    const d = new Date(item.data_upload);
+    setEditDate(isNaN(d.getTime()) ? new Date() : d);
   };
 
   const saveEditDate = async () => {
-    if (!editingItem || !editDate) return;
+    if (!editingItem) return;
+    if (!editDate || isNaN(editDate.getTime())) {
+      toast.error('Selecione uma data válida');
+      return;
+    }
+    // Fixa horário ao meio-dia local para evitar shift de timezone (UTC)
+    const safeDate = new Date(
+      editDate.getFullYear(),
+      editDate.getMonth(),
+      editDate.getDate(),
+      12, 0, 0, 0
+    );
+    if (safeDate.getFullYear() < 2000 || safeDate.getFullYear() > 2100) {
+      toast.error('Data fora do intervalo permitido (2000–2100)');
+      return;
+    }
     setSavingEdit(true);
     try {
       const { error } = await supabase
         .from('obra_fotos')
-        .update({ data_upload: editDate.toISOString() })
+        .update({ data_upload: safeDate.toISOString() })
         .eq('id', editingItem.id);
       if (error) throw error;
       toast.success('Data atualizada com sucesso!');
