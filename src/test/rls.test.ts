@@ -11,11 +11,10 @@
 import { describe, it, expect } from "vitest";
 import { createClient } from "@supabase/supabase-js";
 
-const SUPABASE_URL =
-  import.meta.env.VITE_SUPABASE_URL ?? process.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON =
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY ??
-  process.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
+const SUPABASE_ANON = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as
+  | string
+  | undefined;
 
 const hasEnv = Boolean(SUPABASE_URL && SUPABASE_ANON);
 const d = hasEnv ? describe : describe.skip;
