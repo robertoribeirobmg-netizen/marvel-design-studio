@@ -25,7 +25,7 @@ export default function AreaCooperado() {
   const [profile, setProfile] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [fotos, setFotos] = useState<any[]>([]);
-  const [filtroCategoria, setFiltroCategoria] = useState<'todas' | '1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo'>('todas');
+  const [filtroCategoria, setFiltroCategoria] = useState<'1ª Fase do Muro' | '2ª Fase do Muro' | '3ª Fase do Muro' | 'Supressão Vegetal' | 'Terraplanagem' | 'Infraestrutura' | 'Pavimentação' | 'Portaria e Clube' | 'Paisagismo'>('1ª Fase do Muro');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const [dateFrom, setDateFrom] = useState<Date>();
@@ -85,9 +85,7 @@ export default function AreaCooperado() {
         .from('obra_fotos')
         .select('*');
 
-      if (categoria !== 'todas') {
-        query = query.eq('categoria', categoria as any);
-      }
+      query = query.eq('categoria', categoria as any);
 
       // Aplicar filtros de data
       if (fromDate) {
@@ -339,15 +337,6 @@ export default function AreaCooperado() {
                 <div className="mb-4">
                   <h4 className="text-xs text-muted-foreground mb-2">Categoria</h4>
                   <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant={filtroCategoria === 'todas' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setFiltroCategoria('todas')}
-                    className="flex items-center gap-2"
-                  >
-                    <Filter className="h-4 w-4" />
-                    Todas
-                  </Button>
                   <Button
                     variant={filtroCategoria === '1ª Fase do Muro' ? 'default' : 'outline'}
                     size="sm"
