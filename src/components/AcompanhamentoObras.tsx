@@ -305,10 +305,62 @@ export function AcompanhamentoObras() {
                   </div>
                 )}
               </div>
+
+              {detalhesEtapasObra[etapa.nome] && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                  onClick={() => setDetalheEtapa(etapa)}
+                >
+                  <FileText className="h-4 w-4 mr-2" />
+                  Ver detalhes técnicos
+                </Button>
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
+
+      {/* Dialog com detalhes técnicos da etapa */}
+      <Dialog open={!!detalheEtapa} onOpenChange={(open) => !open && setDetalheEtapa(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          {detalheEtapa && detalhesEtapasObra[detalheEtapa.nome] && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-xl sm:text-2xl pr-8">
+                  {detalheEtapa.nome}
+                </DialogTitle>
+                <div className="flex flex-wrap gap-2 pt-2">
+                  <BadgeUI variant="secondary">
+                    {detalhesEtapasObra[detalheEtapa.nome].status}
+                  </BadgeUI>
+                  <BadgeUI variant="outline">
+                    {detalhesEtapasObra[detalheEtapa.nome].periodo}
+                  </BadgeUI>
+                </div>
+              </DialogHeader>
+              <div className="space-y-6 py-4">
+                <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                  {detalhesEtapasObra[detalheEtapa.nome].resumo}
+                </p>
+                {detalhesEtapasObra[detalheEtapa.nome].secoes.map((s, idx) => (
+                  <div key={idx} className="space-y-2">
+                    <h3 className="text-base sm:text-lg font-semibold text-primary">
+                      {s.titulo}
+                    </h3>
+                    <div>{s.conteudo}</div>
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground border-t pt-3">
+                  Fonte: Documento Técnico de Obra — Memorial das Fases de Execução (atualização Abril/2026).
+                </p>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
+
