@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Calendar, CheckCircle2, Clock, Edit2, Save, X, FileText } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
@@ -159,7 +159,7 @@ export function AcompanhamentoObras() {
 
   const formatDate = (dateString: string | null) => {
     if (!dateString) return 'Não definida';
-    return format(new Date(dateString), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+    return format(parseISO(dateString.slice(0, 10)), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
   };
 
   if (loading) {
@@ -353,7 +353,8 @@ export function AcompanhamentoObras() {
                   </div>
                 ))}
                 <p className="text-xs text-muted-foreground border-t pt-3">
-                  Fonte: Documento Técnico de Obra — Memorial das Fases de Execução (atualização Abril/2026).
+                  {detalhesEtapasObra[detalheEtapa.nome].fonte ??
+                    'Fonte: Documento Técnico de Obra — Memorial das Fases de Execução (atualização Abril/2026).'}
                 </p>
               </div>
             </>

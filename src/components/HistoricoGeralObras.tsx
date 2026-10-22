@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { History, User, Calendar, TrendingUp, FileText, Clock, Filter } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 interface HistoricoItem {
@@ -115,7 +115,7 @@ export function HistoricoGeralObras() {
     
     if (campo === 'data_inicio' || campo === 'data_conclusao') {
       try {
-        return format(new Date(valor), "dd/MM/yyyy", { locale: ptBR });
+        return format(/^\d{4}-\d{2}-\d{2}$/.test(valor) ? parseISO(valor) : new Date(valor), "dd/MM/yyyy", { locale: ptBR });
       } catch {
         return valor;
       }

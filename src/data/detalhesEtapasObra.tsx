@@ -4,6 +4,7 @@ export interface DetalheEtapa {
   resumo: string;
   status: string;
   periodo: string;
+  fonte?: string;
   secoes: { titulo: string; conteudo: ReactNode }[];
 }
 
@@ -35,6 +36,8 @@ const Lista = ({ itens }: { itens: string[] }) => (
     {itens.map((i, idx) => <li key={idx}>{i}</li>)}
   </ul>
 );
+
+const FONTE_COMUNICADO = 'Fonte: Comunicado aos compradores "Obra, etapa por etapa — O caminho até a entrega" (23/09/2026). Metas mensais: distribuição proposta para acompanhamento, sujeita à validação das metas físicas pela engenharia; o executado será registrado a partir das medições mensais.';
 
 export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
   'Supressão Vegetal': {
@@ -79,43 +82,87 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
     ],
   },
 
+
   'Terraplanagem': {
-    resumo: 'Remodelagem do relevo para preparar as plataformas que receberão vias, edificações comuns, lotes e infraestrutura subterrânea — operações de corte, aterro e compactação controlada por camadas, com controle topográfico permanente.',
-    status: 'EM EXECUÇÃO',
-    periodo: '28/02/2026 → 30/10/2026',
+    resumo: 'Remodelagem do relevo para preparar as plataformas que receberão vias, edificações comuns, lotes e infraestrutura subterrânea — corte, aterro e compactação controlada por camadas, com controle topográfico permanente. Conclusão reprogramada para fevereiro/2027.',
+    status: 'EM EXECUÇÃO — REPROGRAMADA',
+    periodo: '01/03/2026 → 28/02/2027',
+    fonte: FONTE_COMUNICADO,
     secoes: [
       {
-        titulo: 'Operação atual',
-        conteudo: <p className="text-sm">Iniciada em 28/02/2026, com conclusão programada para 30/10/2026. A operação envolve frota de tratores de esteira, motoniveladoras, rolos compactadores e caminhões basculantes em jornada contínua, com controle topográfico permanente para garantir aderência ao projeto geométrico.</p>,
+        titulo: 'Por que o prazo foi reprogramado',
+        conteudo: <p className="text-sm">De março até a segunda semana de agosto de 2026, as chuvas e a umidade do solo restringiram a movimentação e a compactação de terra. A avaliação operacional da engenharia e da cooperativa é de uma capacidade média de trabalho de, no máximo, 40% nesse período. O atraso estimado na conclusão da terraplanagem é de 4 meses. Segundo a consultoria climática contratada pela cooperativa, as chuvas na região da Praia do Forte ficaram muito acima das médias dos períodos mais chuvosos dos últimos anos, cenário atípico associado ao El Niño. Nas duas últimas semanas de agosto a operação ganhou continuidade e, em setembro, o ritmo se intensificou. Engenharia e cooperativa trabalham para aproveitar as janelas de sol e buscar a antecipação do novo prazo, sem assumir esse resultado como garantido.</p>,
       },
       {
-        titulo: 'Cronograma físico previsto',
-        conteudo: <Tabela headers={['Período', 'Etapa em execução', 'Acumulado']} rows={[
-          ['28/02/2026', 'Início da mobilização de equipamentos', '5%'],
-          ['Mar–Abr/26', 'Cortes e aterros primários — quadrantes iniciais', '18%'],
-          ['Mai/26', 'Início da plataforma do clube e da portaria', '30%'],
-          ['Jun/26', 'Vias principais e secundárias — modelagem', '45%'],
-          ['Jul/26', 'Compactação por camadas — sub-base preparada', '60%'],
-          ['Ago/26', 'Áreas remanescentes e ajustes topográficos', '75%'],
-          ['Set/26', 'Acabamento de greide das vias — liberação à infra', '92%'],
-          ['Out/26', 'Encerramento e entrega das plataformas', '100%'],
-        ]} />,
+        titulo: 'Posição em 31/08/2026',
+        conteudo: <>
+          <Tabela headers={['Serviço', 'Executado', 'Total de referência', '%']} rows={[
+          ['Corte', '273.591,97 m³', '698.000,00 m³', '39,20%'],
+          ['Aterro', '209.397,72 m³', '498.318,00 m³', '42,02%'],
+          ['Bota-fora', '82.560,75 m³ soltos', '249.602,50 m³ soltos', '33,08%'],
+          ]} />
+          <p className="text-xs text-muted-foreground mt-2">O percentual de cada serviço compara o volume acumulado com seu próprio total de referência. Corte e aterro não devem ser somados. Base: Relatório Técnico de Execução — julho e agosto/2026.</p>
+        </>,
+      },
+      {
+        titulo: 'Metas mensais da frente',
+        conteudo: <>
+          <Tabela headers={['Mês', 'Meta do mês']} rows={[
+          ['Set/26', '10%'],
+          ['Out/26', '10%'],
+          ['Nov/26', '21,6%'],
+          ['Dez/26', '21,6%'],
+          ['Jan/27', '21,6%'],
+          ['Fev/27', '15,2% (conclusão)'],
+          ]} />
+          <p className="text-xs text-muted-foreground mt-2">Percentuais que distribuem o saldo programado da frente; não representam o acumulado desde o início da obra.</p>
+        </>,
+      },
+      {
+        titulo: 'Corte — meta mês a mês',
+        conteudo: <>
+          <Tabela headers={['Mês', 'Acumulado anterior', 'Meta do mês', 'Acumulado previsto', 'Resultado medido']} rows={[
+          ['Set/26', '273.591,97 (39,20%)', '42.440,80 (6,08%)', '316.032,77 (45,28%)', 'A apurar'],
+          ['Out/26', '316.032,77 (45,28%)', '42.440,80 (6,08%)', '358.473,57 (51,36%)', 'A apurar'],
+          ['Nov/26', '358.473,57 (51,36%)', '91.672,13 (13,13%)', '450.145,70 (64,49%)', 'A apurar'],
+          ['Dez/26', '450.145,70 (64,49%)', '91.672,13 (13,13%)', '541.817,83 (77,62%)', 'A apurar'],
+          ['Jan/27', '541.817,83 (77,62%)', '91.672,13 (13,13%)', '633.489,96 (90,76%)', 'A apurar'],
+          ['Fev/27', '633.489,96 (90,76%)', '64.510,04 (9,24%)', '698.000,00 (100,00%)', 'A apurar'],
+          ]} />
+          <p className="text-xs text-muted-foreground mt-2">Volumes em m³. Percentuais sobre o total do serviço: 698.000,00 m³.</p>
+        </>,
+      },
+      {
+        titulo: 'Aterro — meta mês a mês',
+        conteudo: <>
+          <Tabela headers={['Mês', 'Acumulado anterior', 'Meta do mês', 'Acumulado previsto', 'Resultado medido']} rows={[
+          ['Set/26', '209.397,72 (42,02%)', '28.892,03 (5,80%)', '238.289,75 (47,82%)', 'A apurar'],
+          ['Out/26', '238.289,75 (47,82%)', '28.892,03 (5,80%)', '267.181,78 (53,62%)', 'A apurar'],
+          ['Nov/26', '267.181,78 (53,62%)', '62.406,78 (12,52%)', '329.588,56 (66,14%)', 'A apurar'],
+          ['Dez/26', '329.588,56 (66,14%)', '62.406,78 (12,52%)', '391.995,34 (78,66%)', 'A apurar'],
+          ['Jan/27', '391.995,34 (78,66%)', '62.406,78 (12,52%)', '454.402,12 (91,19%)', 'A apurar'],
+          ['Fev/27', '454.402,12 (91,19%)', '43.915,88 (8,81%)', '498.318,00 (100,00%)', 'A apurar'],
+          ]} />
+          <p className="text-xs text-muted-foreground mt-2">Volumes em m³. Percentuais sobre o total do serviço: 498.318,00 m³.</p>
+        </>,
+      },
+      {
+        titulo: 'Bota-fora — meta mês a mês',
+        conteudo: <>
+          <Tabela headers={['Mês', 'Acumulado anterior', 'Meta do mês', 'Acumulado previsto', 'Resultado medido']} rows={[
+          ['Set/26', '82.560,75 (33,08%)', '31.517,31 (12,63%)', '114.078,06 (45,70%)', 'A apurar'],
+          ['Out/26', '114.078,06 (45,70%)', '31.517,31 (12,63%)', '145.595,37 (58,33%)', 'A apurar'],
+          ['Nov/26', '145.595,37 (58,33%)', '31.517,31 (12,63%)', '177.112,68 (70,96%)', 'A apurar'],
+          ['Dez/26', '177.112,68 (70,96%)', '31.517,31 (12,63%)', '208.629,99 (83,58%)', 'A apurar'],
+          ['Jan/27', '208.629,99 (83,58%)', '31.517,31 (12,63%)', '240.147,30 (96,21%)', 'A apurar'],
+          ['Fev/27', '240.147,30 (96,21%)', '9.455,20 (3,79%)', '249.602,50 (100,00%)', 'A apurar'],
+          ]} />
+          <p className="text-xs text-muted-foreground mt-2">Volumes em m³ soltos. Percentuais sobre o total do serviço: 249.602,50 m³ soltos.</p>
+        </>,
       },
       {
         titulo: 'Controle de qualidade',
         conteudo: <p className="text-sm">A compactação de aterros é verificada por ensaios de grau de compactação (Proctor) com meta mínima de 95% para sub-base de vias internas. Em pontos críticos de infraestrutura enterrada — travessias de rede pluvial e cruzamentos de água e esgoto — a exigência sobe para 98%, evitando recalques diferenciais que comprometeriam tubulações.</p>,
-      },
-      {
-        titulo: 'Volumetria de bota-fora',
-        conteudo: <Tabela headers={['Parâmetro dimensional', 'Valor']} rows={[
-          ['Volume total a transportar', '295.000 toneladas'],
-          ['Período da operação', 'Maio a Agosto de 2026'],
-          ['Dias úteis efetivos no período', '≈ 87 dias úteis'],
-          ['Capacidade de carga média', '18 toneladas/caçamba'],
-          ['Viagens diárias por caçamba', '5 viagens/dia'],
-          ['Viagens totais necessárias', '≈ 16.389 viagens'],
-          ['Frota diária dimensionada', '38 caçambas/dia (até 50 em pico)'],
-        ]} />,
       },
       {
         titulo: 'Estudo de solo — sondagens executadas',
@@ -138,20 +185,6 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
           ['Caçamba basculante', '6', '12'],
           ['Rolo compactador', '1', '2'],
           ['TOTAL', '10', '20 unidades'],
-        ]} />,
-      },
-      {
-        titulo: 'Curva de colaboradores mês a mês',
-        conteudo: <Tabela headers={['Mês', 'Colaboradores', 'Observação']} rows={[
-          ['Fev/26', '≈ 30', 'Mobilização inicial, 1 frente em ramp-up'],
-          ['Mar/26', '≈ 42', '1ª frente plena, abertura da 2ª'],
-          ['Abr/26', '≈ 52', '2 frentes em regime pleno'],
-          ['Mai/26', '≈ 58', 'Reforço — plataforma do clube e portaria'],
-          ['Jun/26', '≈ 65', 'Vias principais e secundárias'],
-          ['Jul/26', '≈ 80', 'Início do pico — compactação por camadas'],
-          ['Ago/26', '≈ 85', 'Pico máximo — áreas remanescentes'],
-          ['Set/26', '≈ 72', 'Acabamento de greide e ajustes finais'],
-          ['Out/26', '≈ 50', 'Encerramento — desmobilização progressiva'],
         ]} />,
       },
     ],
@@ -221,43 +254,61 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
     ],
   },
 
-  'Infraestrutura': {
-    resumo: 'Instalação de todas as redes técnicas subterrâneas que dão ao condomínio status de loteamento plenamente urbanizado: água potável, esgoto sanitário, drenagem pluvial, rede elétrica de média/baixa tensão e telecomunicações.',
-    status: 'AGUARDANDO INÍCIO',
-    periodo: '31/07/2026 → 30/12/2026',
+  'Cercamento interno': {
+    resumo: 'Colocação de gradil separando a área de proteção ambiental interna das áreas de unidades residenciais.',
+    status: 'EM EXECUÇÃO',
+    periodo: '01/09/2026 → 31/03/2027',
+    fonte: FONTE_COMUNICADO,
     secoes: [
       {
-        titulo: 'Escopo da infraestrutura',
+        titulo: 'Metas mensais',
+        conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Set/26', '38,75%', '38,75%'],
+          ['Out/26', '16,25%', '55,00%'],
+          ['Nov/26', '12,50%', '67,50%'],
+          ['Dez/26', '12,50%', '80,00%'],
+          ['Jan/27', '11,25%', '91,25%'],
+          ['Fev/27', '6,25%', '97,50%'],
+          ['Mar/27', '2,50%', '100% (conclusão)'],
+        ]} />,
+      },
+    ],
+  },
+
+  'Drenagem': {
+    resumo: 'Rede de drenagem pluvial das vias e áreas do residencial — primeira rede a ser executada após a entrega do greide pela terraplanagem.',
+    status: 'AGUARDANDO INÍCIO',
+    periodo: '01/11/2026 → 31/01/2027',
+    fonte: FONTE_COMUNICADO,
+    secoes: [
+      {
+        titulo: 'Escopo',
         conteudo: <Lista itens={[
-          'Rede de água potável — tubulação principal, ramais secundários e ramais individuais até o limite de cada lote',
-          'Rede de esgoto sanitário — coletores prediais, coletores principais e estação elevatória/tratamento',
-          'Rede de drenagem pluvial — galerias, bocas de lobo, poços de visita e dispositivos de dissipação',
-          'Rede elétrica de média e baixa tensão — entrada de energia, transformadores, ramais e iluminação pública',
-          'Rede de telecomunicações — dutos para cabeamento óptico e infraestrutura de conectividade interna',
+          'Galerias e tubulações de águas pluviais',
+          'Bocas de lobo e poços de visita',
+          'Dispositivos de dissipação e lançamento',
         ]} />,
       },
       {
-        titulo: 'Cronograma de execução',
-        conteudo: <Tabela headers={['Mês', 'Etapa', 'Acumulado']} rows={[
-          ['Jul/26', 'Mobilização, locação topográfica, escavações iniciais', '10%'],
-          ['Ago/26', 'Drenagem pluvial e rede de esgoto — vias principais', '28%'],
-          ['Set/26', 'Rede de água, continuidade da drenagem e esgoto', '48%'],
-          ['Out/26', 'Rede elétrica subterrânea, iluminação pública', '70%'],
-          ['Nov/26', 'Telecomunicações, ramais individuais até lotes', '88%'],
-          ['Dez/26', 'Testes, regularizações, ligações definitivas', '100%'],
+        titulo: 'Metas mensais',
+        conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Nov/26', '33,33%', '33,33%'],
+          ['Dez/26', '33,33%', '66,66%'],
+          ['Jan/27', '33,34%', '100% (conclusão)'],
         ]} />,
       },
       {
-        titulo: 'Sequência técnica obrigatória',
-        conteudo: <p className="text-sm">A ordem não é arbitrária: drenagem pluvial e esgoto primeiro (maior profundidade, dependem do greide entregue pela terraplanagem); rede de água em sequência (cota intermediária); rede elétrica e telecom por último (cotas rasas, após as hidráulicas para evitar interferências). A finalização em dezembro/2026 é compatível com o término da pavimentação no mesmo mês — o paver se sobrepõe à infra nas vias onde as redes já estão prontas.</p>,
+        titulo: 'Sequência técnica',
+        conteudo: <p className="text-sm">Drenagem e esgoto vêm primeiro por estarem nas cotas mais profundas e dependerem do greide entregue pela terraplanagem; a pavimentação avança sobre as vias onde as redes já estão prontas.</p>,
       },
     ],
   },
 
   'Pavimentação': {
-    resumo: 'Mais de 3 milhões de unidades de paver de concreto a serem assentadas em ≈ 90 dias — fabricação interna dedicada ao empreendimento, com controle de qualidade e rastreabilidade industrial.',
+    resumo: 'Mais de 3 milhões de unidades de paver de concreto, com fabricação interna dedicada ao empreendimento, controle de qualidade e rastreabilidade industrial. Execução de novembro/2026 a maio/2027.',
     status: 'AGUARDANDO INÍCIO',
-    periodo: '30/09/2026 → 30/12/2026',
+    periodo: '01/11/2026 → 31/05/2027',
+    fonte: FONTE_COMUNICADO,
     secoes: [
       {
         titulo: 'Por que paver e não asfalto?',
@@ -292,25 +343,16 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
         ]} />,
       },
       {
-        titulo: 'Volume mês a mês — assentamento',
-        conteudo: <Tabela headers={['Mês', 'Pavers no mês', '% do total', 'Acumulado']} rows={[
-          ['Set/26', 'Mobilização — mínimo', '—', '—'],
-          ['Out/26', '600.000', '20%', '600.000'],
-          ['Nov/26', '1.200.000', '40%', '1.800.000'],
-          ['Dez/26', '1.200.000', '40%', '3.000.000'],
-          ['TOTAL', '3.000.000', '100%', '3.000.000'],
+        titulo: 'Metas mensais',
+        conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Nov/26', '10%', '10%'],
+          ['Dez/26', '12%', '22%'],
+          ['Jan/27', '14%', '36%'],
+          ['Fev/27', '16%', '52%'],
+          ['Mar/27', '17%', '69%'],
+          ['Abr/27', '17%', '86%'],
+          ['Mai/27', '14%', '100% (conclusão)'],
         ]} />,
-      },
-      {
-        titulo: 'Dimensionamento de mão de obra',
-        conteudo: <>
-          <p className="text-sm mb-2">Cada equipe padrão: 1 oficial (calceteiro) + 2 ajudantes, com produtividade média de 2.000 pavers/dia útil.</p>
-          <Tabela headers={['Mês', 'Equipes', 'Assentadores', 'Apoio', 'Total']} rows={[
-            ['Out/26', '14', '42', '8', '50'],
-            ['Nov/26', '30', '90', '15', '105'],
-            ['Dez/26', '28', '84', '14', '98'],
-          ]} />
-        </>,
       },
       {
         titulo: 'Processo de assentamento em campo',
@@ -326,10 +368,73 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
     ],
   },
 
+  'Infraestrutura elétrica': {
+    resumo: 'Instalações de média e baixa tensão, alimentação das unidades, iluminação viária e das áreas comuns, cabeamento estruturado, CFTV e antena.',
+    status: 'AGUARDANDO INÍCIO',
+    periodo: '01/01/2027 → 30/04/2027',
+    fonte: FONTE_COMUNICADO,
+    secoes: [
+      {
+        titulo: 'Escopo',
+        conteudo: <Lista itens={[
+          'Instalações de média e baixa tensão',
+          'Alimentação das unidades',
+          'Iluminação viária e das áreas comuns',
+          'Cabeamento estruturado',
+          'CFTV e antena',
+        ]} />,
+      },
+      {
+        titulo: 'Metas mensais',
+        conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Jan/27', '6,25%', '6,25%'],
+          ['Fev/27', '31,25%', '37,50%'],
+          ['Mar/27', '31,25%', '68,75%'],
+          ['Abr/27', '31,25%', '100% (conclusão)'],
+        ]} />,
+      },
+    ],
+  },
+
+  'Água e esgotamento sanitário': {
+    resumo: 'Rede de coleta de esgoto, testes de operação, fornecimento de água canalizada, estações elevatórias e sistema da ETE — Estação de Tratamento de Esgoto.',
+    status: 'AGUARDANDO INÍCIO',
+    periodo: '01/12/2026 → 31/05/2027',
+    fonte: FONTE_COMUNICADO,
+    secoes: [
+      {
+        titulo: 'Escopo',
+        conteudo: <Lista itens={[
+          'Rede de coleta de esgoto',
+          'Testes de operação',
+          'Fornecimento de água canalizada',
+          'Estações elevatórias',
+          'Sistema da ETE — Estação de Tratamento de Esgoto',
+        ]} />,
+      },
+      {
+        titulo: 'Prazos internos',
+        conteudo: <p className="text-sm">A rede de água está programada até março/2027; a conclusão do conjunto de esgotamento, até maio/2027.</p>,
+      },
+      {
+        titulo: 'Metas mensais',
+        conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Dez/26', '21,79%', '21,79%'],
+          ['Jan/27', '23,21%', '45,00%'],
+          ['Fev/27', '23,21%', '68,21%'],
+          ['Mar/27', '16,52%', '84,73%'],
+          ['Abr/27', '8,84%', '93,57%'],
+          ['Mai/27', '6,43%', '100% (conclusão)'],
+        ]} />,
+      },
+    ],
+  },
+
   'Portaria e Clube': {
-    resumo: 'Os dois equipamentos comuns mais visíveis do empreendimento — executados em janela simultânea, compartilhando equipes de estrutura e acabamento para otimização de cronograma.',
-    status: 'EM EXECUÇÃO',
-    periodo: '30/04/2026 → 30/12/2026',
+    resumo: 'Os dois equipamentos comuns mais visíveis do empreendimento. Junho/2027 passa a ser o mês final, com início pela portaria e avanço posterior dos serviços do clube.',
+    status: 'EM EXECUÇÃO — REPROGRAMADA',
+    periodo: '01/05/2026 → 30/06/2027',
+    fonte: FONTE_COMUNICADO,
     secoes: [
       {
         titulo: 'Portaria — dados técnicos da edificação',
@@ -347,22 +452,23 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
         conteudo: <p className="text-sm">O Clube comporta os ambientes de lazer e convivência projetados para 712 unidades. Combina estrutura de concreto armado convencional nas áreas internas com soluções de cobertura de vão amplo (estrutura metálica ou pré-moldada) sobre os espaços de uso coletivo.</p>,
       },
       {
-        titulo: 'Distribuição percentual (curva-S)',
-        conteudo: <Tabela headers={['Mês', 'Etapa principal', '% mês', 'Acum.']} rows={[
-          ['Abr–Jun/26', 'Mobilização, supressão, terraplanagem, locação', '3%', '3%'],
-          ['Jul/26', 'Fundações e estruturas inferiores (sapatas, baldrames)', '7%', '10%'],
-          ['Ago/26', 'Estruturas — pilares, vigas e lajes', '12%', '22%'],
-          ['Set/26', 'Alvenaria, contrapisos, vedações', '15%', '37%'],
-          ['Out/26', 'Cobertura, instalações primárias', '17%', '54%'],
-          ['Out–Nov/26', 'Esquadrias, revestimentos, primeiros acabamentos', '15%', '69%'],
-          ['Nov/26', 'Acabamentos finos, louças, metais, pintura', '13%', '82%'],
-          ['Dez/26', 'Instalações finais, equipamentos, testes', '10%', '92%'],
-          ['Dez/26', 'Acabamentos finais, comissionamento, entrega', '8%', '100%'],
-        ]} />,
+        titulo: 'Sequência de execução',
+        conteudo: <p className="text-sm">A portaria iniciou em setembro/2026 a etapa final de terraplanagem. A sequência prevê finalizar a drenagem e iniciar, em outubro/2026, a pavimentação da portaria. Essa primeira etapa avança até sua conclusão; em seguida, a jornada de execução se concentra no clube, respeitando os prazos do cronograma.</p>,
       },
       {
-        titulo: 'Status real em 30/04/2026',
-        conteudo: <p className="text-sm">A supressão vegetal específica das áreas do Clube e da Portaria já está concluída e a terraplanagem das duas plataformas está em execução. As fundações estão programadas para iniciar em maio/junho conforme a entrega progressiva das plataformas. O acumulado físico no fechamento de abril é compatível com a curva-S (3%). A concentração de massa crítica entre agosto e outubro coincide com o período seco do litoral norte baiano, ideal para cobertura e acabamentos externos.</p>,
+        titulo: 'Metas mensais',
+        conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Set/26', '4%', '4%'],
+          ['Out/26', '6%', '10%'],
+          ['Nov/26', '7%', '17%'],
+          ['Dez/26', '10%', '27%'],
+          ['Jan/27', '11%', '38%'],
+          ['Fev/27', '14%', '52%'],
+          ['Mar/27', '11%', '63%'],
+          ['Abr/27', '12%', '75%'],
+          ['Mai/27', '13%', '88%'],
+          ['Jun/27', '12%', '100% (conclusão)'],
+        ]} />,
       },
     ],
   },
@@ -370,7 +476,8 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
   'Paisagismo': {
     resumo: 'Última grande frente de obra — entrega a experiência sensorial final. Regula o microclima, complementa a drenagem pluvial, oferece sombreamento e cria as zonas verdes de convivência. Posicionado após a pavimentação para evitar dano a mudas recém-plantadas.',
     status: 'AGUARDANDO INÍCIO',
-    periodo: '30/09/2026 → 28/12/2026',
+    periodo: '01/03/2027 → 30/06/2027',
+    fonte: FONTE_COMUNICADO,
     secoes: [
       {
         titulo: 'Volume de paisagismo previsto',
@@ -391,16 +498,37 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
         ]} />,
       },
       {
-        titulo: 'Cronograma de execução',
-        conteudo: <Tabela headers={['Mês', 'Etapa', 'Acumulado']} rows={[
-          ['Out/26', 'Preparação de solo, correção, instalação da irrigação', '30%'],
-          ['Nov/26', 'Plantio massivo — mudas e arbustos', '70%'],
-          ['Dez/26', 'Forração, ajustes finais e primeiras podas de formação', '100%'],
-        ]} />,
+        titulo: 'Metas mensais',
+        conteudo: <>
+          <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Mar/27', '20%', '20%'],
+          ['Abr/27', '30%', '50%'],
+          ['Mai/27', '30%', '80%'],
+          ['Jun/27', '20%', '100% (conclusão)'],
+        ]} />
+          <p className="text-xs text-muted-foreground mt-2">A frente acompanha a liberação das áreas e a conclusão dos serviços anteriores.</p>
+        </>,
       },
       {
         titulo: 'Manutenção pós-entrega',
-        conteudo: <p className="text-sm">A entrega em dezembro/2026 é o ponto de partida da composição. O paisagismo é obra viva — atinge plenitude estética entre o 2º e o 4º ano após o plantio. Os primeiros 12 meses exigem irrigação reforçada, replantio pontual e podas de formação, coordenados pela administração do condomínio.</p>,
+        conteudo: <p className="text-sm">A entrega em junho/2027 é o ponto de partida da composição. O paisagismo é obra viva — atinge plenitude estética entre o 2º e o 4º ano após o plantio. Os primeiros 12 meses exigem irrigação reforçada, replantio pontual e podas de formação, coordenados pela administração do condomínio.</p>,
+      },
+    ],
+  },
+
+  'Sinalização': {
+    resumo: 'Sinalização do residencial, executada na fase final, acompanhando a liberação das áreas e a conclusão dos serviços anteriores.',
+    status: 'AGUARDANDO INÍCIO',
+    periodo: '01/03/2027 → 31/05/2027',
+    fonte: FONTE_COMUNICADO,
+    secoes: [
+      {
+        titulo: 'Metas mensais',
+        conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
+          ['Mar/27', '30%', '30%'],
+          ['Abr/27', '40%', '70%'],
+          ['Mai/27', '30%', '100% (conclusão)'],
+        ]} />,
       },
     ],
   },
