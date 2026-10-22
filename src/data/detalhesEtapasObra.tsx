@@ -341,6 +341,7 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
           'Personalização sem sobrepreço — cor, formato, paginação e espessura ajustados ao projeto',
           'Rastreabilidade total — cada lote registrado com data, traço, ensaios e local de assentamento',
         ]} />,
+      },
       {
         titulo: 'Metas mensais',
         conteudo: <Tabela headers={['Mês', 'Meta do mês', 'Acumulado previsto']} rows={[
@@ -478,6 +479,7 @@ export const detalhesEtapasObra: Record<string, DetalheEtapa> = {
     periodo: '01/03/2027 → 30/06/2027',
     fonte: FONTE_COMUNICADO,
     secoes: [
+      {
         titulo: 'Volume de paisagismo previsto',
         conteudo: <Tabela headers={['Elemento', 'Quantidade', 'Observação técnica']} rows={[
           ['Mudas arbóreas nativas e adaptadas', '1.200 un.', 'Bioma local, baixa exigência hídrica'],
